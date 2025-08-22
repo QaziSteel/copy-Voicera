@@ -1,20 +1,50 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  onSignUpClick?: () => void;
+}
+
+export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { signIn } = useAuth();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Login attempt:", { email, password, rememberMe });
+    setLoading(true);
+
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -102,19 +132,27 @@ export const LoginForm = () => {
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12"
+              disabled={loading}
             >
-              Login
+              {loading ? "Signing in..." : "Login"}
             </Button>
 
             {/* Sign Up Link */}
             <div className="text-center">
               <span className="text-auth-subtle text-sm">Don't have an account? </span>
-              <button
-                type="button"
-                className="text-sm text-auth-link hover:underline font-medium"
-              >
-                Sign up
-              </button>
+              {onSignUpClick ? (
+                <button
+                  type="button"
+                  onClick={onSignUpClick}
+                  className="text-sm text-auth-link hover:underline font-medium"
+                >
+                  Sign up
+                </button>
+              ) : (
+                <Link to="/auth/signup" className="text-sm text-auth-link hover:underline font-medium">
+                  Sign up
+                </Link>
+              )}
             </div>
           </form>
         </div>
