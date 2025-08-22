@@ -137,8 +137,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         <div>
           <Label htmlFor="email">Enter Code</Label>
           <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter the 6 digit code" className="mt-1" />
-          <p className="text-sm text-auth-subtle mt-2">
-            Didn't receive the code? Resend in <span className="font-bold">{countdown}s</span>
+          <p className="text-sm text-auth-subtle mt-2 text-center">
+            Didn't receive the code? Resend in <span className="font-bold text-foreground">{countdown}s</span>
           </p>
         </div>
       </div>
