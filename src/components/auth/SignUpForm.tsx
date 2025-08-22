@@ -123,7 +123,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
             type="text"
             value={formData.firstName}
             onChange={handleChange}
-            placeholder="Enter your first name"
+            placeholder="Enter your full name"
             className="mt-1"
           />
         </div>
