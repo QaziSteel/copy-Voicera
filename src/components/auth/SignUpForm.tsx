@@ -116,7 +116,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
     <>
       <div className="space-y-4">
         <div>
-          <Label htmlFor="firstName">First Name</Label>
+          <Label htmlFor="firstName">Full name</Label>
           <Input
             id="firstName"
             name="firstName"
