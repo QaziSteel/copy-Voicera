@@ -272,18 +272,6 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
         <Card className="p-8 rounded-3xl border-2">
           <div className="space-y-6">
             <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="flex space-x-2">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className={`w-2 h-2 rounded-full ${
-                        step >= i ? 'bg-primary' : 'bg-muted'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
               <h2 className="text-xl font-semibold">
                 {step === 1 && "What's your name?"}
                 {step === 2 && "What's your email?"}
