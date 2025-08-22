@@ -15,16 +15,17 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     firstName: '',
-    lastName: '',
     email: '',
+    verificationCode: '',
     password: '',
     confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1); // 1: Name, 2: Email, 3: Password
+  const [step, setStep] = useState(1); // 1: Name, 2: Verification, 3: Password
   const [countdown, setCountdown] = useState(30);
+  const [sentVerificationCode, setSentVerificationCode] = useState('');
 
   const {
     signUp
@@ -38,26 +39,67 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       [e.target.name]: e.target.value
     }));
   };
-  const handleNext = () => {
-    if (step === 1 && (!formData.firstName || !formData.lastName)) {
+  const sendVerificationCode = async () => {
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setSentVerificationCode(code);
+    
+    // In a real implementation, you'd send this via email
+    // For now, we'll just log it (in production, use an edge function)
+    console.log('Verification code:', code);
+    
+    toast({
+      title: "Verification code sent",
+      description: `Code sent to ${formData.email}. Check your email.`
+    });
+  };
+
+  const handleNext = async () => {
+    if (step === 1 && (!formData.firstName || !formData.email)) {
       toast({
         title: "Error",
-        description: "Please enter your first and last name",
+        description: "Please enter your name and email",
         variant: "destructive"
       });
       return;
     }
-    if (step === 2 && !formData.email) {
+    
+    if (step === 2 && !formData.verificationCode) {
       toast({
         title: "Error",
-        description: "Please enter your email address",
+        description: "Please enter the verification code",
         variant: "destructive"
       });
       return;
     }
+    
     if (step === 1) {
-      setCountdown(30); // Reset countdown when moving to step 2
+      // Send verification code when moving to step 2
+      await sendVerificationCode();
+      setCountdown(30);
     }
+    
+    if (step === 2) {
+      // Verify the code
+      if (formData.verificationCode !== sentVerificationCode) {
+        toast({
+          title: "Error",
+          description: "Invalid verification code",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (countdown <= 0) {
+        toast({
+          title: "Error",
+          description: "Verification code has expired",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
     setStep(prev => prev + 1);
   };
 
@@ -93,7 +135,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
     try {
       const {
         error
-      } = await signUp(formData.email, formData.password, formData.firstName, formData.lastName);
+      } = await signUp(formData.email, formData.password, formData.firstName, '');
       if (error) {
         toast({
           title: "Error",
@@ -124,19 +166,28 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           <Input id="firstName" name="firstName" type="text" value={formData.firstName} onChange={handleChange} placeholder="Enter your full name" className="mt-1" />
         </div>
         <div>
-          <Label htmlFor="lastName">Business email</Label>
-          <Input id="lastName" name="lastName" type="text" value={formData.lastName} onChange={handleChange} placeholder="Enter you business email" className="mt-1" />
+          <Label htmlFor="email">Business email</Label>
+          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter your business email" className="mt-1" />
         </div>
       </div>
-      <Button onClick={handleNext} className="w-full" disabled={!formData.firstName || !formData.lastName}>
+      <Button onClick={handleNext} className="w-full" disabled={!formData.firstName || !formData.email}>
         Continue
       </Button>
     </>;
   const renderStep2 = () => <>
       <div className="space-y-4">
         <div>
-          <Label htmlFor="email">Enter Code</Label>
-          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter the 6 digit code" className="mt-1" />
+          <Label htmlFor="verificationCode">Enter Code</Label>
+          <Input 
+            id="verificationCode" 
+            name="verificationCode" 
+            type="text" 
+            value={formData.verificationCode} 
+            onChange={handleChange} 
+            placeholder="Enter the 6 digit code" 
+            className="mt-1"
+            maxLength={6}
+          />
           <p className="text-sm text-auth-subtle mt-2 text-center">
             Didn't receive the code? Resend in <span className="font-bold text-foreground">{countdown}s</span>
           </p>
@@ -146,7 +197,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
           Cancel
         </Button>
-        <Button onClick={handleNext} className="flex-1" disabled={!formData.email}>
+        <Button onClick={handleNext} className="flex-1" disabled={!formData.verificationCode}>
           Verify & Continue
         </Button>
       </div>
@@ -192,7 +243,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
               </h2>
               <p className="text-sm text-auth-subtle mt-1">
                 {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
-                {step === 2 && `We've sent a 6-digit verification code to ${formData.lastName}. Enter it below to verify your identity`}
+                {step === 2 && `We've sent a 6-digit verification code to ${formData.email}. Enter it below to verify your identity`}
                 {step === 3 && "Secure your account with a strong password to keep your information safe."}
               </p>
             </div>
