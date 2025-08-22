@@ -199,7 +199,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
               <p className="text-sm text-auth-subtle mt-1">
                 {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
                 {step === 2 && `We've sent a 6-digit verification code to ${formData.lastName}. Enter it below to verify your identity`}
-                {step === 3 && "Create a secure password for your account"}
+                {step === 3 && "Secure your account with a strong password to keep your information safe."}
               </p>
             </div>
 
