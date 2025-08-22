@@ -7,12 +7,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-
 interface SignUpFormProps {
   onSuccess?: () => void;
 }
-
-export const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
+export const SignUpForm: React.FC<SignUpFormProps> = ({
+  onSuccess
+}) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -24,80 +24,71 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Name, 2: Email, 3: Password
-  
-  const { signUp } = useAuth();
-  const { toast } = useToast();
 
+  const {
+    signUp
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
-
   const handleNext = () => {
     if (step === 1 && (!formData.firstName || !formData.lastName)) {
       toast({
         title: "Error",
         description: "Please enter your first and last name",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-    
     if (step === 2 && !formData.email) {
       toast({
         title: "Error",
         description: "Please enter your email address",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-    
     setStep(prev => prev + 1);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Error",
         description: "Passwords do not match",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (formData.password.length < 6) {
       toast({
         title: "Error",
         description: "Password must be at least 6 characters",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setLoading(true);
-
     try {
-      const { error } = await signUp(
-        formData.email,
-        formData.password,
-        formData.firstName,
-        formData.lastName
-      );
-
+      const {
+        error
+      } = await signUp(formData.email, formData.password, formData.firstName, formData.lastName);
       if (error) {
         toast({
           title: "Error",
           description: error.message,
-          variant: "destructive",
+          variant: "destructive"
         });
       } else {
         toast({
           title: "Success",
-          description: "Please check your email to verify your account",
+          description: "Please check your email to verify your account"
         });
         onSuccess?.();
       }
@@ -105,164 +96,76 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
       toast({
         title: "Error",
         description: "An unexpected error occurred",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
-  const renderStep1 = () => (
-    <>
+  const renderStep1 = () => <>
       <div className="space-y-4">
         <div>
-          <Label htmlFor="firstName">First Name</Label>
-          <Input
-            id="firstName"
-            name="firstName"
-            type="text"
-            value={formData.firstName}
-            onChange={handleChange}
-            placeholder="Enter your first name"
-            className="mt-1"
-          />
+          <Label htmlFor="firstName">Full name</Label>
+          <Input id="firstName" name="firstName" type="text" value={formData.firstName} onChange={handleChange} placeholder="Enter your full name" className="mt-1" />
         </div>
         <div>
-          <Label htmlFor="lastName">Last Name</Label>
-          <Input
-            id="lastName"
-            name="lastName"
-            type="text"
-            value={formData.lastName}
-            onChange={handleChange}
-            placeholder="Enter your last name"
-            className="mt-1"
-          />
+          <Label htmlFor="lastName">Email</Label>
+          <Input id="lastName" name="lastName" type="text" value={formData.lastName} onChange={handleChange} placeholder="Enter your last name" className="mt-1" />
         </div>
       </div>
-      <Button 
-        onClick={handleNext}
-        className="w-full"
-        disabled={!formData.firstName || !formData.lastName}
-      >
+      <Button onClick={handleNext} className="w-full" disabled={!formData.firstName || !formData.lastName}>
         Continue
       </Button>
-    </>
-  );
-
-  const renderStep2 = () => (
-    <>
+    </>;
+  const renderStep2 = () => <>
       <div className="space-y-4">
         <div>
-          <Label htmlFor="email">Business email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter your email"
-            className="mt-1"
-          />
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter your email" className="mt-1" />
         </div>
       </div>
       <div className="flex gap-2">
-        <Button
-          onClick={() => setStep(1)}
-          variant="outline"
-          className="flex-1"
-        >
+        <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button 
-          onClick={handleNext}
-          className="flex-1"
-          disabled={!formData.email}
-        >
+        <Button onClick={handleNext} className="flex-1" disabled={!formData.email}>
           Continue
         </Button>
       </div>
-    </>
-  );
-
-  const renderStep3 = () => (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    </>;
+  const renderStep3 = () => <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div>
           <Label htmlFor="password">Password</Label>
           <div className="relative mt-1">
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Create a password"
-              className="pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4 text-auth-subtle" />
-              ) : (
-                <Eye className="h-4 w-4 text-auth-subtle" />
-              )}
+            <Input id="password" name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} placeholder="Create a password" className="pr-10" />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              {showPassword ? <EyeOff className="h-4 w-4 text-auth-subtle" /> : <Eye className="h-4 w-4 text-auth-subtle" />}
             </button>
           </div>
         </div>
         <div>
           <Label htmlFor="confirmPassword">Confirm Password</Label>
           <div className="relative mt-1">
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm your password"
-              className="pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4 text-auth-subtle" />
-              ) : (
-                <Eye className="h-4 w-4 text-auth-subtle" />
-              )}
+            <Input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm your password" className="pr-10" />
+            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              {showConfirmPassword ? <EyeOff className="h-4 w-4 text-auth-subtle" /> : <Eye className="h-4 w-4 text-auth-subtle" />}
             </button>
           </div>
         </div>
       </div>
       <div className="flex gap-2">
-        <Button
-          onClick={() => setStep(2)}
-          variant="outline"
-          className="flex-1"
-          type="button"
-        >
+        <Button onClick={() => setStep(2)} variant="outline" className="flex-1" type="button">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <Button 
-          type="submit"
-          className="flex-1"
-          disabled={loading || !formData.password || !formData.confirmPassword}
-        >
+        <Button type="submit" className="flex-1" disabled={loading || !formData.password || !formData.confirmPassword}>
           {loading ? "Creating Account..." : "Create Account"}
         </Button>
       </div>
-    </form>
-  );
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    </form>;
+  return <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">Voicera AI</h1>
@@ -294,6 +197,5 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSuccess }) => {
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
