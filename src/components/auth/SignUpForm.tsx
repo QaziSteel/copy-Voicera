@@ -194,7 +194,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
               <h2 className="text-xl font-semibold">
                 {step === 1 && "Create an Account"}
                 {step === 2 && "Verify your identity"}
-                {step === 3 && "Create a password"}
+                {step === 3 && "Create your password"}
               </h2>
               <p className="text-sm text-auth-subtle mt-1">
                 {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
