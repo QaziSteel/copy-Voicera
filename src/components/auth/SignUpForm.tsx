@@ -110,7 +110,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         </div>
         <div>
           <Label htmlFor="lastName">Business email</Label>
-          <Input id="lastName" name="lastName" type="text" value={formData.lastName} onChange={handleChange} placeholder="Enter your last name" className="mt-1" />
+          <Input id="lastName" name="lastName" type="text" value={formData.lastName} onChange={handleChange} placeholder="Enter you business email" className="mt-1" />
         </div>
       </div>
       <Button onClick={handleNext} className="w-full" disabled={!formData.firstName || !formData.lastName}>
