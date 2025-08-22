@@ -188,7 +188,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
               <p className="text-sm text-auth-subtle">
                 Already have an account?{' '}
                 <Link to="/auth" className="text-auth-link hover:underline font-medium">
-                  Sign in
+                  Login
                 </Link>
               </p>
             </div>
