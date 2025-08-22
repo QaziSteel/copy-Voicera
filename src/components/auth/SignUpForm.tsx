@@ -176,9 +176,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-xl font-semibold">
-                {step === 1 && "What's your name?"}
-                {step === 2 && "What's your email?"}
-                {step === 3 && "Create a password"}
+                Create an Account
               </h2>
             </div>
 
