@@ -169,7 +169,6 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">Voicera AI</h1>
-          <p className="text-auth-subtle">Create your account</p>
         </div>
 
         <Card className="p-8 rounded-3xl border-2">
