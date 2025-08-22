@@ -208,12 +208,6 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
             {step === 3 && renderStep3()}
 
             <div className="text-center">
-              <p className="text-sm text-auth-subtle">
-                Already have an account?{' '}
-                <Link to="/auth" className="text-auth-link hover:underline font-medium">
-                  Login
-                </Link>
-              </p>
             </div>
           </div>
         </Card>
