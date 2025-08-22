@@ -144,8 +144,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       </div>
       <div className="flex gap-2">
         <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          Cancel
         </Button>
         <Button onClick={handleNext} className="flex-1" disabled={!formData.email}>
           Continue
