@@ -120,8 +120,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const renderStep2 = () => <>
       <div className="space-y-4">
         <div>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter your email" className="mt-1" />
+          <Label htmlFor="email">Enter Code</Label>
+          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter the 6 digit code" className="mt-1" />
         </div>
       </div>
       <div className="flex gap-2">
@@ -179,7 +179,11 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
                 {step === 2 && "Verify your identity"}
                 {step === 3 && "Create a password"}
               </h2>
-              <p className="text-sm text-auth-subtle mt-1">Get started with your Voicera AI dashboard in minutes</p>
+              <p className="text-sm text-auth-subtle mt-1">
+                {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
+                {step === 2 && `We've sent a 6-digit verification code to ${formData.lastName}. Enter it below to verify your identity`}
+                {step === 3 && "Create a secure password for your account"}
+              </p>
             </div>
 
             {step === 1 && renderStep1()}
