@@ -156,9 +156,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         <div>
           <Label htmlFor="password">Password</Label>
           <div className="relative mt-1">
-            <Input id="password" name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} placeholder="Create a password" className="pr-10" />
+            <Input id="password" name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} placeholder="Create your password" className="pr-10" />
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              {showPassword ? <EyeOff className="h-4 w-4 text-auth-subtle" /> : <Eye className="h-4 w-4 text-auth-subtle" />}
+              {showPassword ? <Eye className="h-4 w-4 text-auth-subtle" /> : <EyeOff className="h-4 w-4 text-auth-subtle" />}
             </button>
           </div>
         </div>
@@ -167,20 +167,14 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           <div className="relative mt-1">
             <Input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm your password" className="pr-10" />
             <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              {showConfirmPassword ? <EyeOff className="h-4 w-4 text-auth-subtle" /> : <Eye className="h-4 w-4 text-auth-subtle" />}
+              {showConfirmPassword ? <Eye className="h-4 w-4 text-auth-subtle" /> : <EyeOff className="h-4 w-4 text-auth-subtle" />}
             </button>
           </div>
         </div>
       </div>
-      <div className="flex gap-2">
-        <Button onClick={() => setStep(2)} variant="outline" className="flex-1" type="button">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <Button type="submit" className="flex-1" disabled={loading || !formData.password || !formData.confirmPassword}>
-          {loading ? "Creating Account..." : "Create Account"}
-        </Button>
-      </div>
+      <Button type="submit" className="w-full" disabled={loading || !formData.password || !formData.confirmPassword}>
+        {loading ? "Creating Account..." : "Create Account"}
+      </Button>
     </form>;
   return <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
