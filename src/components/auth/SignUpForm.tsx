@@ -147,7 +147,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           Cancel
         </Button>
         <Button onClick={handleNext} className="flex-1" disabled={!formData.email}>
-          Continue
+          Verify & Continue
         </Button>
       </div>
     </>;
