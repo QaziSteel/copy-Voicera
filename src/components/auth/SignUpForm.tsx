@@ -106,7 +106,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       <div className="space-y-4">
         <div>
           <Label htmlFor="firstName">Full name</Label>
-          <Input id="firstName" name="firstName" type="text" value={formData.firstName} onChange={handleChange} placeholder="Enter your first name" className="mt-1" />
+          <Input id="firstName" name="firstName" type="text" value={formData.firstName} onChange={handleChange} placeholder="Enter your full name" className="mt-1" />
         </div>
         <div>
           <Label htmlFor="lastName">Business Email</Label>
