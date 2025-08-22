@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Name, 2: Email, 3: Password
+  const [countdown, setCountdown] = useState(30);
 
   const {
     signUp
@@ -54,8 +55,22 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       });
       return;
     }
+    if (step === 1) {
+      setCountdown(30); // Reset countdown when moving to step 2
+    }
     setStep(prev => prev + 1);
   };
+
+  // Countdown timer for step 2
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (step === 2 && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [step, countdown]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
@@ -122,6 +137,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         <div>
           <Label htmlFor="email">Enter Code</Label>
           <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter the 6 digit code" className="mt-1" />
+          <p className="text-sm text-auth-subtle mt-2">
+            Didn't receive the code? Resend in <span className="font-bold">{countdown}s</span>
+          </p>
         </div>
       </div>
       <div className="flex gap-2">
