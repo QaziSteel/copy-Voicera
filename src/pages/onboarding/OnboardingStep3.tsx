@@ -1,35 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
 export const OnboardingStep3: React.FC = () => {
+  const [businessName, setBusinessName] = useState("Silhouette Hair Co.");
   const navigate = useNavigate();
 
-  const handleNext = () => {
-    navigate("/onboarding/step4");
-  };
+  useEffect(() => {
+    // Load any previously saved business name
+    const savedName = sessionStorage.getItem("businessName");
+    if (savedName) {
+      setBusinessName(savedName);
+    }
+  }, []);
 
   const handlePrevious = () => {
     navigate("/onboarding/step2");
   };
 
+  const handleNext = () => {
+    if (businessName.trim()) {
+      // Store the business name
+      sessionStorage.setItem("businessName", businessName.trim());
+      navigate("/onboarding/step4");
+    }
+  };
+
+  const isNextDisabled = !businessName.trim();
+
   return (
     <OnboardingLayout
       step={3}
       totalSteps={5}
-      completionPercentage={46}
-      onNext={handleNext}
+      completionPercentage={60}
       onPrevious={handlePrevious}
-      nextButtonText="Continue"
+      onNext={handleNext}
       showPrevious={true}
+      nextDisabled={isNextDisabled}
     >
-      <div className="flex flex-col items-center gap-8">
-        <h2 className="text-2xl font-bold text-black text-center">
-          Step 3 - Coming Soon
-        </h2>
-        <p className="text-xl font-semibold text-[#6B7280] max-w-lg leading-7 text-center">
-          This step will be implemented next.
-        </p>
+      <div className="flex flex-col gap-12">
+        {/* Header */}
+        <div className="flex flex-col gap-3">
+          <h2 className="text-xl font-bold text-foreground">
+            What's your business name?
+          </h2>
+          <p className="text-base italic text-muted-foreground leading-6">
+            This is how your AI will introduce your business when it answers calls.
+          </p>
+        </div>
+
+        {/* Business Name Input */}
+        <div className="flex flex-col gap-6">
+          <input
+            type="text"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            placeholder="Enter your business name..."
+            className="w-full p-4 text-lg font-semibold text-foreground border-2 border-border rounded-xl placeholder-muted-foreground focus:outline-none focus:border-foreground transition-colors bg-background"
+          />
+        </div>
       </div>
     </OnboardingLayout>
   );
