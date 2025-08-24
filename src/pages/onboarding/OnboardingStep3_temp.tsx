@@ -12,21 +12,21 @@ const businessTypes = [
   "Chiropractor",
 ];
 
-export const OnboardingStep3: React.FC = () => {
+export const OnboardingStep2: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   const [customType, setCustomType] = useState("");
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/step2");
+    navigate("/onboarding/step1");
   };
 
   const handleNext = () => {
     if (selectedType || customType) {
       const businessType = selectedType === "Other (Custom)" ? customType : selectedType;
       sessionStorage.setItem("businessType", businessType);
-      navigate("/onboarding/step4");
+      navigate("/onboarding/step3");
     }
   };
 
@@ -42,9 +42,9 @@ export const OnboardingStep3: React.FC = () => {
 
   return (
     <OnboardingLayout
-      step={3}
+      step={2}
       totalSteps={5}
-      completionPercentage={60}
+      completionPercentage={26}
       onPrevious={handlePrevious}
       onNext={handleNext}
       showPrevious={true}
@@ -53,10 +53,10 @@ export const OnboardingStep3: React.FC = () => {
       <div className="flex flex-col gap-12">
         {/* Header */}
         <div className="flex flex-col gap-3">
-          <h2 className="text-xl font-bold text-foreground">
+          <h2 className="text-xl font-bold text-black">
             What type of business do you run?
           </h2>
-          <p className="text-base italic text-muted-foreground leading-6">
+          <p className="text-base italic text-[#737373] leading-6">
             This helps us personalise your AI agent and suggest common FAQs.
           </p>
         </div>
@@ -66,10 +66,10 @@ export const OnboardingStep3: React.FC = () => {
           {/* Dropdown Header */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center justify-between w-full p-4 border-2 border-border rounded-xl hover:border-foreground transition-colors"
+            className="flex items-center justify-between w-full p-4 border-2 border-[#E5E7EB] rounded-xl hover:border-black transition-colors"
           >
             <span
-              className={`text-lg ${selectedType ? "text-foreground" : "text-muted-foreground"}`}
+              className={`text-lg ${selectedType ? "text-black" : "text-[#6B7280]"}`}
             >
               {selectedType || "Select your business type"}
             </span>
@@ -83,7 +83,7 @@ export const OnboardingStep3: React.FC = () => {
             >
               <path
                 d="M18 15C18 15 13.5811 9 12 9C10.4188 9 6 15 6 15"
-                stroke="currentColor"
+                stroke="#141B34"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -93,12 +93,12 @@ export const OnboardingStep3: React.FC = () => {
 
           {/* Dropdown Options */}
           {isOpen && (
-            <div className="border-2 border-border rounded-xl overflow-hidden">
+            <div className="border-2 border-[#E5E7EB] rounded-xl overflow-hidden">
               {businessTypes.map((type) => (
                 <button
                   key={type}
                   onClick={() => handleSelectType(type)}
-                  className="w-full p-3 px-4 text-left text-lg text-muted-foreground hover:bg-accent transition-colors"
+                  className="w-full p-3 px-4 text-left text-lg text-[#6B7280] hover:bg-gray-50 transition-colors"
                 >
                   {type}
                 </button>
@@ -108,7 +108,7 @@ export const OnboardingStep3: React.FC = () => {
               <div className="flex items-center gap-3 p-3 px-4">
                 <button
                   onClick={() => handleSelectType("Other (Custom)")}
-                  className="text-lg text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-lg text-[#6B7280] hover:text-black transition-colors"
                 >
                   Other (Custom)
                 </button>
@@ -122,7 +122,7 @@ export const OnboardingStep3: React.FC = () => {
                     }
                   }}
                   placeholder="Enter your business type..."
-                  className="flex-1 p-3 border-2 border-border rounded-xl placeholder-muted-foreground focus:outline-none focus:border-foreground transition-colors bg-background"
+                  className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
                 />
               </div>
             </div>
