@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 interface SignUpFormProps {
   onSuccess?: () => void;
@@ -13,6 +13,7 @@ interface SignUpFormProps {
 export const SignUpForm: React.FC<SignUpFormProps> = ({
   onSuccess
 }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     email: '',
@@ -145,9 +146,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       } else {
         toast({
           title: "Success",
-          description: "Please check your email to verify your account"
+          description: "Account created successfully!"
         });
-        onSuccess?.();
+        navigate('/onboarding/step1');
       }
     } catch (error) {
       toast({

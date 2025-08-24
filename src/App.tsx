@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import { SignUpForm } from "@/components/auth/SignUpForm";
+import { OnboardingStep1 } from "./pages/onboarding/Step1";
+import { OnboardingStep2 } from "./pages/onboarding/Step2";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +25,16 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/signup" element={<SignUpForm />} />
+            <Route path="/onboarding/step1" element={
+              <ProtectedRoute>
+                <OnboardingStep1 />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/step2" element={
+              <ProtectedRoute>
+                <OnboardingStep2 />
+              </ProtectedRoute>
+            } />
             <Route path="/" element={
               <ProtectedRoute>
                 <Dashboard />
