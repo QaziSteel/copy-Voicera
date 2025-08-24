@@ -146,9 +146,10 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       } else {
         toast({
           title: "Success",
-          description: "Account created! Please check your email and click the confirmation link to verify your account before logging in."
+          description: "Account created! Please check your email and click the confirmation link to verify your account."
         });
-        onSuccess?.();
+        // Show success state instead of redirecting
+        setStep(4); // Add a new step for email confirmation
       }
     } catch (error) {
       toast({
@@ -203,7 +204,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         </Button>
       </div>
     </>;
-  const renderStep3 = () => <form onSubmit={handleSubmit} className="space-y-6">
+  const renderStep3 = () => (
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div>
           <Label htmlFor="password">Password</Label>
@@ -227,7 +229,34 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       <Button type="submit" className="w-full" disabled={loading || !formData.password || !formData.confirmPassword}>
         {loading ? "Creating Account..." : "Create Account"}
       </Button>
-    </form>;
+    </form>
+  );
+
+  const renderEmailConfirmation = () => (
+    <div className="text-center space-y-6">
+      <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+        <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold text-foreground mb-2">
+          Check your email
+        </h3>
+        <p className="text-auth-subtle text-sm">
+          We've sent a confirmation link to <span className="font-medium">{formData.email}</span>. 
+          Click the link to verify your account and continue to your dashboard.
+        </p>
+      </div>
+
+      <div className="p-4 bg-muted rounded-lg">
+        <p className="text-sm text-muted-foreground">
+          Didn't receive the email? Check your spam folder or try signing up again.
+        </p>
+      </div>
+    </div>
+  );
   return <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
@@ -241,17 +270,20 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
                 {step === 1 && "Create an Account"}
                 {step === 2 && "Verify your identity"}
                 {step === 3 && "Create your password"}
+                {step === 4 && "Account Created Successfully!"}
               </h2>
               <p className="text-sm text-auth-subtle mt-1">
                 {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
                 {step === 2 && `We've sent a 6-digit verification code to ${formData.email}. Enter it below to verify your identity`}
                 {step === 3 && "Secure your account with a strong password to keep your information safe."}
+                {step === 4 && ""}
               </p>
             </div>
 
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}
             {step === 3 && renderStep3()}
+            {step === 4 && renderEmailConfirmation()}
 
             <div className="text-center">
             </div>
