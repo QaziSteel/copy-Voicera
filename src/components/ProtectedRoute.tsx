@@ -17,6 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       if (!user) return;
 
       try {
+        console.log('Checking onboarding status for user:', user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('onboarding_completed')
@@ -29,7 +30,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           return;
         }
 
-        setOnboardingCompleted(data?.onboarding_completed || false);
+        console.log('Onboarding status data:', data);
+        const completed = data?.onboarding_completed || false;
+        console.log('Setting onboardingCompleted to:', completed);
+        setOnboardingCompleted(completed);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
         setOnboardingCompleted(false);
@@ -58,13 +62,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // If user hasn't completed onboarding and is not already on an onboarding page
   if (!onboardingCompleted && !location.pathname.startsWith('/onboarding')) {
+    console.log('Redirecting to onboarding - onboardingCompleted:', onboardingCompleted, 'pathname:', location.pathname);
     return <Navigate to="/onboarding/step1" replace />;
   }
 
   // If user has completed onboarding but is trying to access onboarding pages
   if (onboardingCompleted && location.pathname.startsWith('/onboarding')) {
+    console.log('Redirecting to dashboard - onboardingCompleted:', onboardingCompleted, 'pathname:', location.pathname);
     return <Navigate to="/" replace />;
   }
+
+  console.log('Rendering children - onboardingCompleted:', onboardingCompleted, 'pathname:', location.pathname);
 
   return <>{children}</>;
 };
