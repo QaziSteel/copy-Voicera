@@ -146,9 +146,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       } else {
         toast({
           title: "Success",
-          description: "Account created successfully!"
+          description: "Account created! Please check your email and click the confirmation link to verify your account before logging in."
         });
-        navigate('/onboarding/step1');
+        onSuccess?.();
       }
     } catch (error) {
       toast({

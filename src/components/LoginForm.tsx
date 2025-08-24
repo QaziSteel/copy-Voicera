@@ -30,9 +30,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
       const { error } = await signIn(email, password);
       
       if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Invalid email or password. If you just signed up, please check your email and confirm your account first.";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Please check your email and click the confirmation link to verify your account.";
+        }
         toast({
           title: "Error",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
       }
