@@ -14,7 +14,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   onSuccess
 }) => {
   const [formData, setFormData] = useState({
-    firstName: '',
+    fullName: '',
     email: '',
     verificationCode: '',
     password: '',
@@ -55,7 +55,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   };
 
   const handleNext = async () => {
-    if (step === 1 && (!formData.firstName || !formData.email)) {
+    if (step === 1 && (!formData.fullName || !formData.email)) {
       toast({
         title: "Error",
         description: "Please enter your name and email",
@@ -135,7 +135,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
     try {
       const {
         error
-      } = await signUp(formData.email, formData.password, formData.firstName, '');
+      } = await signUp(formData.email, formData.password, formData.fullName);
       if (error) {
         toast({
           title: "Error",
@@ -162,15 +162,15 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const renderStep1 = () => <>
       <div className="space-y-4">
         <div>
-          <Label htmlFor="firstName">Full name</Label>
-          <Input id="firstName" name="firstName" type="text" value={formData.firstName} onChange={handleChange} placeholder="Enter your full name" className="mt-1" />
+          <Label htmlFor="fullName">Full name</Label>
+          <Input id="fullName" name="fullName" type="text" value={formData.fullName} onChange={handleChange} placeholder="Enter your full name" className="mt-1" />
         </div>
         <div>
           <Label htmlFor="email">Business email</Label>
           <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter your business email" className="mt-1" />
         </div>
       </div>
-      <Button onClick={handleNext} className="w-full" disabled={!formData.firstName || !formData.email}>
+      <Button onClick={handleNext} className="w-full" disabled={!formData.fullName || !formData.email}>
         Continue
       </Button>
     </>;
