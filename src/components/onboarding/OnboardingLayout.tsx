@@ -34,18 +34,21 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       {/* Header Section */}
-      <div className="flex justify-between items-center px-8 py-4">
-        {/* App Title */}
-        <h1 className="text-4xl font-bold text-black">Voicera AI</h1>
+      <div className="grid grid-cols-3 items-center px-8 py-4">
+        <div></div>
+        {/* App Title - Centered */}
+        <h1 className="text-4xl font-bold text-black text-center">Voicera AI</h1>
         
         {/* Logout Button */}
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 bg-[#F3F4F6] rounded-xl hover:bg-gray-200 transition-colors"
-        >
-          <LogOut className="w-4 h-4 text-[#6B7280]" />
-          <span className="text-base text-[#6B7280]">Logout</span>
-        </button>
+        <div className="flex justify-end">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 bg-[#F3F4F6] rounded-xl hover:bg-gray-200 transition-colors"
+          >
+            <LogOut className="w-4 h-4 text-[#6B7280]" />
+            <span className="text-base text-[#6B7280]">Logout</span>
+          </button>
+        </div>
       </div>
 
       {/* Progress Section */}
