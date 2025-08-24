@@ -37,14 +37,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Handle successful email confirmation
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Redirect to onboarding after successful email confirmation
-          setTimeout(() => {
-            window.location.href = '/onboarding/step1';
-          }, 100);
-        }
       }
     );
 
@@ -59,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const redirectUrl = `${window.location.origin}/auth`;
+    const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
       email,
