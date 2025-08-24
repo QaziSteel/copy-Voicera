@@ -1,6 +1,7 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,8 +9,39 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
-  if (loading) {
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error checking onboarding status:', error);
+          setOnboardingCompleted(false);
+          return;
+        }
+
+        setOnboardingCompleted(data?.onboarding_completed || false);
+      } catch (error) {
+        console.error('Error checking onboarding status:', error);
+        setOnboardingCompleted(false);
+      }
+    };
+
+    if (user && !loading) {
+      checkOnboardingStatus();
+    }
+  }, [user, loading]);
+
+  if (loading || (user && onboardingCompleted === null)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -22,6 +54,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // If user hasn't completed onboarding and is not already on an onboarding page
+  if (!onboardingCompleted && !location.pathname.startsWith('/onboarding')) {
+    return <Navigate to="/onboarding/step1" replace />;
+  }
+
+  // If user has completed onboarding but is trying to access onboarding pages
+  if (onboardingCompleted && location.pathname.startsWith('/onboarding')) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
