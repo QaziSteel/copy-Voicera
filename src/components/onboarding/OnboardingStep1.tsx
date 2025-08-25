@@ -33,7 +33,7 @@ export const OnboardingStep1: React.FC = () => {
       {/* Main Content */}
       <div className="flex flex-col items-center gap-8">
         {/* Step Indicator */}
-        <h1 className="text-lg font-semibold text-black text-center">
+        <h1 className="text-lg font-bold text-gray-500 text-center">
           Step 1 of 5
         </h1>
         
