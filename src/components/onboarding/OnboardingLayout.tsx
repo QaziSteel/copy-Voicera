@@ -58,7 +58,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
             
             {/* Step Counter */}
             <div className="text-xl font-semibold text-[#6B7280]">
-              Step {step} of {totalSteps}
+              Step 1 of 5
             </div>
 
             {/* Progress Bar */}
