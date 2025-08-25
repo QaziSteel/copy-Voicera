@@ -4,7 +4,7 @@ import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
 export default function OnboardingStep4() {
   const [primaryLocation, setPrimaryLocation] = useState(
-    "350 5th Avenue, Suite 2100, New York, NY 10118",
+    "Enter your primary location",
   );
   const navigate = useNavigate();
 
