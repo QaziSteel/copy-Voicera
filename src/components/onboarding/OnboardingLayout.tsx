@@ -27,21 +27,21 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   const getStepInfo = () => {
     switch (location.pathname) {
       case '/onboarding/step1':
-        return { step: 1, totalSteps: 5, completionPercentage: 6 };
+        return { step: 1, totalSteps: 7, completionPercentage: 14 };
       case '/onboarding/step2':
-        return { step: 1, totalSteps: 5, completionPercentage: 6 };
+        return { step: 2, totalSteps: 7, completionPercentage: 28 };
       case '/onboarding/step3':
-        return { step: 2, totalSteps: 5, completionPercentage: 12 };
+        return { step: 3, totalSteps: 7, completionPercentage: 42 };
       case '/onboarding/step4':
-        return { step: 3, totalSteps: 5, completionPercentage: 18 };
+        return { step: 4, totalSteps: 7, completionPercentage: 57 };
       case '/onboarding/step5':
-        return { step: 4, totalSteps: 5, completionPercentage: 24 };
+        return { step: 5, totalSteps: 7, completionPercentage: 71 };
       case '/onboarding/step6':
-        return { step: 4, totalSteps: 5, completionPercentage: 24 };
+        return { step: 6, totalSteps: 7, completionPercentage: 85 };
       case '/onboarding/step7':
-        return { step: 5, totalSteps: 5, completionPercentage: 30 };
+        return { step: 7, totalSteps: 7, completionPercentage: 100 };
       default:
-        return { step: 1, totalSteps: 5, completionPercentage: 6 };
+        return { step: 1, totalSteps: 7, completionPercentage: 14 };
     }
   };
 
