@@ -86,6 +86,9 @@ export const OnboardingStep5: React.FC = () => {
         {/* Content */}
         <div className="flex flex-col items-center gap-6 text-center">
           <div className="flex flex-col items-center gap-3">
+            <h1 className="text-lg font-bold text-gray-500 text-center">
+              Step 2 of 5
+            </h1>
             <h2 className="text-2xl font-bold text-black">
               Give Your AI Its Personality
             </h2>
