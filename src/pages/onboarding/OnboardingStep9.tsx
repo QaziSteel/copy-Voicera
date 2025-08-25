@@ -116,7 +116,7 @@ export default function OnboardingStep9() {
                             setSelectedSchedule("custom");
                           }
                         }}
-                        placeholder="Enter the duration you want your AI to answer call"
+                        placeholder="Enter custom duration"
                         className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
                       />
                     </div>
