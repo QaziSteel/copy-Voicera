@@ -15,9 +15,6 @@ export const OnboardingStep5: React.FC = () => {
 
   return (
     <OnboardingLayout
-      step={5}
-      totalSteps={6}
-      completionPercentage={85}
       onNext={handleNext}
       onPrevious={handlePrevious}
       nextButtonText="Let's go"

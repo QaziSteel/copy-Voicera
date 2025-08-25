@@ -91,9 +91,6 @@ export default function OnboardingStep4() {
 
   return (
     <OnboardingLayout
-      step={4}
-      totalSteps={5}
-      completionPercentage={18}
       onPrevious={handlePrevious}
       onNext={handleNext}
       showPrevious={true}

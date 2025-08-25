@@ -1,11 +1,9 @@
 import React, { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 
 interface OnboardingLayoutProps {
-  step: number;
-  totalSteps: number;
-  completionPercentage: number;
   children: ReactNode;
   onPrevious?: () => void;
   onNext?: () => void;
@@ -15,9 +13,6 @@ interface OnboardingLayoutProps {
 }
 
 export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
-  step,
-  totalSteps,
-  completionPercentage,
   children,
   onPrevious,
   onNext,
@@ -26,6 +21,31 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   nextDisabled = false
 }) => {
   const { signOut } = useAuth();
+  const location = useLocation();
+
+  // Hardcoded step values based on route
+  const getStepInfo = () => {
+    switch (location.pathname) {
+      case '/onboarding/step1':
+        return { step: 1, totalSteps: 7, completionPercentage: 14 };
+      case '/onboarding/step2':
+        return { step: 2, totalSteps: 7, completionPercentage: 28 };
+      case '/onboarding/step3':
+        return { step: 3, totalSteps: 7, completionPercentage: 42 };
+      case '/onboarding/step4':
+        return { step: 4, totalSteps: 7, completionPercentage: 57 };
+      case '/onboarding/step5':
+        return { step: 5, totalSteps: 7, completionPercentage: 71 };
+      case '/onboarding/step6':
+        return { step: 6, totalSteps: 7, completionPercentage: 85 };
+      case '/onboarding/step7':
+        return { step: 7, totalSteps: 7, completionPercentage: 100 };
+      default:
+        return { step: 1, totalSteps: 7, completionPercentage: 14 };
+    }
+  };
+
+  const { step, totalSteps, completionPercentage } = getStepInfo();
 
 
   const handleLogout = async () => {
