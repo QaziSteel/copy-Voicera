@@ -9,16 +9,16 @@ interface AdditionalLocation {
 }
 
 export default function OnboardingStep4() {
-  const [primaryLocation, setPrimaryLocation] = useState(
-    "Enter your primary location",
-  );
+  const [primaryLocation, setPrimaryLocation] = useState("");
   const [additionalLocations, setAdditionalLocations] = useState<AdditionalLocation[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Load any previously saved location, but ignore old placeholder values
     const savedLocation = sessionStorage.getItem("primaryLocation");
-    if (savedLocation && savedLocation !== "350 5th Avenue, Suite 2100, New York, NY 10118") {
+    if (savedLocation && 
+        savedLocation !== "350 5th Avenue, Suite 2100, New York, NY 10118" && 
+        savedLocation !== "Enter your primary location") {
       setPrimaryLocation(savedLocation);
     } else {
       // Clear old cached values to ensure fresh start
@@ -29,7 +29,12 @@ export default function OnboardingStep4() {
     const savedAdditionalLocations = sessionStorage.getItem("additionalLocations");
     if (savedAdditionalLocations) {
       try {
-        setAdditionalLocations(JSON.parse(savedAdditionalLocations));
+        const parsed = JSON.parse(savedAdditionalLocations);
+        // Filter out any locations with placeholder text
+        const validLocations = parsed.filter((loc: AdditionalLocation) => 
+          loc.value && !loc.value.startsWith("Enter your")
+        );
+        setAdditionalLocations(validLocations);
       } catch (error) {
         console.error("Error parsing additional locations:", error);
         sessionStorage.removeItem("additionalLocations");
@@ -43,18 +48,22 @@ export default function OnboardingStep4() {
 
   const handleNext = () => {
     if (primaryLocation.trim()) {
-      // Store all locations
+      // Store primary location
       sessionStorage.setItem("primaryLocation", primaryLocation.trim());
-      sessionStorage.setItem("additionalLocations", JSON.stringify(additionalLocations));
+      
+      // Store only non-empty additional locations
+      const validLocations = additionalLocations.filter(loc => loc.value.trim());
+      sessionStorage.setItem("additionalLocations", JSON.stringify(validLocations));
+      
       navigate("/onboarding/step5");
     }
   };
 
   const handleAddMoreLocations = () => {
-    // Add a new location to the list
+    // Add a new location to the list with empty value
     const newLocation: AdditionalLocation = {
-      id: `location-${additionalLocations.length + 2}`,
-      value: `Enter your ${getLocationNumber(additionalLocations.length + 2)} location`
+      id: `location-${Date.now()}`, // Use timestamp for unique ID
+      value: ""
     };
     setAdditionalLocations([...additionalLocations, newLocation]);
   };
@@ -78,7 +87,7 @@ export default function OnboardingStep4() {
     return numbers[index - 1] || `${index}th`;
   };
 
-  const isNextDisabled = !primaryLocation.trim() || primaryLocation === "Enter your primary location";
+  const isNextDisabled = !primaryLocation.trim();
 
   return (
     <OnboardingLayout
