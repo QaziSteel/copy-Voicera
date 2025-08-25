@@ -30,10 +30,10 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   // Helper function to get display step based on step ranges
   const getDisplayStep = (currentStep: number): number => {
     if (currentStep >= 1 && currentStep <= 4) return 1;
-    if (currentStep >= 5 && currentStep <= 6) return 2;
-    if (currentStep >= 7 && currentStep <= 8) return 3;
-    if (currentStep >= 9 && currentStep <= 10) return 4;
-    return 5; // For steps 11 and above
+    if (currentStep >= 5 && currentStep <= 7) return 2;
+    if (currentStep >= 8 && currentStep <= 9) return 3;
+    if (currentStep >= 10 && currentStep <= 11) return 4;
+    return 5; // For steps 12 and above
   };
 
   const handleLogout = async () => {
