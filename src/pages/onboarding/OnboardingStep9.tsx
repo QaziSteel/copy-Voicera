@@ -129,7 +129,7 @@ export default function OnboardingStep9() {
                               setError("");
                             }
                           }}
-                          placeholder="e.g., 8:00am - 5:00pm"
+                          placeholder="Enter custom range"
                           className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
                         />
                       </div>
