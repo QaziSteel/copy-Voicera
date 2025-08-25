@@ -21,7 +21,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   children,
   onPrevious,
   onNext,
-  nextButtonText = "Continue",
+  nextButtonText = "Next",
   showPrevious = true,
   nextDisabled = false
 }) => {
