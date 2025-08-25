@@ -2,10 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
+interface AdditionalLocation {
+  id: string;
+  value: string;
+}
+
 export default function OnboardingStep4() {
   const [primaryLocation, setPrimaryLocation] = useState(
     "Enter your primary location",
   );
+  const [additionalLocations, setAdditionalLocations] = useState<AdditionalLocation[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,6 +23,17 @@ export default function OnboardingStep4() {
       // Clear old cached values to ensure fresh start
       sessionStorage.removeItem("primaryLocation");
     }
+
+    // Load additional locations
+    const savedAdditionalLocations = sessionStorage.getItem("additionalLocations");
+    if (savedAdditionalLocations) {
+      try {
+        setAdditionalLocations(JSON.parse(savedAdditionalLocations));
+      } catch (error) {
+        console.error("Error parsing additional locations:", error);
+        sessionStorage.removeItem("additionalLocations");
+      }
+    }
   }, []);
 
   const handlePrevious = () => {
@@ -25,21 +42,36 @@ export default function OnboardingStep4() {
 
   const handleNext = () => {
     if (primaryLocation.trim()) {
-      // Store the primary location
+      // Store all locations
       sessionStorage.setItem("primaryLocation", primaryLocation.trim());
+      sessionStorage.setItem("additionalLocations", JSON.stringify(additionalLocations));
       navigate("/onboarding/step5");
     }
   };
 
   const handleAddMoreLocations = () => {
-    // Navigate directly to step 5 to add more locations
-    if (primaryLocation.trim()) {
-      sessionStorage.setItem("primaryLocation", primaryLocation.trim());
-      navigate("/onboarding/step5");
-    }
+    // Add a new location to the list
+    const newLocation: AdditionalLocation = {
+      id: `location-${additionalLocations.length + 2}`,
+      value: `Enter your ${getLocationNumber(additionalLocations.length + 2)} location`
+    };
+    setAdditionalLocations([...additionalLocations, newLocation]);
   };
 
-  const isNextDisabled = !primaryLocation.trim();
+  const handleAdditionalLocationChange = (id: string, value: string) => {
+    setAdditionalLocations(locations => 
+      locations.map(location => 
+        location.id === id ? { ...location, value } : location
+      )
+    );
+  };
+
+  const getLocationNumber = (index: number): string => {
+    const numbers = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
+    return numbers[index - 1] || `${index}th`;
+  };
+
+  const isNextDisabled = !primaryLocation.trim() || primaryLocation === "Enter your primary location";
 
   return (
     <OnboardingLayout
@@ -73,6 +105,20 @@ export default function OnboardingStep4() {
             className="w-full p-4 text-lg font-semibold text-muted-foreground border-2 border-muted rounded-xl placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
+
+        {/* Additional Locations */}
+        {additionalLocations.map((location, index) => (
+          <div key={location.id} className="flex flex-col gap-3">
+            <h3 className="text-xl font-bold text-black">Location {index + 2}</h3>
+            <input
+              type="text"
+              value={location.value}
+              onChange={(e) => handleAdditionalLocationChange(location.id, e.target.value)}
+              placeholder={`Enter your ${getLocationNumber(index + 2)} location`}
+              className="w-full p-4 text-lg font-semibold text-muted-foreground border-2 border-muted rounded-xl placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
+            />
+          </div>
+        ))}
 
         {/* Add More Locations Button */}
         <button
