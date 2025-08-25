@@ -68,7 +68,7 @@ export const OnboardingStep7 = () => {
     <OnboardingLayout
       step={7}
       totalSteps={7}
-      completionPercentage={100}
+      completionPercentage={30}
       onPrevious={handlePrevious}
       onNext={handleNext}
       showPrevious={true}
