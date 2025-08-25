@@ -28,7 +28,7 @@ export default function OnboardingStep8() {
         : `Your ${businessName} Assistant`;
     if (finalName.trim()) {
       sessionStorage.setItem("aiAssistantName", finalName.trim());
-      navigate("/");
+      navigate("/onboarding/step9");
     }
   };
 
