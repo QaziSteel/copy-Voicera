@@ -46,7 +46,7 @@ export default function OnboardingStep8() {
     selectedOption === "business"
       ? `Your ${businessName} Assistant`
       : selectedOption === "custom"
-        ? "Custom name"
+        ? customName
         : "";
 
   return (
@@ -120,6 +120,8 @@ export default function OnboardingStep8() {
                     setCustomName(e.target.value);
                     if (e.target.value) {
                       setSelectedOption("custom");
+                    } else {
+                      setSelectedOption("");
                     }
                   }}
                   placeholder="Enter custom name..."
