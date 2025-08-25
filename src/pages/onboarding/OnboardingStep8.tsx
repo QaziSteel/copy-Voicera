@@ -110,12 +110,9 @@ export default function OnboardingStep8() {
 
               {/* Custom Name Option */}
               <div className="flex items-center gap-3 p-3 px-4">
-                <button
-                  onClick={() => handleSelectOption("custom")}
-                  className="text-lg text-[#6B7280] hover:text-black transition-colors"
-                >
+                <span className="text-lg text-[#6B7280]">
                   Custom name
-                </button>
+                </span>
                 <input
                   type="text"
                   value={customName}
