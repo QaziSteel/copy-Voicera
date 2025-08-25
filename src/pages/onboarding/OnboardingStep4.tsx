@@ -66,8 +66,8 @@ export default function OnboardingStep4() {
             type="text"
             value={primaryLocation}
             onChange={(e) => setPrimaryLocation(e.target.value)}
-            placeholder="Enter your primary location..."
-            className="w-full p-4 text-lg font-semibold text-black border-2 border-[#E5E7EB] rounded-xl placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
+            placeholder="Enter your primary location"
+            className="w-full p-4 text-lg font-semibold text-muted-foreground border-2 border-muted rounded-xl placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
