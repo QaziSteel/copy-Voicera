@@ -50,7 +50,7 @@ export const OnboardingStep6: React.FC = () => {
     >
       <div className="flex flex-col gap-12">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 items-start">
           <h2 className="text-xl font-bold text-black">
             What's your preferred AI voice style?
           </h2>
