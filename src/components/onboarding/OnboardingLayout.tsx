@@ -65,13 +65,13 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
             <div className="w-full h-2.5 bg-[#D1D5DB] rounded-full overflow-hidden">
               <div
                 className="h-full bg-black rounded-full transition-all duration-300"
-                style={{ width: `${completionPercentage}%` }}
+                style={{ width: `6%` }}
               />
             </div>
 
             {/* Completion Percentage */}
             <div className="text-xl font-semibold text-[#6B7280]">
-              {completionPercentage}% completed
+              6% completed
             </div>
           </div>
         </div>
