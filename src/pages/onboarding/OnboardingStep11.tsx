@@ -27,7 +27,7 @@ export default function OnboardingStep11() {
         allServices.push(customService.trim());
       }
       sessionStorage.setItem("bookingServices", JSON.stringify(allServices));
-      navigate("/");
+      navigate("/onboarding/step12");
     }
   };
 
