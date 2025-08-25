@@ -17,7 +17,7 @@ export const OnboardingStep6: React.FC = () => {
   const handleNext = () => {
     if (selectedVoice) {
       sessionStorage.setItem("aiVoiceStyle", selectedVoice);
-      navigate("/dashboard");
+      navigate("/onboarding/step7");
     }
   };
 
