@@ -12,7 +12,7 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import OnboardingStep1 from "./pages/onboarding/OnboardingStep1";
 import { OnboardingStep2 } from "./pages/onboarding/OnboardingStep2";
 import { OnboardingStep3 } from "./pages/onboarding/OnboardingStep3";
-import { OnboardingStep4 } from "./pages/onboarding/OnboardingStep4";
+import OnboardingStep4 from "./pages/onboarding/OnboardingStep4";
 import { OnboardingStep5 } from "./pages/onboarding/OnboardingStep5";
 import NotFound from "./pages/NotFound";
 
