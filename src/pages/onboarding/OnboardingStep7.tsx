@@ -56,8 +56,8 @@ export const OnboardingStep7 = () => {
             text: selectedOption.text.replace("[Business Name]", businessName),
           }),
         );
-        // Navigate to dashboard
-        navigate("/");
+        // Navigate to next step
+        navigate("/onboarding/step8");
       }
     }
   };

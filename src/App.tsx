@@ -16,6 +16,7 @@ import OnboardingStep4 from "./pages/onboarding/OnboardingStep4";
 import { OnboardingStep5 } from "./pages/onboarding/OnboardingStep5";
 import { OnboardingStep6 } from "./pages/onboarding/OnboardingStep6";
 import { OnboardingStep7 } from "./pages/onboarding/OnboardingStep7";
+import OnboardingStep8 from "./pages/onboarding/OnboardingStep8";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,11 @@ const App = () => (
             <Route path="/onboarding/step7" element={
               <ProtectedRoute>
                 <OnboardingStep7 />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/step8" element={
+              <ProtectedRoute>
+                <OnboardingStep8 />
               </ProtectedRoute>
             } />
             <Route path="/" element={
