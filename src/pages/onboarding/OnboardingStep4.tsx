@@ -9,10 +9,13 @@ export default function OnboardingStep4() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load any previously saved location
+    // Load any previously saved location, but ignore old placeholder values
     const savedLocation = sessionStorage.getItem("primaryLocation");
-    if (savedLocation) {
+    if (savedLocation && savedLocation !== "350 5th Avenue, Suite 2100, New York, NY 10118") {
       setPrimaryLocation(savedLocation);
+    } else {
+      // Clear old cached values to ensure fresh start
+      sessionStorage.removeItem("primaryLocation");
     }
   }, []);
 
