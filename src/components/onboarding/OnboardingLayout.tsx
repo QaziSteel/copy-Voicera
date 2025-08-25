@@ -51,29 +51,31 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         </div>
       </div>
 
-      {/* Progress Section */}
-      <div className="flex flex-col items-center px-8 mb-12">
-        <div className="flex flex-col items-center gap-4 w-full max-w-3xl">
-          
-          {/* Step Counter */}
-          <div className="text-xl font-semibold text-[#6B7280]">
-            Step {step} of {totalSteps}
-          </div>
+      {/* Progress Section - Hidden for step 1 */}
+      {step > 1 && (
+        <div className="flex flex-col items-center px-8 mb-12">
+          <div className="flex flex-col items-center gap-4 w-full max-w-3xl">
+            
+            {/* Step Counter */}
+            <div className="text-xl font-semibold text-[#6B7280]">
+              Step {step} of {totalSteps}
+            </div>
 
-          {/* Progress Bar */}
-          <div className="w-full h-2.5 bg-[#D1D5DB] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-black rounded-full transition-all duration-300"
-              style={{ width: `${completionPercentage}%` }}
-            />
-          </div>
+            {/* Progress Bar */}
+            <div className="w-full h-2.5 bg-[#D1D5DB] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-black rounded-full transition-all duration-300"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
 
-          {/* Completion Percentage */}
-          <div className="text-xl font-semibold text-[#6B7280]">
-            {completionPercentage}% completed
+            {/* Completion Percentage */}
+            <div className="text-xl font-semibold text-[#6B7280]">
+              {completionPercentage}% completed
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Section */}
       <div className="flex justify-center px-4">
