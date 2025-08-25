@@ -44,7 +44,7 @@ export const OnboardingStep6: React.FC = () => {
       completionPercentage={100}
       onNext={handleNext}
       onPrevious={handlePrevious}
-      nextButtonText="Complete Setup"
+      nextButtonText="Next"
       nextDisabled={!selectedVoice}
       showPrevious={true}
     >
