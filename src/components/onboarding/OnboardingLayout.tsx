@@ -27,14 +27,6 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
 }) => {
   const { signOut } = useAuth();
 
-  // Helper function to get display step based on step ranges
-  const getDisplayStep = (currentStep: number): number => {
-    if (currentStep >= 1 && currentStep <= 4) return 1;
-    if (currentStep >= 5 && currentStep <= 7) return 2;
-    if (currentStep >= 8 && currentStep <= 9) return 3;
-    if (currentStep >= 10 && currentStep <= 11) return 4;
-    return 5; // For steps 12 and above
-  };
 
   const handleLogout = async () => {
     await signOut();
@@ -67,20 +59,20 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
             
             {/* Step Counter */}
             <div className="text-xl font-semibold text-[#6B7280]">
-              Step {getDisplayStep(step)} of 5
+              Step {step} of {totalSteps}
             </div>
 
             {/* Progress Bar */}
             <div className="w-full h-2.5 bg-[#D1D5DB] rounded-full overflow-hidden">
               <div
                 className="h-full bg-black rounded-full transition-all duration-300"
-                style={{ width: `${step === 2 ? 6 : step === 3 ? 12 : step === 6 ? 24 : completionPercentage}%` }}
+                style={{ width: `${completionPercentage}%` }}
               />
             </div>
 
             {/* Completion Percentage */}
             <div className="text-xl font-semibold text-[#6B7280]">
-              {step === 2 ? 6 : step === 3 ? 12 : step === 6 ? 24 : completionPercentage}% completed
+              {completionPercentage}% completed
             </div>
           </div>
         </div>
