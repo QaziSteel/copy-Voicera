@@ -9,7 +9,7 @@ export default function OnboardingStep10() {
   };
 
   const handleNext = () => {
-    navigate("/");
+    navigate("/onboarding/step11");
   };
 
   return (

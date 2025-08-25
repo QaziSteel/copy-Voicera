@@ -46,6 +46,8 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         return { step: 2, totalSteps: 5, completionPercentage: 42 };
       case '/onboarding/step10':
         return { step: 3, totalSteps: 5, completionPercentage: 0 };
+      case '/onboarding/step11':
+        return { step: 3, totalSteps: 5, completionPercentage: 48 };
       default:
         return { step: 1, totalSteps: 5, completionPercentage: 0 };
     }
