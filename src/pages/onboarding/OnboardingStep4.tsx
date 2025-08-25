@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
 interface AdditionalLocation {
@@ -66,6 +67,12 @@ export default function OnboardingStep4() {
     );
   };
 
+  const handleDeleteLocation = (id: string) => {
+    const updatedLocations = additionalLocations.filter(location => location.id !== id);
+    setAdditionalLocations(updatedLocations);
+    sessionStorage.setItem("additionalLocations", JSON.stringify(updatedLocations));
+  };
+
   const getLocationNumber = (index: number): string => {
     const numbers = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
     return numbers[index - 1] || `${index}th`;
@@ -109,7 +116,16 @@ export default function OnboardingStep4() {
         {/* Additional Locations */}
         {additionalLocations.map((location, index) => (
           <div key={location.id} className="flex flex-col gap-3">
-            <h3 className="text-xl font-bold text-black">Location {index + 2}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-black">Location {index + 2}</h3>
+              <button
+                onClick={() => handleDeleteLocation(location.id)}
+                className="p-2 text-gray-400 hover:text-gray-700 transition-colors"
+                aria-label={`Delete location ${index + 2}`}
+              >
+                <Trash2 size={20} />
+              </button>
+            </div>
             <input
               type="text"
               value={location.value}
