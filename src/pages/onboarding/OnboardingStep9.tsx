@@ -12,7 +12,13 @@ export default function OnboardingStep9() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState("");
   const [customSchedule, setCustomSchedule] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const validateTimeFormat = (input: string) => {
+    const timeRangeRegex = /^\d{1,2}:\d{2}(am|pm)\s*-\s*\d{1,2}:\d{2}(am|pm)$/i;
+    return timeRangeRegex.test(input.trim());
+  };
 
   const handlePrevious = () => {
     navigate("/onboarding/step8");
@@ -41,10 +47,10 @@ export default function OnboardingStep9() {
     (s) => s.id === selectedSchedule,
   )?.name;
   const displayValue =
-    selectedSchedule === "custom" ? "Custom schedule" : selectedScheduleName;
+    selectedSchedule === "custom" ? customSchedule : selectedScheduleName;
   const isNextDisabled =
     !selectedSchedule ||
-    (selectedSchedule === "custom" && !customSchedule.trim());
+    (selectedSchedule === "custom" && (!customSchedule.trim() || !!error));
 
   return (
     <OnboardingLayout
@@ -100,25 +106,38 @@ export default function OnboardingStep9() {
               {scheduleOptions.map((schedule) => (
                 <div key={schedule.id}>
                   {schedule.id === "custom" ? (
-                    <div className="flex items-center gap-3 p-3 px-4">
-                      <button
-                        onClick={() => handleSelectSchedule("custom")}
-                        className="text-lg text-[#6B7280] hover:text-black transition-colors"
-                      >
-                        {schedule.name}
-                      </button>
-                      <input
-                        type="text"
-                        value={customSchedule}
-                        onChange={(e) => {
-                          setCustomSchedule(e.target.value);
-                          if (e.target.value) {
-                            setSelectedSchedule("custom");
-                          }
-                        }}
-                        placeholder="Enter custom duration"
-                        className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
-                      />
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-3 p-3 px-4">
+                        <span className="text-lg text-[#6B7280]">
+                          {schedule.name}
+                        </span>
+                        <input
+                          type="text"
+                          value={customSchedule}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCustomSchedule(value);
+                            if (value) {
+                              setSelectedSchedule("custom");
+                              if (!validateTimeFormat(value)) {
+                                setError("Please enter time range in format: 8:00am - 5:00pm");
+                              } else {
+                                setError("");
+                              }
+                            } else {
+                              setSelectedSchedule("");
+                              setError("");
+                            }
+                          }}
+                          placeholder="e.g., 8:00am - 5:00pm"
+                          className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
+                        />
+                      </div>
+                      {error && (
+                        <p className="text-red-500 text-sm px-4 pb-2">
+                          {error}
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <button
