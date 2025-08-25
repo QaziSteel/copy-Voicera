@@ -4,7 +4,7 @@ import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
 const scheduleOptions = [
   { id: "24-7", name: "24/7 (default)" },
-  { id: "business-hours", name: "During business hours (8:00am - 05:00pm)" },
+  { id: "business-hours", name: "During business hours (8:00am - 5:00pm)" },
   { id: "custom", name: "Custom schedule" },
 ];
 
