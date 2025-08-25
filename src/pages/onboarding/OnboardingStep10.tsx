@@ -20,11 +20,6 @@ export default function OnboardingStep10() {
       showPrevious={true}
     >
       <div className="flex flex-col items-center gap-8">
-        {/* Step Header */}
-        <h1 className="text-lg font-bold text-gray-500 text-center">
-          Step 3 of 5
-        </h1>
-
         {/* Calendar Icon */}
         <div className="flex items-center justify-center w-20 h-20 bg-[#F3F4F6] border-[1.25px] border-[#E5E7EB] rounded-full">
           <svg
@@ -82,6 +77,10 @@ export default function OnboardingStep10() {
         {/* Content */}
         <div className="flex flex-col items-center gap-6 text-center">
           <div className="flex flex-col items-center gap-3">
+            {/* Step Header */}
+            <h1 className="text-lg font-bold text-gray-500 text-center">
+              Step 3 of 5
+            </h1>
             <h2 className="text-2xl font-bold text-black">Booking Setup</h2>
             <p className="text-xl font-semibold text-[#6B7280] max-w-lg leading-7">
               Now, let's set up how your AI will handle appointments.
