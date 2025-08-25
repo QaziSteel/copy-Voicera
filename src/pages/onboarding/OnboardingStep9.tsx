@@ -25,7 +25,7 @@ export default function OnboardingStep9() {
         : scheduleOptions.find((s) => s.id === selectedSchedule)?.name;
     if (finalSchedule) {
       sessionStorage.setItem("aiCallSchedule", finalSchedule);
-      navigate("/");
+      navigate("/onboarding/step10");
     }
   };
 
