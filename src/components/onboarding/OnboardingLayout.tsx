@@ -51,8 +51,8 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         </div>
       </div>
 
-      {/* Progress Section - Hidden for step 1 and step 5 */}
-      {step > 1 && step !== 5 && (
+      {/* Progress Section - Hidden for step 1 */}
+      {step > 1 && (
         <div className="flex flex-col items-center px-8 mb-12">
           <div className="flex flex-col items-center gap-4 w-full max-w-3xl">
             
