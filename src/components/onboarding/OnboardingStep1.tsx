@@ -32,6 +32,11 @@ export const OnboardingStep1: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex flex-col items-center gap-8">
+        {/* Step Indicator */}
+        <h1 className="text-lg font-semibold text-black text-center">
+          Step 1 of 5
+        </h1>
+        
         {/* Main Heading */}
         <h2 className="text-2xl font-bold text-black text-center">
           Let's Get Your AI Assistant Ready!
