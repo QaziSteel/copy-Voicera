@@ -23,7 +23,7 @@ export default function OnboardingStep12() {
   const handleNext = () => {
     if (selectedDays.length > 0) {
       sessionStorage.setItem("businessDays", JSON.stringify(selectedDays));
-      navigate("/");
+      navigate("/onboarding/step13");
     }
   };
 
