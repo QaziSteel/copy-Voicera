@@ -575,7 +575,7 @@ const Dashboard: React.FC = () => {
           {/* Left Column */}
           <div className="flex-1 space-y-6">
             {/* Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-5">
               {/* Total Calls */}
               <div className="bg-white rounded-2xl p-5">
                 <div className="flex justify-between items-center mb-9">
