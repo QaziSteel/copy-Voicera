@@ -69,12 +69,12 @@ export default function Completion() {
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-8">
-        <div className="w-full max-w-[800px] bg-white border-2 border-[#E5E7EB] rounded-3xl p-8">
-          <div className="flex flex-col items-center gap-10">
+        <div className="w-full max-w-xl bg-white border-2 border-[#E5E7EB] rounded-3xl p-8">
+          <div className="flex flex-col items-center gap-2">
             {/* Success Icon */}
             <svg
-              width="100"
-              height="100"
+              width="60"
+              height="60"
               viewBox="0 0 100 100"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -86,11 +86,11 @@ export default function Completion() {
             </svg>
 
             {/* Content */}
-            <div className="text-center space-y-2">
-              <h2 className="text-3xl font-bold text-black tracking-[-0.168px] leading-9">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <h2 className="text-2xl font-bold text-black tracking-[-0.168px] leading-9">
                 Your AI Agent Is Ready!
               </h2>
-              <p className="text-xl text-[#737373] leading-6 tracking-[-0.12px] max-w-[600px]">
+              <p className="text-lg text-[#737373] leading-6 tracking-[-0.12px] max-w-[600px]">
                 Great! We've set up your AI assistant. You can test it now or go
                 live when you're ready.
               </p>
