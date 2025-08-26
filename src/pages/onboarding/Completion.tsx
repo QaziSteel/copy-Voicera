@@ -1,26 +1,60 @@
 import { useNavigate } from "react-router-dom";
+import { collectOnboardingDataFromSession, saveOnboardingResponse } from "@/lib/onboarding";
+import { toast } from "sonner";
 
 export default function Completion() {
   const navigate = useNavigate();
 
-  const handleGoLive = () => {
-    // Set login state and redirect to the dashboard
-    sessionStorage.setItem("isLoggedIn", "true");
-    sessionStorage.setItem(
-      "userEmail",
-      sessionStorage.getItem("email") || "user@example.com",
-    );
-    navigate("/dashboard");
+  const handleGoLive = async () => {
+    try {
+      // Collect and save onboarding data
+      const onboardingData = collectOnboardingDataFromSession();
+      const { error } = await saveOnboardingResponse(onboardingData);
+      
+      if (error) {
+        toast.error("Failed to save onboarding data: " + error.message);
+        return;
+      }
+      
+      toast.success("Onboarding data saved successfully!");
+      
+      // Set login state and redirect to the dashboard
+      sessionStorage.setItem("isLoggedIn", "true");
+      sessionStorage.setItem(
+        "userEmail",
+        sessionStorage.getItem("email") || "user@example.com",
+      );
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error("Failed to save onboarding data");
+      console.error("Error saving onboarding data:", error);
+    }
   };
 
-  const handleTestAI = () => {
-    // Set login state and redirect to agent management for testing
-    sessionStorage.setItem("isLoggedIn", "true");
-    sessionStorage.setItem(
-      "userEmail",
-      sessionStorage.getItem("email") || "user@example.com",
-    );
-    navigate("/agent-management");
+  const handleTestAI = async () => {
+    try {
+      // Collect and save onboarding data
+      const onboardingData = collectOnboardingDataFromSession();
+      const { error } = await saveOnboardingResponse(onboardingData);
+      
+      if (error) {
+        toast.error("Failed to save onboarding data: " + error.message);
+        return;
+      }
+      
+      toast.success("Onboarding data saved successfully!");
+      
+      // Set login state and redirect to agent management for testing
+      sessionStorage.setItem("isLoggedIn", "true");
+      sessionStorage.setItem(
+        "userEmail",
+        sessionStorage.getItem("email") || "user@example.com",
+      );
+      navigate("/agent-management");
+    } catch (error) {
+      toast.error("Failed to save onboarding data");
+      console.error("Error saving onboarding data:", error);
+    }
   };
 
   return (

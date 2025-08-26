@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      onboarding_responses: {
+        Row: {
+          ai_assistant_name: string | null
+          ai_call_schedule: string | null
+          ai_greeting_style: Json | null
+          ai_handling_unknown: string | null
+          ai_voice_style: string | null
+          appointment_duration: string | null
+          business_days: Json | null
+          business_hours: Json | null
+          business_name: string | null
+          business_type: string | null
+          contact_number: string | null
+          created_at: string
+          faq_data: Json | null
+          id: string
+          primary_location: string | null
+          reminder_settings: Json | null
+          schedule_full_action: string | null
+          services: Json | null
+          updated_at: string
+          user_id: string
+          wants_daily_summary: boolean | null
+          wants_email_confirmations: boolean | null
+        }
+        Insert: {
+          ai_assistant_name?: string | null
+          ai_call_schedule?: string | null
+          ai_greeting_style?: Json | null
+          ai_handling_unknown?: string | null
+          ai_voice_style?: string | null
+          appointment_duration?: string | null
+          business_days?: Json | null
+          business_hours?: Json | null
+          business_name?: string | null
+          business_type?: string | null
+          contact_number?: string | null
+          created_at?: string
+          faq_data?: Json | null
+          id?: string
+          primary_location?: string | null
+          reminder_settings?: Json | null
+          schedule_full_action?: string | null
+          services?: Json | null
+          updated_at?: string
+          user_id: string
+          wants_daily_summary?: boolean | null
+          wants_email_confirmations?: boolean | null
+        }
+        Update: {
+          ai_assistant_name?: string | null
+          ai_call_schedule?: string | null
+          ai_greeting_style?: Json | null
+          ai_handling_unknown?: string | null
+          ai_voice_style?: string | null
+          appointment_duration?: string | null
+          business_days?: Json | null
+          business_hours?: Json | null
+          business_name?: string | null
+          business_type?: string | null
+          contact_number?: string | null
+          created_at?: string
+          faq_data?: Json | null
+          id?: string
+          primary_location?: string | null
+          reminder_settings?: Json | null
+          schedule_full_action?: string | null
+          services?: Json | null
+          updated_at?: string
+          user_id?: string
+          wants_daily_summary?: boolean | null
+          wants_email_confirmations?: boolean | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
