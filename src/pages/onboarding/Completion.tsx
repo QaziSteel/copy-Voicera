@@ -4,23 +4,11 @@ export default function Completion() {
   const navigate = useNavigate();
 
   const handleGoLive = () => {
-    // Set login state and redirect to the dashboard
-    sessionStorage.setItem("isLoggedIn", "true");
-    sessionStorage.setItem(
-      "userEmail",
-      sessionStorage.getItem("email") || "user@example.com",
-    );
     navigate("/dashboard");
   };
 
   const handleTestAI = () => {
-    // Set login state and redirect to agent management for testing
-    sessionStorage.setItem("isLoggedIn", "true");
-    sessionStorage.setItem(
-      "userEmail",
-      sessionStorage.getItem("email") || "user@example.com",
-    );
-    navigate("/agent-management");
+    navigate("/dashboard");
   };
 
   return (
