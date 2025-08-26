@@ -5,7 +5,7 @@ export default function Integrations() {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/");
+    navigate("/onboarding/question-handling");
   };
 
   const handlePrevious = () => {

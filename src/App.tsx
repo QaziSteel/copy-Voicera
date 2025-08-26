@@ -28,6 +28,7 @@ import Schedule from "./pages/onboarding/Schedule";
 import FAQIntro from "./pages/onboarding/FAQIntro";
 import FAQQuestions from "./pages/onboarding/FAQQuestions";
 import Integrations from "./pages/onboarding/Integrations";
+import QuestionHandling from "./pages/onboarding/QuestionHandling";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -135,6 +136,11 @@ const App = () => (
             <Route path="/onboarding/integrations" element={
               <ProtectedRoute>
                 <Integrations />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/question-handling" element={
+              <ProtectedRoute>
+                <QuestionHandling />
               </ProtectedRoute>
             } />
             <Route path="/" element={
