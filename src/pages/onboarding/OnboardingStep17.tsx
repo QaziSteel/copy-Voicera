@@ -8,6 +8,7 @@ export default function OnboardingStep17() {
   const [customAnswers, setCustomAnswers] = useState<{ [key: string]: string }>(
     {},
   );
+  const [customFAQs, setCustomFAQs] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const predefinedFAQs = [
@@ -52,10 +53,14 @@ export default function OnboardingStep17() {
 
   const handleAddCustomFAQ = () => {
     if (customQuestion.trim()) {
+      setCustomFAQs((prev) => [...prev, customQuestion.trim()]);
       setSelectedFAQs((prev) => [...prev, customQuestion.trim()]);
       setCustomQuestion("");
     }
   };
+
+  // Combine predefined and custom FAQs for rendering
+  const allFAQs = [...predefinedFAQs, ...customFAQs];
 
   return (
     <OnboardingLayout
@@ -77,7 +82,7 @@ export default function OnboardingStep17() {
 
         {/* FAQ Options */}
         <div className="flex flex-col gap-3">
-          {predefinedFAQs.map((faq) => (
+          {allFAQs.map((faq) => (
             <div key={faq} className="space-y-3">
               {/* Checkbox */}
               <div className="flex items-center gap-3">
