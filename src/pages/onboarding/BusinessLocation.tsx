@@ -27,7 +27,7 @@ export default function BusinessLocation() {
     if (primaryLocation.trim()) {
       // Store primary location
       sessionStorage.setItem("primaryLocation", primaryLocation.trim());
-      navigate("/onboarding/personality-intro");
+      navigate("/onboarding/contact-number");
     }
   };
 
