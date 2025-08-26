@@ -49,7 +49,7 @@ export default function Confirmations() {
             >
               <div
                 className={`w-6 h-6 rounded-full ${
-                  wantsEmailConfirmations ? "bg-transparent" : "bg-black"
+                  wantsEmailConfirmations ? "bg-transparent" : "bg-white"
                 }`}
               />
               <div
