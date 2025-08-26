@@ -46,7 +46,7 @@ export default function Summaries() {
             >
               <div
                 className={`w-6 h-6 rounded-full ${
-                  wantsDailySummary ? "bg-transparent" : "bg-black"
+                  wantsDailySummary ? "bg-transparent" : "bg-white"
                 }`}
               />
               <div
