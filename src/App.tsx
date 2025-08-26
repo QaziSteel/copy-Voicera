@@ -27,6 +27,7 @@ import AppointmentTime from "./pages/onboarding/AppointmentTime";
 import Schedule from "./pages/onboarding/Schedule";
 import FAQIntro from "./pages/onboarding/FAQIntro";
 import FAQQuestions from "./pages/onboarding/FAQQuestions";
+import Integrations from "./pages/onboarding/Integrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -129,6 +130,11 @@ const App = () => (
             <Route path="/onboarding/faq-questions" element={
               <ProtectedRoute>
                 <FAQQuestions />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/integrations" element={
+              <ProtectedRoute>
+                <Integrations />
               </ProtectedRoute>
             } />
             <Route path="/" element={

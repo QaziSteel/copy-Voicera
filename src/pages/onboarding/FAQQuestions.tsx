@@ -27,7 +27,7 @@ export default function FAQQuestions() {
       customAnswers,
     };
     sessionStorage.setItem("faqData", JSON.stringify(faqData));
-    navigate("/onboarding/integrations-intro");
+    navigate("/onboarding/integrations");
   };
 
   const handleFAQToggle = (faq: string) => {
