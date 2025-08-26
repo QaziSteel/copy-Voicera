@@ -31,7 +31,7 @@ export const BusinessIntro: React.FC = () => {
       </svg>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center gap-10">
+      <div className="flex flex-col items-center gap-4">
         {/* Step Indicator */}
         <h1 className="text-lg font-bold text-gray-500 text-center">
           Step 1 of 5
