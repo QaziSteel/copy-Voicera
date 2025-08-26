@@ -22,7 +22,7 @@ export const BusinessName: React.FC = () => {
     if (businessName.trim()) {
       // Store the business name
       sessionStorage.setItem("businessName", businessName.trim());
-      navigate("/onboarding/step3");
+      navigate("/onboarding/business-type");
     }
   };
 

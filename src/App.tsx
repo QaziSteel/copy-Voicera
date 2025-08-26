@@ -11,7 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
-import { OnboardingStep3 } from "./pages/onboarding/OnboardingStep3";
+import { BusinessType } from "./pages/onboarding/BusinessType";
 import OnboardingStep4 from "./pages/onboarding/OnboardingStep4";
 import { OnboardingStep5 } from "./pages/onboarding/OnboardingStep5";
 import { OnboardingStep6 } from "./pages/onboarding/OnboardingStep6";
@@ -50,9 +50,9 @@ const App = () => (
                 <BusinessName />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step3" element={
+            <Route path="/onboarding/business-type" element={
               <ProtectedRoute>
-                <OnboardingStep3 />
+                <BusinessType />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/step4" element={

@@ -20,7 +20,7 @@ export default function OnboardingStep4() {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/step3");
+    navigate("/onboarding/business-type");
   };
 
   const handleNext = () => {

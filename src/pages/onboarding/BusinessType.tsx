@@ -12,7 +12,7 @@ const businessTypes = [
   "Chiropractor",
 ];
 
-export const OnboardingStep3: React.FC = () => {
+export const BusinessType: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   const [customType, setCustomType] = useState("");
