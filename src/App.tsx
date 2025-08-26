@@ -30,6 +30,7 @@ import FAQQuestions from "./pages/onboarding/FAQQuestions";
 import Integrations from "./pages/onboarding/Integrations";
 import QuestionHandling from "./pages/onboarding/QuestionHandling";
 import Summaries from "./pages/onboarding/Summaries";
+import Confirmations from "./pages/onboarding/Confirmations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -147,6 +148,11 @@ const App = () => (
             <Route path="/onboarding/summaries" element={
               <ProtectedRoute>
                 <Summaries />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/confirmations" element={
+              <ProtectedRoute>
+                <Confirmations />
               </ProtectedRoute>
             } />
             <Route path="/" element={

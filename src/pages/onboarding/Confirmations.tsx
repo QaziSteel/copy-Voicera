@@ -2,21 +2,24 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-export default function Summaries() {
-  const [wantsDailySummary, setWantsDailySummary] = useState(true);
+export default function Confirmations() {
+  const [wantsEmailConfirmations, setWantsEmailConfirmations] = useState(true);
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/question-handling");
+    navigate("/onboarding/summaries");
   };
 
   const handleNext = () => {
-    sessionStorage.setItem("wantsDailySummary", wantsDailySummary.toString());
-    navigate("/onboarding/confirmations");
+    sessionStorage.setItem(
+      "wantsEmailConfirmations",
+      wantsEmailConfirmations.toString(),
+    );
+    navigate("/");
   };
 
   const handleToggle = () => {
-    setWantsDailySummary(!wantsDailySummary);
+    setWantsEmailConfirmations(!wantsEmailConfirmations);
   };
 
   return (
@@ -30,7 +33,7 @@ export default function Summaries() {
         {/* Question */}
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-bold text-black leading-[22px]">
-            Do you want a daily summary of all calls and bookings?
+            Should customers receive booking confirmations by Email?
           </h2>
 
           {/* Toggle Switch */}
@@ -46,12 +49,12 @@ export default function Summaries() {
             >
               <div
                 className={`w-6 h-6 rounded-full ${
-                  wantsDailySummary ? "bg-transparent" : "bg-black"
+                  wantsEmailConfirmations ? "bg-transparent" : "bg-black"
                 }`}
               />
               <div
                 className={`w-6 h-6 rounded-full ${
-                  wantsDailySummary ? "bg-black" : "bg-transparent"
+                  wantsEmailConfirmations ? "bg-black" : "bg-transparent"
                 }`}
               />
             </button>
