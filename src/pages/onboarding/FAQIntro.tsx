@@ -19,7 +19,7 @@ export default function FAQIntro() {
       showPrevious={true}
       nextButtonText="Let's go"
     >
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-2">
         {/* Icon */}
         <div className="w-20 h-20 bg-[#F3F4F6] border border-[#E5E7EB] rounded-full flex items-center justify-center">
           <svg
@@ -41,7 +41,7 @@ export default function FAQIntro() {
         </div>
 
         {/* Content */}
-        <div className="text-center space-y-3">
+        <div className="flex flex-col items-center gap-2 text-center">
           <p className="text-xl font-bold text-[#6B7280] tracking-[-0.1px]">
             Step 4 of 5
           </p>
