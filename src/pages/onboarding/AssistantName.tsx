@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-export default function OnboardingStep8() {
+export default function AssistantName() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
   const [customName, setCustomName] = useState("");
@@ -18,7 +18,7 @@ export default function OnboardingStep8() {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/step7");
+    navigate("/onboarding/greetings");
   };
 
   const handleNext = () => {

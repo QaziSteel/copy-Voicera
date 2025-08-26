@@ -21,7 +21,7 @@ export default function OnboardingStep9() {
   };
 
   const handlePrevious = () => {
-    navigate("/onboarding/step8");
+    navigate("/onboarding/assistant-name");
   };
 
   const handleNext = () => {

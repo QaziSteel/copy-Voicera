@@ -9,7 +9,7 @@ const voiceOptions = [
   { id: "energetic-male", name: "Energetic Male" },
 ];
 
-export const OnboardingStep6: React.FC = () => {
+export const VoiceStyle: React.FC = () => {
   const navigate = useNavigate();
   const [selectedVoice, setSelectedVoice] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -17,12 +17,12 @@ export const OnboardingStep6: React.FC = () => {
   const handleNext = () => {
     if (selectedVoice) {
       sessionStorage.setItem("aiVoiceStyle", selectedVoice);
-      navigate("/onboarding/step7");
+      navigate("/onboarding/greetings");
     }
   };
 
   const handlePrevious = () => {
-    navigate("/onboarding/step5");
+    navigate("/onboarding/personality-intro");
   };
 
   const handleSelectVoice = (voiceId: string) => {

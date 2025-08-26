@@ -26,7 +26,7 @@ export const BusinessType: React.FC = () => {
     if (selectedType || customType) {
       const businessType = selectedType === "Other (Custom)" ? customType : selectedType;
       sessionStorage.setItem("businessType", businessType);
-      navigate("/onboarding/step4");
+      navigate("/onboarding/business-location");
     }
   };
 

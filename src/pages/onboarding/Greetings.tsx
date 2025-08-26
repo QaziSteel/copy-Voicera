@@ -25,7 +25,7 @@ const greetingOptions = [
   },
 ];
 
-export const OnboardingStep7 = () => {
+export const Greetings = () => {
   const [selectedGreeting, setSelectedGreeting] = useState("warm-reassuring");
   const [businessName, setBusinessName] = useState("Business Name");
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ export const OnboardingStep7 = () => {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/step6");
+    navigate("/onboarding/voice-style");
   };
 
   const handleNext = () => {
@@ -57,7 +57,7 @@ export const OnboardingStep7 = () => {
           }),
         );
         // Navigate to next step
-        navigate("/onboarding/step8");
+        navigate("/onboarding/assistant-name");
       }
     }
   };
@@ -128,4 +128,4 @@ export const OnboardingStep7 = () => {
   );
 };
 
-export default OnboardingStep7;
+export default Greetings;

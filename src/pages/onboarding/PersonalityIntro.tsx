@@ -2,15 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
-export const OnboardingStep5: React.FC = () => {
+export const PersonalityIntro: React.FC = () => {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/onboarding/step6");
+    navigate("/onboarding/voice-style");
   };
 
   const handlePrevious = () => {
-    navigate("/onboarding/step4");
+    navigate("/onboarding/business-location");
   };
 
   return (

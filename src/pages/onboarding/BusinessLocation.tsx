@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-export default function OnboardingStep4() {
+export default function BusinessLocation() {
   const [primaryLocation, setPrimaryLocation] = useState("");
   const navigate = useNavigate();
 
@@ -27,7 +27,7 @@ export default function OnboardingStep4() {
     if (primaryLocation.trim()) {
       // Store primary location
       sessionStorage.setItem("primaryLocation", primaryLocation.trim());
-      navigate("/onboarding/step5");
+      navigate("/onboarding/personality-intro");
     }
   };
 

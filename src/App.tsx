@@ -12,11 +12,11 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
-import OnboardingStep4 from "./pages/onboarding/OnboardingStep4";
-import { OnboardingStep5 } from "./pages/onboarding/OnboardingStep5";
-import { OnboardingStep6 } from "./pages/onboarding/OnboardingStep6";
-import { OnboardingStep7 } from "./pages/onboarding/OnboardingStep7";
-import OnboardingStep8 from "./pages/onboarding/OnboardingStep8";
+import BusinessLocation from "./pages/onboarding/BusinessLocation";
+import { PersonalityIntro } from "./pages/onboarding/PersonalityIntro";
+import { VoiceStyle } from "./pages/onboarding/VoiceStyle";
+import { Greetings } from "./pages/onboarding/Greetings";
+import AssistantName from "./pages/onboarding/AssistantName";
 import OnboardingStep9 from "./pages/onboarding/OnboardingStep9";
 import OnboardingStep10 from "./pages/onboarding/OnboardingStep10";
 import OnboardingStep11 from "./pages/onboarding/OnboardingStep11";
@@ -55,29 +55,29 @@ const App = () => (
                 <BusinessType />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step4" element={
+            <Route path="/onboarding/business-location" element={
               <ProtectedRoute>
-                <OnboardingStep4 />
+                <BusinessLocation />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step5" element={
+            <Route path="/onboarding/personality-intro" element={
               <ProtectedRoute>
-                <OnboardingStep5 />
+                <PersonalityIntro />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step6" element={
+            <Route path="/onboarding/voice-style" element={
               <ProtectedRoute>
-                <OnboardingStep6 />
+                <VoiceStyle />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step7" element={
+            <Route path="/onboarding/greetings" element={
               <ProtectedRoute>
-                <OnboardingStep7 />
+                <Greetings />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step8" element={
+            <Route path="/onboarding/assistant-name" element={
               <ProtectedRoute>
-                <OnboardingStep8 />
+                <AssistantName />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/step9" element={
