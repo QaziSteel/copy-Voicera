@@ -31,19 +31,19 @@ export const BusinessIntro: React.FC = () => {
       </svg>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-10">
         {/* Step Indicator */}
         <h1 className="text-lg font-bold text-gray-500 text-center">
           Step 1 of 5
         </h1>
         
         {/* Main Heading */}
-        <h2 className="text-2xl font-bold text-black text-center">
+        <h2 className="text-xl font-bold text-black text-center">
           Let's Get Your AI Assistant Ready!
         </h2>
 
         {/* Subtitle/Description */}
-        <p className="text-xl font-semibold text-[#6B7280] max-w-lg leading-7 text-center">
+        <p className="text-lg font-semibold text-[#6B7280] max-w-md leading-6 text-center">
           We'll ask a few quick questions to set up your voice AI agent. It only takes 7 minutes.
         </p>
       </div>

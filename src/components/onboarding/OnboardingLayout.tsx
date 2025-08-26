@@ -87,10 +87,10 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       {/* Header Section */}
-      <div className="grid grid-cols-3 items-center px-8 py-4">
+      <div className="grid grid-cols-3 items-center px-8 py-6 mb-8">
         <div></div>
         {/* App Title - Centered */}
-        <h1 className="text-4xl font-bold text-black text-center">Voicera AI</h1>
+        <h1 className="text-3xl font-bold text-black text-center">Voicera AI</h1>
         
         {/* Logout Button */}
         <div className="flex justify-end">
@@ -131,8 +131,8 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       )}
 
       {/* Main Content Section */}
-      <div className="flex justify-center px-4">
-        <div className="w-full max-w-4xl bg-white rounded-[28px] border-2 border-[#E5E7EB] p-8">
+      <div className="flex justify-center px-8 pb-8">
+        <div className="w-full max-w-2xl bg-white rounded-[28px] border-2 border-[#E5E7EB] p-10">
           {/* Page Content */}
           <div className="flex flex-col items-center gap-8">
             {children}
