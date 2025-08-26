@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
 const presetDurations = ["15 min", "30 min", "45 min", "60 min"];
-const hourOptions = ["01 hr", "02 hr", "03 hr", "04 hr"];
-const minuteOptions = ["15 min", "30 min", "45 min"];
+const hourOptions = ["00 hr", "01 hr", "02 hr", "03 hr", "04 hr"];
+const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
 
 export default function OnboardingStep14() {
   const [selectedPreset, setSelectedPreset] = useState("");
@@ -28,13 +28,25 @@ export default function OnboardingStep14() {
   };
 
   const handlePresetSelect = (duration: string) => {
-    setSelectedPreset(duration);
+    if (selectedPreset === duration) {
+      // Toggle off if already selected
+      setSelectedPreset("");
+      setCustomHour("01 hr");
+      setCustomMinute("30 min");
+    } else {
+      // Select new preset and reset custom to zeros
+      setSelectedPreset(duration);
+      setCustomHour("00 hr");
+      setCustomMinute("00 min");
+    }
     setUseCustom(false);
   };
 
   const handleCustomToggle = () => {
     setUseCustom(true);
     setSelectedPreset("");
+    setCustomHour("01 hr");
+    setCustomMinute("30 min");
   };
 
   const isNextDisabled = !selectedPreset && !useCustom;
