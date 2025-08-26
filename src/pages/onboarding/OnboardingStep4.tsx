@@ -53,7 +53,7 @@ export default function OnboardingStep4() {
 
         {/* Primary Location */}
         <div className="flex flex-col gap-3">
-          <h3 className="text-xl font-bold text-black">Primary location</h3>
+          <h3 className="text-xl font-bold text-black">Location</h3>
           <input
             type="text"
             value={primaryLocation}
