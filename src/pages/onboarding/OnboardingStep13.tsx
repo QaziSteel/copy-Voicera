@@ -47,9 +47,10 @@ export default function OnboardingStep13() {
           <div className="flex-1">
             <div className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl">
               <input
-                type="time"
+                type={fromTime ? "time" : "text"}
                 value={fromTime}
                 onChange={(e) => setFromTime(e.target.value)}
+                onFocus={(e) => e.target.type = "time"}
                 placeholder="From"
                 className="text-lg text-[#6B7280] bg-transparent focus:outline-none focus:text-black flex-1"
               />
