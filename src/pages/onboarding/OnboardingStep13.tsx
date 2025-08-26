@@ -59,7 +59,7 @@ export default function OnboardingStep13() {
           {/* From Time */}
           <div className="flex-1">
             <Select value={fromTime} onValueChange={setFromTime}>
-              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>svg]:hidden">
+              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
                 <SelectValue placeholder="From" className="text-[#6B7280]" />
                 <svg
                   width="24"
@@ -97,7 +97,7 @@ export default function OnboardingStep13() {
           {/* To Time */}
           <div className="flex-1">
             <Select value={toTime} onValueChange={setToTime}>
-              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>svg]:hidden">
+              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
                 <SelectValue placeholder="To" className="text-[#6B7280]" />
                 <svg
                   width="24"
