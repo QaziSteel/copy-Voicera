@@ -8,8 +8,17 @@ export default function FAQIntro() {
     navigate("/onboarding/faq-questions");
   };
 
+  const handlePrevious = () => {
+    navigate("/onboarding/schedule");
+  };
+
   return (
-    <OnboardingLayout onNext={handleNext} nextButtonText="Let's go">
+    <OnboardingLayout 
+      onNext={handleNext} 
+      onPrevious={handlePrevious}
+      showPrevious={true}
+      nextButtonText="Let's go"
+    >
       <div className="flex flex-col items-center gap-8">
         {/* Icon */}
         <div className="w-20 h-20 bg-[#F3F4F6] border border-[#E5E7EB] rounded-full flex items-center justify-center">
