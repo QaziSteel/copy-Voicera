@@ -8,8 +8,8 @@ const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
 
 export default function OnboardingStep14() {
   const [selectedPreset, setSelectedPreset] = useState("");
-  const [customHour, setCustomHour] = useState("01 hr");
-  const [customMinute, setCustomMinute] = useState("30 min");
+  const [customHour, setCustomHour] = useState("00 hr");
+  const [customMinute, setCustomMinute] = useState("00 min");
   const [useCustom, setUseCustom] = useState(false);
   const navigate = useNavigate();
 
@@ -31,8 +31,8 @@ export default function OnboardingStep14() {
     if (selectedPreset === duration) {
       // Toggle off if already selected
       setSelectedPreset("");
-      setCustomHour("01 hr");
-      setCustomMinute("30 min");
+      setCustomHour("00 hr");
+      setCustomMinute("00 min");
     } else {
       // Select new preset and reset custom to zeros
       setSelectedPreset(duration);
@@ -45,8 +45,6 @@ export default function OnboardingStep14() {
   const handleCustomToggle = () => {
     setUseCustom(true);
     setSelectedPreset("");
-    setCustomHour("01 hr");
-    setCustomMinute("30 min");
   };
 
   const isNextDisabled = !selectedPreset && !useCustom;
