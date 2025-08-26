@@ -100,13 +100,13 @@ export default function Completion() {
             <div className="flex gap-4 w-full">
               <button
                 onClick={handleGoLive}
-                className="flex-1 h-14 bg-[#F3F4F6] text-[#6B7280] text-lg font-bold rounded-xl flex items-center justify-center hover:bg-[#E5E7EB] transition-colors"
+                className="flex-1 h-10 bg-[#F3F4F6] text-[#6B7280] text-base font-bold rounded-xl flex items-center justify-center hover:bg-[#E5E7EB] transition-colors"
               >
                 Go Live
               </button>
               <button
                 onClick={handleTestAI}
-                className="flex-1 h-14 bg-black text-white text-lg font-bold rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors"
+                className="flex-1 h-10 bg-black text-white text-base font-bold rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors"
               >
                 Test My AI
               </button>
