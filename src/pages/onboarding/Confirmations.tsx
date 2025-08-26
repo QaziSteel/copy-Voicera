@@ -15,7 +15,7 @@ export default function Confirmations() {
       "wantsEmailConfirmations",
       wantsEmailConfirmations.toString(),
     );
-    navigate("/");
+    navigate("/onboarding/reminders");
   };
 
   const handleToggle = () => {
