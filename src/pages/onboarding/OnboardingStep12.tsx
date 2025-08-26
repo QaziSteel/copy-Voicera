@@ -2,18 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-const daysOfWeek = [
-  { short: "Sun", full: "Sunday" },
-  { short: "Mon", full: "Monday" },
-  { short: "Tues", full: "Tuesday" },
-  { short: "Wed", full: "Wednesday" },
-  { short: "Thur", full: "Thursday" },
-  { short: "Fri", full: "Friday" },
-  { short: "Sat", full: "Saturday" },
+const serviceOptions = [
+  "Appointment",
+  "Consultation",
+  "Service",
+  "Class",
+  "Other",
 ];
 
 export default function OnboardingStep12() {
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [customService, setCustomService] = useState("");
   const navigate = useNavigate();
 
   const handlePrevious = () => {
@@ -21,21 +21,30 @@ export default function OnboardingStep12() {
   };
 
   const handleNext = () => {
-    if (selectedDays.length > 0) {
-      sessionStorage.setItem("businessDays", JSON.stringify(selectedDays));
+    if (selectedServices.length > 0 || customService.trim()) {
+      const allServices = [...selectedServices];
+      if (customService.trim()) {
+        allServices.push(customService.trim());
+      }
+      sessionStorage.setItem("bookingServices", JSON.stringify(allServices));
       navigate("/onboarding/step13");
     }
   };
 
-  const handleDayToggle = (dayShort: string) => {
-    setSelectedDays((prev) =>
-      prev.includes(dayShort)
-        ? prev.filter((d) => d !== dayShort)
-        : [...prev, dayShort],
+  const handleServiceToggle = (service: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(service)
+        ? prev.filter((s) => s !== service)
+        : [...prev, service],
     );
   };
 
-  const isNextDisabled = selectedDays.length === 0;
+  const displayText =
+    selectedServices.length > 0
+      ? `${selectedServices.length} service${selectedServices.length > 1 ? "s" : ""} selected`
+      : "Select the services you want your customers to book";
+
+  const isNextDisabled = selectedServices.length === 0 && !customService.trim();
 
   return (
     <OnboardingLayout
@@ -44,42 +53,133 @@ export default function OnboardingStep12() {
       showPrevious={true}
       nextDisabled={isNextDisabled}
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-12">
         {/* Header */}
         <div className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-black">
-            Select your business days
+            What can customers book?
           </h2>
           <p className="text-base italic text-[#737373] leading-6">
-            Choose the days your business is open for customers.
+            Pick the type of appointments or services your AI will book.
           </p>
         </div>
 
-        {/* Days Selection */}
-        <div className="flex gap-3 flex-wrap">
-          {daysOfWeek.map((day) => (
-            <button
-              key={day.short}
-              onClick={() => handleDayToggle(day.short)}
-              className={`px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
-                selectedDays.includes(day.short)
-                  ? "border-black bg-black text-white"
-                  : "border-[#E5E7EB] text-[#6B7280] hover:border-gray-400"
-              }`}
+        {/* Service Selection */}
+        <div className="flex flex-col gap-2">
+          {/* Dropdown Header */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center justify-between w-full p-4 border-2 border-[#E5E7EB] rounded-xl hover:border-black transition-colors"
+          >
+            <span
+              className={`text-lg ${selectedServices.length > 0 ? "text-black" : "text-[#6B7280]"}`}
             >
-              {day.short}
-            </button>
-          ))}
-        </div>
+              {displayText}
+            </span>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className={`transform transition-transform ${isOpen ? "rotate-180" : ""}`}
+            >
+              <path
+                d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                stroke="#141B34"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
 
-        {/* Selected Days Summary */}
-        {selectedDays.length > 0 && (
-          <div className="mt-4 p-4 bg-[#F3F4F6] rounded-xl">
-            <p className="text-sm text-[#6B7280]">
-              Selected days: {selectedDays.join(", ")}
-            </p>
-          </div>
-        )}
+          {/* Dropdown Options */}
+          {isOpen && (
+            <div className="border-2 border-[#E5E7EB] rounded-xl overflow-hidden bg-white z-50">
+              {serviceOptions.map((service) => (
+                <div key={service}>
+                  {service === "Other" ? (
+                    <div className="flex items-center gap-3 p-3 px-4">
+                      <button
+                        onClick={() => handleServiceToggle(service)}
+                        className="flex items-center gap-2.5"
+                      >
+                        <div
+                          className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                            selectedServices.includes(service)
+                              ? "border-black bg-black"
+                              : "border-[#6B7280]"
+                          }`}
+                        >
+                          {selectedServices.includes(service) && (
+                            <svg
+                              width="8"
+                              height="6"
+                              viewBox="0 0 8 6"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M1 3L3 5L7 1"
+                                stroke="white"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-lg text-[#6B7280]">
+                          {service}
+                        </span>
+                      </button>
+                      <input
+                        type="text"
+                        value={customService}
+                        onChange={(e) => setCustomService(e.target.value)}
+                        placeholder="Custom"
+                        className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleServiceToggle(service)}
+                      className="w-full flex items-center gap-2.5 p-3 px-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div
+                        className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                          selectedServices.includes(service)
+                            ? "border-black bg-black"
+                            : "border-[#6B7280]"
+                        }`}
+                      >
+                        {selectedServices.includes(service) && (
+                          <svg
+                            width="8"
+                            height="6"
+                            viewBox="0 0 8 6"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M1 3L3 5L7 1"
+                              stroke="white"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="text-lg text-[#6B7280]">{service}</span>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </OnboardingLayout>
   );
