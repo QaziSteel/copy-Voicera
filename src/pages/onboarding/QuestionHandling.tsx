@@ -20,7 +20,7 @@ export default function QuestionHandling() {
   const handleNext = () => {
     if (selectedOption) {
       sessionStorage.setItem("aiHandlingUnknown", selectedOption);
-      navigate("/");
+      navigate("/onboarding/summaries");
     }
   };
 
