@@ -20,7 +20,7 @@ export const Auth: React.FC = () => {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/onboarding/business-intro" replace />;
   }
 
   if (showSignUp) {
