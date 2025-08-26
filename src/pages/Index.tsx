@@ -16,9 +16,10 @@ const Index = () => {
     );
   }
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Commented out for testing - no auto redirect to dashboard
+  // if (user) {
+  //   return <Navigate to="/dashboard" replace />;
+  // }
 
   return <LoginForm />;
 };
