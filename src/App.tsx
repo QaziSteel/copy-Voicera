@@ -32,6 +32,7 @@ import QuestionHandling from "./pages/onboarding/QuestionHandling";
 import Summaries from "./pages/onboarding/Summaries";
 import Confirmations from "./pages/onboarding/Confirmations";
 import Reminders from "./pages/onboarding/Reminders";
+import Completion from "./pages/onboarding/Completion";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -159,6 +160,11 @@ const App = () => (
             <Route path="/onboarding/reminders" element={
               <ProtectedRoute>
                 <Reminders />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/completion" element={
+              <ProtectedRoute>
+                <Completion />
               </ProtectedRoute>
             } />
             <Route path="/" element={

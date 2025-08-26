@@ -20,7 +20,7 @@ export default function Reminders() {
       timing: wantsReminders ? reminderTiming : null,
     };
     sessionStorage.setItem("reminderSettings", JSON.stringify(reminderData));
-    navigate("/");
+    navigate("/onboarding/completion");
   };
 
   const handleToggle = () => {
