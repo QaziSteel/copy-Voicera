@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
+import { collectOnboardingDataFromSession, saveOnboardingResponse } from "@/lib/onboarding";
+import { toast } from "sonner";
 
 export default function Reminders() {
   const [wantsReminders, setWantsReminders] = useState(false);
   const [reminderTiming, setReminderTiming] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const timingOptions = ["1 hour before", "24 hours before", "Both"];
@@ -14,13 +17,34 @@ export default function Reminders() {
     navigate("/onboarding/confirmations");
   };
 
-  const handleSubmit = () => {
-    const reminderData = {
-      wantsReminders,
-      timing: wantsReminders ? reminderTiming : null,
-    };
-    sessionStorage.setItem("reminderSettings", JSON.stringify(reminderData));
-    navigate("/onboarding/completion");
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Save reminder settings to sessionStorage first
+      const reminderData = {
+        wantsReminders,
+        timing: wantsReminders ? reminderTiming : null,
+      };
+      sessionStorage.setItem("reminderSettings", JSON.stringify(reminderData));
+      
+      // Collect all onboarding data and save to database
+      const onboardingData = collectOnboardingDataFromSession();
+      const { error } = await saveOnboardingResponse(onboardingData);
+      
+      if (error) {
+        toast.error("Failed to save onboarding data: " + error.message);
+        setIsSubmitting(false);
+        return;
+      }
+      
+      toast.success("Onboarding completed successfully!");
+      navigate("/onboarding/completion");
+    } catch (error) {
+      toast.error("Failed to save onboarding data");
+      console.error("Error saving onboarding data:", error);
+      setIsSubmitting(false);
+    }
   };
 
   const handleToggle = () => {
@@ -35,8 +59,8 @@ export default function Reminders() {
     setShowDropdown(false);
   };
 
-  const isNextDisabled = wantsReminders && !reminderTiming;
-  const buttonText = wantsReminders ? "Submit" : "Next";
+  const isNextDisabled = (wantsReminders && !reminderTiming) || isSubmitting;
+  const buttonText = isSubmitting ? "Saving..." : (wantsReminders ? "Submit" : "Next");
 
   return (
     <OnboardingLayout
