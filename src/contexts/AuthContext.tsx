@@ -72,10 +72,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       password,
     });
     
-    if (!error) {
-      window.location.href = '/';
-    }
-    
     return { error };
   };
 
