@@ -57,8 +57,8 @@ const Dashboard: React.FC = () => {
   };
 
   const renderNotificationsPopup = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-end items-start pt-24 pr-16 z-50">
-      <div className="bg-white rounded-2xl w-[650px] max-h-[936px] overflow-y-auto shadow-lg">
+    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-24 px-4 z-50">
+      <div className="bg-white rounded-2xl w-full max-w-[650px] max-h-[936px] overflow-y-auto shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b border-gray-200">
           <h3 className="text-xl font-medium text-gray-600">
@@ -234,8 +234,8 @@ const Dashboard: React.FC = () => {
   );
 
   const renderDateFilterPopup = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-32 z-50">
-      <div className="bg-white rounded-2xl w-[500px] shadow-lg">
+    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-32 px-4 z-50">
+      <div className="bg-white rounded-2xl w-full max-w-[500px] shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b border-gray-200">
           <h3 className="text-xl font-medium text-gray-800">Filter</h3>
@@ -344,7 +344,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-16 py-4">
+      <header className="bg-white border-b border-gray-200 px-4 md:px-8 lg:px-16 py-4">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
 
@@ -491,7 +491,7 @@ const Dashboard: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="px-16 py-8">
+      <main className="px-4 md:px-8 lg:px-16 py-8">
         {/* Dashboard Header */}
         <div className="flex justify-between items-end mb-6">
           <div>
@@ -571,11 +571,11 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Column */}
           <div className="flex-1 space-y-6">
             {/* Metrics Cards */}
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Total Calls */}
               <div className="bg-white rounded-2xl p-5">
                 <div className="flex justify-between items-center mb-9">
@@ -861,7 +861,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Right Column - Recent Calls */}
-          <div className="w-[790px]">
+          <div className="w-full lg:w-[790px] lg:flex-shrink-0">
             <div className="bg-white rounded-2xl p-5">
               <div className="mb-5">
                 <h3 className="text-xl font-semibold text-black mb-1">
@@ -878,7 +878,7 @@ const Dashboard: React.FC = () => {
                     <img
                       src="https://api.builder.io/api/v1/image/assets/TEMP/b806c01e97879ada90b7566a617f9dcacf61430b?width=752"
                       alt="No calls"
-                      className="w-96 h-96 mx-auto"
+                      className="w-48 h-48 md:w-64 md:h-64 lg:w-96 lg:h-96 mx-auto"
                     />
                   </div>
                 </div>
