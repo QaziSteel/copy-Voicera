@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import { SignUpForm } from "@/components/auth/SignUpForm";
-import OnboardingStep1 from "./pages/onboarding/OnboardingStep1";
+import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import { OnboardingStep2 } from "./pages/onboarding/OnboardingStep2";
 import { OnboardingStep3 } from "./pages/onboarding/OnboardingStep3";
 import OnboardingStep4 from "./pages/onboarding/OnboardingStep4";
@@ -42,7 +42,7 @@ const App = () => (
             <Route path="/auth/signup" element={<SignUpForm />} />
             <Route path="/onboarding/step1" element={
               <ProtectedRoute>
-                <OnboardingStep1 />
+                <BusinessIntro />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/step2" element={
