@@ -571,7 +571,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-6">
           {/* Left Column */}
           <div className="flex-1 space-y-6">
             {/* Metrics Cards */}
@@ -861,7 +861,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Right Column - Recent Calls */}
-          <div className="w-full lg:w-[790px] lg:flex-shrink-0">
+          <div className="w-full md:w-[400px] lg:w-[790px] lg:flex-shrink-0">
             <div className="bg-white rounded-2xl p-5">
               <div className="mb-5">
                 <h3 className="text-xl font-semibold text-black mb-1">
