@@ -26,7 +26,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   // Hardcoded step values based on route
   const getStepInfo = () => {
     switch (location.pathname) {
-      case '/onboarding/step1':
+      case '/onboarding/business-intro':
         return { step: 1, totalSteps: 5, completionPercentage: 0 };
       case '/onboarding/step2':
         return { step: 1, totalSteps: 5, completionPercentage: 6 };

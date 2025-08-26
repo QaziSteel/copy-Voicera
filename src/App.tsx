@@ -40,7 +40,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/signup" element={<SignUpForm />} />
-            <Route path="/onboarding/step1" element={
+            <Route path="/onboarding/business-intro" element={
               <ProtectedRoute>
                 <BusinessIntro />
               </ProtectedRoute>

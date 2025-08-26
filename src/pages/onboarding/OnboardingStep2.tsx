@@ -15,7 +15,7 @@ export const OnboardingStep2: React.FC = () => {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/step1");
+    navigate("/onboarding/business-intro");
   };
 
   const handleNext = () => {

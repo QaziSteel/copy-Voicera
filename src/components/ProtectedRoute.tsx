@@ -63,7 +63,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // If user hasn't completed onboarding and is not already on an onboarding page
   if (!onboardingCompleted && !location.pathname.startsWith('/onboarding')) {
     console.log('Redirecting to onboarding - onboardingCompleted:', onboardingCompleted, 'pathname:', location.pathname);
-    return <Navigate to="/onboarding/step1" replace />;
+    return <Navigate to="/onboarding/business-intro" replace />;
   }
 
   // If user has completed onboarding but is trying to access onboarding pages
