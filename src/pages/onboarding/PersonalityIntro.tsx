@@ -20,7 +20,7 @@ export const PersonalityIntro: React.FC = () => {
       nextButtonText="Let's go"
       showPrevious={true}
     >
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-2">
         {/* Robot Icon */}
         <div className="flex items-center justify-center w-20 h-20 bg-[#F3F4F6] border-[1.25px] border-[#E5E7EB] rounded-full">
           <svg
@@ -84,8 +84,8 @@ export const PersonalityIntro: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col items-center gap-6 text-center">
-          <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex flex-col items-center gap-2">
             <h1 className="text-lg font-bold text-gray-500 text-center">
               Step 2 of 5
             </h1>
