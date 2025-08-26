@@ -30,7 +30,7 @@ export default function OnboardingStep13() {
         "businessHours",
         JSON.stringify({ from: fromTime, to: toTime }),
       );
-      navigate("/");
+      navigate("/onboarding/step14");
     }
   };
 
