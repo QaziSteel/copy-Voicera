@@ -26,7 +26,7 @@ export default function Services() {
       if (customService.trim()) {
         allServices.push(customService.trim());
       }
-      sessionStorage.setItem("bookingServices", JSON.stringify(allServices));
+      sessionStorage.setItem("services", JSON.stringify(allServices));
       navigate("/onboarding/business-days");
     }
   };

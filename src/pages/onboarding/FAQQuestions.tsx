@@ -22,11 +22,12 @@ export default function FAQQuestions() {
   };
 
   const handleNext = () => {
-    const faqData = {
-      selectedFAQs,
-      customAnswers,
-    };
-    sessionStorage.setItem("faqData", JSON.stringify(faqData));
+    // Transform data to match expected format in onboarding.ts
+    const faqQuestions = selectedFAQs;
+    const faqAnswers = selectedFAQs.map(faq => customAnswers[faq] || "");
+    
+    sessionStorage.setItem("faqQuestions", JSON.stringify(faqQuestions));
+    sessionStorage.setItem("faqAnswers", JSON.stringify(faqAnswers));
     navigate("/onboarding/integrations");
   };
 
