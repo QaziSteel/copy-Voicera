@@ -1,40 +1,74 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+const presetDurations = ["15 min", "30 min", "45 min", "60 min"];
+const hourOptions = ["00 hr", "01 hr", "02 hr", "03 hr", "04 hr"];
+const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
 
 export default function OnboardingStep14() {
-  const [fromTime, setFromTime] = useState("");
-  const [toTime, setToTime] = useState("");
+  const [selectedPreset, setSelectedPreset] = useState("");
+  const [customHour, setCustomHour] = useState("00 hr");
+  const [customMinute, setCustomMinute] = useState("00 min");
+  const [showHourDropdown, setShowHourDropdown] = useState(false);
+  const [showMinuteDropdown, setShowMinuteDropdown] = useState(false);
   const navigate = useNavigate();
-
-  // Generate time options for 24-hour format
-  const timeOptions = Array.from({ length: 24 }, (_, i) => {
-    const hour = i.toString().padStart(2, '0');
-    return `${hour}:00`;
-  });
 
   const handlePrevious = () => {
     navigate("/onboarding/step13");
   };
 
   const handleNext = () => {
-    if (fromTime && toTime) {
-      sessionStorage.setItem(
-        "businessHours",
-        JSON.stringify({ from: fromTime, to: toTime }),
-      );
+    const hasCustomValues = customHour !== "00 hr" || customMinute !== "00 min";
+    const duration = hasCustomValues
+      ? `${customHour} ${customMinute}`
+      : selectedPreset;
+    if (duration) {
+      sessionStorage.setItem("appointmentDuration", duration);
       navigate("/onboarding/step15");
     }
   };
 
-  const isNextDisabled = !fromTime || !toTime;
+  const handlePresetSelect = (duration: string) => {
+    if (selectedPreset === duration) {
+      // Toggle off if already selected
+      setSelectedPreset("");
+      setCustomHour("00 hr");
+      setCustomMinute("00 min");
+    } else {
+      // Select new preset and reset custom to zeros
+      setSelectedPreset(duration);
+      setCustomHour("00 hr");
+      setCustomMinute("00 min");
+    }
+    setShowHourDropdown(false);
+    setShowMinuteDropdown(false);
+  };
+
+  const handleHourClick = () => {
+    setShowHourDropdown(!showHourDropdown);
+    setShowMinuteDropdown(false);
+    setSelectedPreset("");
+  };
+
+  const handleMinuteClick = () => {
+    setShowMinuteDropdown(!showMinuteDropdown);
+    setShowHourDropdown(false);
+    setSelectedPreset("");
+  };
+
+  const handleHourSelect = (hour: string) => {
+    setCustomHour(hour);
+    setShowHourDropdown(false);
+  };
+
+  const handleMinuteSelect = (minute: string) => {
+    setCustomMinute(minute);
+    setShowMinuteDropdown(false);
+  };
+
+  const hasCustomValues = customHour !== "00 hr" || customMinute !== "00 min";
+  const isNextDisabled = !selectedPreset && !hasCustomValues;
 
   return (
     <OnboardingLayout
@@ -45,22 +79,41 @@ export default function OnboardingStep14() {
     >
       <div className="flex flex-col gap-12">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           <h2 className="text-xl font-bold text-black">
-            Enter your business hours
+            How long is each appointment?
           </h2>
-          <p className="text-base italic text-[#737373] leading-6">
-            Define your availability so customers know when they can reach you.
-          </p>
-        </div>
 
-        {/* Time Selection */}
-        <div className="flex gap-3">
-          {/* From Time */}
-          <div className="flex-1">
-            <Select value={fromTime} onValueChange={setFromTime}>
-              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
-                <SelectValue placeholder="From" className="text-[#6B7280]" />
+          {/* Preset Duration Options */}
+          <div className="flex gap-3 flex-wrap">
+            {presetDurations.map((duration) => (
+              <button
+                key={duration}
+                onClick={() => handlePresetSelect(duration)}
+                className={`px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
+                  selectedPreset === duration
+                    ? "border-black bg-black text-white"
+                    : "border-[#E5E7EB] text-[#6B7280] hover:border-gray-400"
+                }`}
+              >
+                {duration}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom Duration Section */}
+          <div className="flex items-center gap-4">
+            <span className="text-lg text-[#6B7280]">Custom durations</span>
+
+            {/* Hour Selector */}
+            <div className="relative">
+              <button
+                onClick={handleHourClick}
+                className={`flex items-center gap-5 px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
+                  showHourDropdown ? "border-black" : "border-black"
+                }`}
+              >
+                <span className="text-black">{customHour}</span>
                 <svg
                   width="24"
                   height="24"
@@ -69,36 +122,40 @@ export default function OnboardingStep14() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-                    stroke="#6B7280"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 6.75V12H17.25"
-                    stroke="#6B7280"
+                    d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                    stroke="#141B34"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-              </SelectTrigger>
-              <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
-                {timeOptions.map((time) => (
-                  <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
-                    {time}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </button>
 
-          {/* To Time */}
-          <div className="flex-1">
-            <Select value={toTime} onValueChange={setToTime}>
-              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
-                <SelectValue placeholder="To" className="text-[#6B7280]" />
+              {/* Hour Dropdown */}
+              {showHourDropdown && (
+                <div className="absolute top-full left-0 mt-1 w-full bg-white border-2 border-[#E5E7EB] rounded-xl overflow-hidden z-10">
+                  {hourOptions.map((hour) => (
+                    <button
+                      key={hour}
+                      onClick={() => handleHourSelect(hour)}
+                      className="w-full px-4 py-2 text-left text-lg text-[#6B7280] hover:bg-gray-50 transition-colors"
+                    >
+                      {hour}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Minute Selector */}
+            <div className="relative">
+              <button
+                onClick={handleMinuteClick}
+                className={`flex items-center gap-5 px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
+                  showMinuteDropdown ? "border-black" : "border-black"
+                }`}
+              >
+                <span className="text-black">{customMinute}</span>
                 <svg
                   width="24"
                   height="24"
@@ -107,40 +164,32 @@ export default function OnboardingStep14() {
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-                    stroke="#6B7280"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M12 6.75V12H17.25"
-                    stroke="#6B7280"
+                    d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                    stroke="#141B34"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-              </SelectTrigger>
-              <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
-                {timeOptions.map((time) => (
-                  <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
-                    {time}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              </button>
+
+              {/* Minute Dropdown */}
+              {showMinuteDropdown && (
+                <div className="absolute top-full left-0 mt-1 w-full bg-white border-2 border-[#E5E7EB] rounded-xl overflow-hidden z-10">
+                  {minuteOptions.map((minute) => (
+                    <button
+                      key={minute}
+                      onClick={() => handleMinuteSelect(minute)}
+                      className="w-full px-4 py-2 text-left text-lg text-[#6B7280] hover:bg-gray-50 transition-colors"
+                    >
+                      {minute}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Hours Summary */}
-        {fromTime && toTime && (
-          <div className="p-4 bg-[#F3F4F6] rounded-xl">
-            <p className="text-sm text-[#6B7280]">
-              Business hours: {fromTime} - {toTime}
-            </p>
-          </div>
-        )}
       </div>
     </OnboardingLayout>
   );

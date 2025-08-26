@@ -1,53 +1,56 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
+const scheduleOptions = [
+  { id: "24-7", name: "24/7 (default)" },
+  { id: "business-hours", name: "During business hours (8:00am - 5:00pm)" },
+  { id: "custom", name: "Custom schedule" },
+];
+
 export default function OnboardingStep9() {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("");
-  const [customName, setCustomName] = useState("");
-  const [businessName, setBusinessName] = useState("Business Name");
+  const [selectedSchedule, setSelectedSchedule] = useState("");
+  const [customSchedule, setCustomSchedule] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Get business name from previous steps
-    const savedBusinessName = sessionStorage.getItem("businessName");
-    if (savedBusinessName) {
-      setBusinessName(savedBusinessName);
-    }
-  }, []);
+  const validateTimeFormat = (input: string) => {
+    const timeRangeRegex = /^\d{1,2}:\d{2}(am|pm)\s*-\s*\d{1,2}:\d{2}(am|pm)$/i;
+    return timeRangeRegex.test(input.trim());
+  };
 
   const handlePrevious = () => {
     navigate("/onboarding/step8");
   };
 
   const handleNext = () => {
-    const finalName =
-      selectedOption === "custom"
-        ? customName
-        : `Your ${businessName} Assistant`;
-    if (finalName.trim()) {
-      sessionStorage.setItem("aiAssistantName", finalName.trim());
+    const finalSchedule =
+      selectedSchedule === "custom"
+        ? customSchedule
+        : scheduleOptions.find((s) => s.id === selectedSchedule)?.name;
+    if (finalSchedule) {
+      sessionStorage.setItem("aiCallSchedule", finalSchedule);
       navigate("/onboarding/step10");
     }
   };
 
-  const handleSelectOption = (option: string) => {
-    setSelectedOption(option);
+  const handleSelectSchedule = (scheduleId: string) => {
+    setSelectedSchedule(scheduleId);
     setIsOpen(false);
-    if (option !== "custom") {
-      setCustomName("");
+    if (scheduleId !== "custom") {
+      setCustomSchedule("");
     }
   };
 
-  const isNextDisabled =
-    !selectedOption || (selectedOption === "custom" && !customName.trim());
+  const selectedScheduleName = scheduleOptions.find(
+    (s) => s.id === selectedSchedule,
+  )?.name;
   const displayValue =
-    selectedOption === "business"
-      ? `Your ${businessName} Assistant`
-      : selectedOption === "custom"
-        ? customName
-        : "";
+    selectedSchedule === "custom" ? customSchedule : selectedScheduleName;
+  const isNextDisabled =
+    !selectedSchedule ||
+    (selectedSchedule === "custom" && (!customSchedule.trim() || !!error));
 
   return (
     <OnboardingLayout
@@ -60,14 +63,14 @@ export default function OnboardingStep9() {
         {/* Header */}
         <div className="flex flex-col gap-3">
           <h2 className="text-xl font-bold text-black">
-            What should your AI assistant be called?
+            When should your AI answer calls?
           </h2>
           <p className="text-base italic text-[#737373] leading-6">
-            Choose a name so customers know who they're talking to.
+            We'll make sure it only answers when you want it to.
           </p>
         </div>
 
-        {/* Assistant Name Selection */}
+        {/* Schedule Selection */}
         <div className="flex flex-col gap-2">
           {/* Dropdown Header */}
           <button
@@ -75,9 +78,9 @@ export default function OnboardingStep9() {
             className="flex items-center justify-between w-full p-4 border-2 border-[#E5E7EB] rounded-xl hover:border-black transition-colors"
           >
             <span
-              className={`text-lg ${selectedOption ? "text-black" : "text-[#6B7280]"}`}
+              className={`text-lg ${selectedSchedule ? "text-black" : "text-[#6B7280]"}`}
             >
-              {displayValue || "Select name for your AI assistant"}
+              {displayValue || "Select when you want your AI to answer calls"}
             </span>
             <svg
               width="24"
@@ -100,34 +103,52 @@ export default function OnboardingStep9() {
           {/* Dropdown Options */}
           {isOpen && (
             <div className="border-2 border-[#E5E7EB] rounded-xl overflow-hidden bg-white z-10">
-              {/* Business Name Option */}
-              <button
-                onClick={() => handleSelectOption("business")}
-                className="w-full p-3 px-4 text-left text-lg text-[#6B7280] hover:bg-gray-50 transition-colors"
-              >
-                Your {businessName} Assistant
-              </button>
-
-              {/* Custom Name Option */}
-              <div className="flex items-center gap-3 p-3 px-4">
-                <span className="text-lg text-[#6B7280]">
-                  Custom name
-                </span>
-                <input
-                  type="text"
-                  value={customName}
-                  onChange={(e) => {
-                    setCustomName(e.target.value);
-                    if (e.target.value) {
-                      setSelectedOption("custom");
-                    } else {
-                      setSelectedOption("");
-                    }
-                  }}
-                  placeholder="Enter custom name..."
-                  className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
-                />
-              </div>
+              {scheduleOptions.map((schedule) => (
+                <div key={schedule.id}>
+                  {schedule.id === "custom" ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-3 p-3 px-4">
+                        <span className="text-lg text-[#6B7280]">
+                          {schedule.name}
+                        </span>
+                        <input
+                          type="text"
+                          value={customSchedule}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCustomSchedule(value);
+                            if (value) {
+                              setSelectedSchedule("custom");
+                              if (!validateTimeFormat(value)) {
+                                setError("Please enter time range in format: 8:00am - 5:00pm");
+                              } else {
+                                setError("");
+                              }
+                            } else {
+                              setSelectedSchedule("");
+                              setError("");
+                            }
+                          }}
+                          placeholder="Enter custom range"
+                          className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
+                        />
+                      </div>
+                      {error && (
+                        <p className="text-red-500 text-sm px-4 pb-2">
+                          {error}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleSelectSchedule(schedule.id)}
+                      className="w-full p-3 px-4 text-left text-lg text-[#6B7280] hover:bg-gray-50 transition-colors"
+                    >
+                      {schedule.name}
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>

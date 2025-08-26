@@ -5,7 +5,7 @@ export default function OnboardingStep16() {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/onboarding/step17");
+    navigate("/onboarding/faqs");
   };
 
   return (

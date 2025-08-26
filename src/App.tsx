@@ -16,7 +16,7 @@ import OnboardingStep4 from "./pages/onboarding/OnboardingStep4";
 import { OnboardingStep5 } from "./pages/onboarding/OnboardingStep5";
 import { OnboardingStep6 } from "./pages/onboarding/OnboardingStep6";
 import { OnboardingStep7 } from "./pages/onboarding/OnboardingStep7";
-import { OnboardingStep8 } from "./pages/onboarding/OnboardingStep8";
+import OnboardingStep8 from "./pages/onboarding/OnboardingStep8";
 import OnboardingStep9 from "./pages/onboarding/OnboardingStep9";
 import OnboardingStep10 from "./pages/onboarding/OnboardingStep10";
 import OnboardingStep11 from "./pages/onboarding/OnboardingStep11";
@@ -26,7 +26,6 @@ import OnboardingStep14 from "./pages/onboarding/OnboardingStep14";
 import OnboardingStep15 from "./pages/onboarding/OnboardingStep15";
 import OnboardingStep16 from "./pages/onboarding/OnboardingStep16";
 import OnboardingStep17 from "./pages/onboarding/OnboardingStep17";
-import OnboardingStep18 from "./pages/onboarding/OnboardingStep18";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -121,14 +120,9 @@ const App = () => (
                 <OnboardingStep16 />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step17" element={
-              <ProtectedRoute>
-                <OnboardingStep17 />
-              </ProtectedRoute>
-            } />
             <Route path="/onboarding/faqs" element={
               <ProtectedRoute>
-                <OnboardingStep18 />
+                <OnboardingStep17 />
               </ProtectedRoute>
             } />
             <Route path="/" element={
