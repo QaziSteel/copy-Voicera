@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-export default function OnboardingStep15() {
+export default function Schedule() {
   const [selectedOption, setSelectedOption] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
@@ -14,13 +14,13 @@ export default function OnboardingStep15() {
   ];
 
   const handlePrevious = () => {
-    navigate("/onboarding/step14");
+    navigate("/onboarding/appointment-time");
   };
 
   const handleNext = () => {
     if (selectedOption) {
       sessionStorage.setItem("scheduleFullAction", selectedOption);
-      navigate("/onboarding/step16");
+      navigate("/onboarding/faq-intro");
     }
   };
 

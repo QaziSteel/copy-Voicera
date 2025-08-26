@@ -42,23 +42,23 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         return { step: 2, totalSteps: 5, completionPercentage: 30 };
       case '/onboarding/assistant-name':
         return { step: 2, totalSteps: 5, completionPercentage: 36 };
-      case '/onboarding/step9':
+      case '/onboarding/answer-time':
         return { step: 2, totalSteps: 5, completionPercentage: 42 };
-      case '/onboarding/step10':
+      case '/onboarding/booking-intro':
         return { step: 3, totalSteps: 5, completionPercentage: 0 };
-      case '/onboarding/step11':
+      case '/onboarding/services':
         return { step: 3, totalSteps: 5, completionPercentage: 48 };
-      case '/onboarding/step12':
+      case '/onboarding/business-days':
         return { step: 3, totalSteps: 5, completionPercentage: 54 };
-      case '/onboarding/step13':
+      case '/onboarding/business-hours':
         return { step: 3, totalSteps: 5, completionPercentage: 60 };
-      case '/onboarding/step14':
+      case '/onboarding/appointment-time':
         return { step: 3, totalSteps: 5, completionPercentage: 66 };
-      case '/onboarding/step15':
+      case '/onboarding/schedule':
         return { step: 3, totalSteps: 5, completionPercentage: 72 };
-      case '/onboarding/step16':
+      case '/onboarding/faq-intro':
         return { step: 4, totalSteps: 5, completionPercentage: 74 };
-      case '/onboarding/faqs':
+      case '/onboarding/faq-questions':
         return { step: 4, totalSteps: 5, completionPercentage: 78 };
       default:
         return { step: 1, totalSteps: 5, completionPercentage: 0 };

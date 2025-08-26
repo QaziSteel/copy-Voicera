@@ -1,15 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-export default function OnboardingStep10() {
+export default function BookingIntro() {
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/step9");
+    navigate("/onboarding/answer-time");
   };
 
   const handleNext = () => {
-    navigate("/onboarding/step11");
+    navigate("/onboarding/services");
   };
 
   return (

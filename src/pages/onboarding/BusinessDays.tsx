@@ -12,18 +12,18 @@ const daysOfWeek = [
   { short: "Sat", full: "Saturday" },
 ];
 
-export default function OnboardingStep12() {
+export default function BusinessDays() {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/step11");
+    navigate("/onboarding/services");
   };
 
   const handleNext = () => {
     if (selectedDays.length > 0) {
       sessionStorage.setItem("businessDays", JSON.stringify(selectedDays));
-      navigate("/onboarding/step13");
+      navigate("/onboarding/business-hours");
     }
   };
 

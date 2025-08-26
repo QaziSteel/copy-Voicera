@@ -17,15 +17,15 @@ import { PersonalityIntro } from "./pages/onboarding/PersonalityIntro";
 import { VoiceStyle } from "./pages/onboarding/VoiceStyle";
 import { Greetings } from "./pages/onboarding/Greetings";
 import AssistantName from "./pages/onboarding/AssistantName";
-import OnboardingStep9 from "./pages/onboarding/OnboardingStep9";
-import OnboardingStep10 from "./pages/onboarding/OnboardingStep10";
-import OnboardingStep11 from "./pages/onboarding/OnboardingStep11";
-import OnboardingStep12 from "./pages/onboarding/OnboardingStep12";
-import OnboardingStep13 from "./pages/onboarding/OnboardingStep13";
-import OnboardingStep14 from "./pages/onboarding/OnboardingStep14";
-import OnboardingStep15 from "./pages/onboarding/OnboardingStep15";
-import OnboardingStep16 from "./pages/onboarding/OnboardingStep16";
-import OnboardingStep17 from "./pages/onboarding/OnboardingStep17";
+import AnswerTime from "./pages/onboarding/AnswerTime";
+import BookingIntro from "./pages/onboarding/BookingIntro";
+import Services from "./pages/onboarding/Services";
+import BusinessDays from "./pages/onboarding/BusinessDays";
+import BusinessHours from "./pages/onboarding/BusinessHours";
+import AppointmentTime from "./pages/onboarding/AppointmentTime";
+import Schedule from "./pages/onboarding/Schedule";
+import FAQIntro from "./pages/onboarding/FAQIntro";
+import FAQQuestions from "./pages/onboarding/FAQQuestions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,49 +80,49 @@ const App = () => (
                 <AssistantName />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step9" element={
+            <Route path="/onboarding/answer-time" element={
               <ProtectedRoute>
-                <OnboardingStep9 />
+                <AnswerTime />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step10" element={
+            <Route path="/onboarding/booking-intro" element={
               <ProtectedRoute>
-                <OnboardingStep10 />
+                <BookingIntro />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step11" element={
+            <Route path="/onboarding/services" element={
               <ProtectedRoute>
-                <OnboardingStep11 />
+                <Services />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step12" element={
+            <Route path="/onboarding/business-days" element={
               <ProtectedRoute>
-                <OnboardingStep12 />
+                <BusinessDays />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step13" element={
+            <Route path="/onboarding/business-hours" element={
               <ProtectedRoute>
-                <OnboardingStep13 />
+                <BusinessHours />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step14" element={
+            <Route path="/onboarding/appointment-time" element={
               <ProtectedRoute>
-                <OnboardingStep14 />
+                <AppointmentTime />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step15" element={
+            <Route path="/onboarding/schedule" element={
               <ProtectedRoute>
-                <OnboardingStep15 />
+                <Schedule />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/step16" element={
+            <Route path="/onboarding/faq-intro" element={
               <ProtectedRoute>
-                <OnboardingStep16 />
+                <FAQIntro />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding/faqs" element={
+            <Route path="/onboarding/faq-questions" element={
               <ProtectedRoute>
-                <OnboardingStep17 />
+                <FAQQuestions />
               </ProtectedRoute>
             } />
             <Route path="/" element={

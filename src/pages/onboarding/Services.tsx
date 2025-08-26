@@ -10,14 +10,14 @@ const serviceOptions = [
   "Other",
 ];
 
-export default function OnboardingStep11() {
+export default function Services() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [customService, setCustomService] = useState("");
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/step10");
+    navigate("/onboarding/booking-intro");
   };
 
   const handleNext = () => {
@@ -27,7 +27,7 @@ export default function OnboardingStep11() {
         allServices.push(customService.trim());
       }
       sessionStorage.setItem("bookingServices", JSON.stringify(allServices));
-      navigate("/onboarding/step12");
+      navigate("/onboarding/business-days");
     }
   };
 

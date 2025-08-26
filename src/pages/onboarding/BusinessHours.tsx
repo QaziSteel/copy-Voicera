@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function OnboardingStep13() {
+export default function BusinessHours() {
   const [fromTime, setFromTime] = useState("");
   const [toTime, setToTime] = useState("");
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function OnboardingStep13() {
   });
 
   const handlePrevious = () => {
-    navigate("/onboarding/step12");
+    navigate("/onboarding/business-days");
   };
 
   const handleNext = () => {
@@ -30,7 +30,7 @@ export default function OnboardingStep13() {
         "businessHours",
         JSON.stringify({ from: fromTime, to: toTime }),
       );
-      navigate("/onboarding/step14");
+      navigate("/onboarding/appointment-time");
     }
   };
 

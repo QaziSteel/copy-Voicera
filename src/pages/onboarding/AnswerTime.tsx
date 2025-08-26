@@ -8,7 +8,7 @@ const scheduleOptions = [
   { id: "custom", name: "Custom schedule" },
 ];
 
-export default function OnboardingStep9() {
+export default function AnswerTime() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState("");
   const [customSchedule, setCustomSchedule] = useState("");
@@ -31,7 +31,7 @@ export default function OnboardingStep9() {
         : scheduleOptions.find((s) => s.id === selectedSchedule)?.name;
     if (finalSchedule) {
       sessionStorage.setItem("aiCallSchedule", finalSchedule);
-      navigate("/onboarding/step10");
+      navigate("/onboarding/booking-intro");
     }
   };
 

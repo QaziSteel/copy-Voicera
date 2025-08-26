@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-export default function OnboardingStep16() {
+export default function FAQIntro() {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/onboarding/faqs");
+    navigate("/onboarding/faq-questions");
   };
 
   return (

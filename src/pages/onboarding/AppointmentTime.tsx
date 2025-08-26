@@ -6,7 +6,7 @@ const presetDurations = ["15 min", "30 min", "45 min", "60 min"];
 const hourOptions = ["00 hr", "01 hr", "02 hr", "03 hr", "04 hr"];
 const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
 
-export default function OnboardingStep14() {
+export default function AppointmentTime() {
   const [selectedPreset, setSelectedPreset] = useState("");
   const [customHour, setCustomHour] = useState("00 hr");
   const [customMinute, setCustomMinute] = useState("00 min");
@@ -15,7 +15,7 @@ export default function OnboardingStep14() {
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/step13");
+    navigate("/onboarding/business-hours");
   };
 
   const handleNext = () => {
@@ -25,7 +25,7 @@ export default function OnboardingStep14() {
       : selectedPreset;
     if (duration) {
       sessionStorage.setItem("appointmentDuration", duration);
-      navigate("/onboarding/step15");
+      navigate("/onboarding/schedule");
     }
   };
 

@@ -28,7 +28,7 @@ export default function AssistantName() {
         : `Your ${businessName} Assistant`;
     if (finalName.trim()) {
       sessionStorage.setItem("aiAssistantName", finalName.trim());
-      navigate("/onboarding/step9");
+      navigate("/onboarding/answer-time");
     }
   };
 

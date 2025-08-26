@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
-export default function OnboardingStep17() {
+export default function FAQQuestions() {
   const [selectedFAQs, setSelectedFAQs] = useState<string[]>([]);
   const [customQuestion, setCustomQuestion] = useState("");
   const [customAnswers, setCustomAnswers] = useState<{ [key: string]: string }>(
@@ -18,7 +18,7 @@ export default function OnboardingStep17() {
   ];
 
   const handlePrevious = () => {
-    navigate("/onboarding/step16");
+    navigate("/onboarding/faq-intro");
   };
 
   const handleNext = () => {
