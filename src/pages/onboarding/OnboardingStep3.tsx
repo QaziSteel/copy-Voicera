@@ -19,7 +19,7 @@ export const OnboardingStep3: React.FC = () => {
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/step2");
+    navigate("/onboarding/business-name");
   };
 
   const handleNext = () => {

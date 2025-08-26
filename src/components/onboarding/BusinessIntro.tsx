@@ -6,7 +6,7 @@ export const BusinessIntro: React.FC = () => {
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate("/onboarding/step2");
+    navigate("/onboarding/business-name");
   };
 
   return (

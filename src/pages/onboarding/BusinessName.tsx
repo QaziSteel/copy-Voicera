@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
-export const OnboardingStep2: React.FC = () => {
+export const BusinessName: React.FC = () => {
   const [businessName, setBusinessName] = useState("Silhouette Hair Co.");
   const navigate = useNavigate();
 
@@ -60,3 +60,5 @@ export const OnboardingStep2: React.FC = () => {
     </OnboardingLayout>
   );
 };
+
+export default BusinessName;

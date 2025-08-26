@@ -28,7 +28,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
     switch (location.pathname) {
       case '/onboarding/business-intro':
         return { step: 1, totalSteps: 5, completionPercentage: 0 };
-      case '/onboarding/step2':
+      case '/onboarding/business-name':
         return { step: 1, totalSteps: 5, completionPercentage: 6 };
       case '/onboarding/step3':
         return { step: 1, totalSteps: 5, completionPercentage: 12 };
