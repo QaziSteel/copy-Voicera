@@ -1,58 +1,26 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 
 export default function Completion() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleCompleteOnboarding = async (redirectPath: string) => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to complete onboarding.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Update the onboarding_completed status in the profiles table
-      const { error } = await supabase
-        .from("profiles")
-        .update({ onboarding_completed: true })
-        .eq("id", user.id);
-
-      if (error) {
-        throw error;
-      }
-
-      // Navigate to the desired page
-      navigate(redirectPath);
-    } catch (error) {
-      console.error("Error completing onboarding:", error);
-      toast({
-        title: "Error",
-        description: "Failed to complete onboarding. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleGoLive = () => {
-    handleCompleteOnboarding("/dashboard");
+    // Set login state and redirect to the dashboard
+    sessionStorage.setItem("isLoggedIn", "true");
+    sessionStorage.setItem(
+      "userEmail",
+      sessionStorage.getItem("email") || "user@example.com",
+    );
+    navigate("/dashboard");
   };
 
   const handleTestAI = () => {
-    handleCompleteOnboarding("/agent-management");
+    // Set login state and redirect to agent management for testing
+    sessionStorage.setItem("isLoggedIn", "true");
+    sessionStorage.setItem(
+      "userEmail",
+      sessionStorage.getItem("email") || "user@example.com",
+    );
+    navigate("/agent-management");
   };
 
   return (
@@ -132,17 +100,15 @@ export default function Completion() {
             <div className="flex gap-4 w-full">
               <button
                 onClick={handleGoLive}
-                disabled={isLoading}
-                className="flex-1 h-10 bg-[#F3F4F6] text-[#6B7280] text-base font-bold rounded-xl flex items-center justify-center hover:bg-[#E5E7EB] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 h-10 bg-[#F3F4F6] text-[#6B7280] text-base font-bold rounded-xl flex items-center justify-center hover:bg-[#E5E7EB] transition-colors"
               >
-                {isLoading ? "Setting up..." : "Go Live"}
+                Go Live
               </button>
               <button
                 onClick={handleTestAI}
-                disabled={isLoading}
-                className="flex-1 h-10 bg-black text-white text-base font-bold rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 h-10 bg-black text-white text-base font-bold rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors"
               >
-                {isLoading ? "Setting up..." : "Test My AI"}
+                Test My AI
               </button>
             </div>
           </div>

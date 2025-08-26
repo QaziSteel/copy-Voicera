@@ -8,10 +8,6 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import AgentManagement from "./pages/AgentManagement";
-import CallLogs from "./pages/CallLogs";
-import DailySummary from "./pages/DailySummary";
-import Profile from "./pages/Profile";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
@@ -173,32 +169,7 @@ const App = () => (
             } />
             <Route path="/" element={
               <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/agent-management" element={
-              <ProtectedRoute>
-                <AgentManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/call-logs" element={
-              <ProtectedRoute>
-                <CallLogs />
-              </ProtectedRoute>
-            } />
-            <Route path="/daily-summary" element={
-              <ProtectedRoute>
-                <DailySummary />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Profile />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
