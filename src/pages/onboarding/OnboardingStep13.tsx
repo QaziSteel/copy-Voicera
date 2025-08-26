@@ -77,11 +77,6 @@ export default function OnboardingStep13() {
                 />
               </svg>
             </div>
-            {!fromTime && (
-              <label className="block text-lg text-[#6B7280] mt-2 px-4">
-                From
-              </label>
-            )}
           </div>
 
           {/* To Time */}
