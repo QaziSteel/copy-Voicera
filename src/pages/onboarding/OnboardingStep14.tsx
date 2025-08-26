@@ -10,7 +10,8 @@ export default function OnboardingStep14() {
   const [selectedPreset, setSelectedPreset] = useState("");
   const [customHour, setCustomHour] = useState("00 hr");
   const [customMinute, setCustomMinute] = useState("00 min");
-  const [useCustom, setUseCustom] = useState(false);
+  const [showHourDropdown, setShowHourDropdown] = useState(false);
+  const [showMinuteDropdown, setShowMinuteDropdown] = useState(false);
   const navigate = useNavigate();
 
   const handlePrevious = () => {
@@ -18,7 +19,8 @@ export default function OnboardingStep14() {
   };
 
   const handleNext = () => {
-    const duration = useCustom
+    const hasCustomValues = customHour !== "00 hr" || customMinute !== "00 min";
+    const duration = hasCustomValues
       ? `${customHour} ${customMinute}`
       : selectedPreset;
     if (duration) {
@@ -39,15 +41,34 @@ export default function OnboardingStep14() {
       setCustomHour("00 hr");
       setCustomMinute("00 min");
     }
-    setUseCustom(false);
+    setShowHourDropdown(false);
+    setShowMinuteDropdown(false);
   };
 
-  const handleCustomToggle = () => {
-    setUseCustom(true);
+  const handleHourClick = () => {
+    setShowHourDropdown(!showHourDropdown);
+    setShowMinuteDropdown(false);
     setSelectedPreset("");
   };
 
-  const isNextDisabled = !selectedPreset && !useCustom;
+  const handleMinuteClick = () => {
+    setShowMinuteDropdown(!showMinuteDropdown);
+    setShowHourDropdown(false);
+    setSelectedPreset("");
+  };
+
+  const handleHourSelect = (hour: string) => {
+    setCustomHour(hour);
+    setShowHourDropdown(false);
+  };
+
+  const handleMinuteSelect = (minute: string) => {
+    setCustomMinute(minute);
+    setShowMinuteDropdown(false);
+  };
+
+  const hasCustomValues = customHour !== "00 hr" || customMinute !== "00 min";
+  const isNextDisabled = !selectedPreset && !hasCustomValues;
 
   return (
     <OnboardingLayout
@@ -87,9 +108,9 @@ export default function OnboardingStep14() {
             {/* Hour Selector */}
             <div className="relative">
               <button
-                onClick={handleCustomToggle}
+                onClick={handleHourClick}
                 className={`flex items-center gap-5 px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
-                  useCustom ? "border-black" : "border-black"
+                  showHourDropdown ? "border-black" : "border-black"
                 }`}
               >
                 <span className="text-black">{customHour}</span>
@@ -111,12 +132,12 @@ export default function OnboardingStep14() {
               </button>
 
               {/* Hour Dropdown */}
-              {useCustom && (
+              {showHourDropdown && (
                 <div className="absolute top-full left-0 mt-1 w-full bg-white border-2 border-[#E5E7EB] rounded-xl overflow-hidden z-10">
                   {hourOptions.map((hour) => (
                     <button
                       key={hour}
-                      onClick={() => setCustomHour(hour)}
+                      onClick={() => handleHourSelect(hour)}
                       className="w-full px-4 py-2 text-left text-lg text-[#6B7280] hover:bg-gray-50 transition-colors"
                     >
                       {hour}
@@ -129,9 +150,9 @@ export default function OnboardingStep14() {
             {/* Minute Selector */}
             <div className="relative">
               <button
-                onClick={handleCustomToggle}
+                onClick={handleMinuteClick}
                 className={`flex items-center gap-5 px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
-                  useCustom ? "border-black" : "border-black"
+                  showMinuteDropdown ? "border-black" : "border-black"
                 }`}
               >
                 <span className="text-black">{customMinute}</span>
@@ -153,12 +174,12 @@ export default function OnboardingStep14() {
               </button>
 
               {/* Minute Dropdown */}
-              {useCustom && (
+              {showMinuteDropdown && (
                 <div className="absolute top-full left-0 mt-1 w-full bg-white border-2 border-[#E5E7EB] rounded-xl overflow-hidden z-10">
                   {minuteOptions.map((minute) => (
                     <button
                       key={minute}
-                      onClick={() => setCustomMinute(minute)}
+                      onClick={() => handleMinuteSelect(minute)}
                       className="w-full px-4 py-2 text-left text-lg text-[#6B7280] hover:bg-gray-50 transition-colors"
                     >
                       {minute}
