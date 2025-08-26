@@ -5,9 +5,23 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { cn } from "@/lib/utils";
+
+// Custom TimeSelectTrigger without default dropdown arrow
+const TimeSelectTrigger = ({ className, children, ...props }: any) => (
+  <SelectPrimitive.Trigger
+    className={cn(
+      "flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto w-full",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </SelectPrimitive.Trigger>
+);
 
 export default function OnboardingStep13() {
   const [fromTime, setFromTime] = useState("");
@@ -59,7 +73,7 @@ export default function OnboardingStep13() {
           {/* From Time */}
           <div className="flex-1">
             <Select value={fromTime} onValueChange={setFromTime}>
-              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto">
+              <TimeSelectTrigger>
                 <SelectValue placeholder="From" className="text-[#6B7280]" />
                 <svg
                   width="24"
@@ -83,7 +97,7 @@ export default function OnboardingStep13() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </SelectTrigger>
+              </TimeSelectTrigger>
               <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
                 {timeOptions.map((time) => (
                   <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
@@ -97,7 +111,7 @@ export default function OnboardingStep13() {
           {/* To Time */}
           <div className="flex-1">
             <Select value={toTime} onValueChange={setToTime}>
-              <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto">
+              <TimeSelectTrigger>
                 <SelectValue placeholder="To" className="text-[#6B7280]" />
                 <svg
                   width="24"
@@ -121,7 +135,7 @@ export default function OnboardingStep13() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </SelectTrigger>
+              </TimeSelectTrigger>
               <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
                 {timeOptions.map((time) => (
                   <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
