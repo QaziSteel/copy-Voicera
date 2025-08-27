@@ -377,7 +377,7 @@ const CallLogs: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-16 py-4">
+      <header className="bg-white border-b border-gray-200 px-4 md:px-8 lg:px-16 py-4">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
 
@@ -520,7 +520,7 @@ const CallLogs: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="px-16 py-8">
+      <main className="px-4 md:px-8 lg:px-16 py-8">
         {/* Page Header */}
         <div className="flex justify-between items-end mb-7">
           <div>
