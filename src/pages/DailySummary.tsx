@@ -538,8 +538,8 @@ const DailySummary: React.FC = () => {
 
       {/* Notification Popup */}
       {showNotifications && (
-        <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-end items-start pt-24 pr-16 z-50">
-          <div className="bg-white rounded-2xl w-[650px] max-h-[936px] overflow-y-auto shadow-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-24 px-4 z-50">
+          <div className="bg-white rounded-2xl w-full max-w-[650px] max-h-[936px] overflow-y-auto shadow-lg">
             {/* Header */}
             <div className="flex justify-between items-center p-5 border-b border-gray-200">
               <h3 className="text-xl font-medium text-gray-600">
