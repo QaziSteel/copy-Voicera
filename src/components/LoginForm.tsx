@@ -56,7 +56,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
         </div>
 
         {/* Login Card */}
-        <div className="border border-border rounded-lg p-8 space-y-6 bg-card">
+        <div className="border border-border rounded-2xl p-8 space-y-6 bg-card">
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-semibold text-foreground">Welcome to Voicera AI</h2>
             <p className="text-auth-subtle">Please enter your details to sign in</p>
