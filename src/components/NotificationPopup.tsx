@@ -1,5 +1,6 @@
 import React from "react";
 import { Notification } from "@/hooks/useNotifications";
+import { CheckCircle, AlertTriangle, Info, AlertCircle } from "lucide-react";
 
 interface NotificationPopupProps {
   notifications: Notification[];
@@ -20,47 +21,27 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
     switch (iconType) {
       case "success":
         return (
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-              <path
-                d="M14 0.666992C21.3637 0.666992 27.333 6.6362 27.333 14C27.3329 21.3637 21.3637 27.333 14 27.333C6.63629 27.333 0.667081 21.3636 0.666992 14C0.666992 6.63623 6.63624 0.667036 14 0.666992Z"
-                fill="#22C55E"
-              />
-            </svg>
+          <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-6 h-6 text-green-600" />
           </div>
         );
       case "warning":
         return (
-          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-              <path
-                d="M14 0.666992C21.3637 0.666992 27.333 6.6362 27.333 14C27.3329 21.3637 21.3637 27.333 14 27.333C6.63629 27.333 0.667081 21.3636 0.666992 14C0.666992 6.63623 6.63624 0.667036 14 0.666992Z"
-                fill="#F59E0B"
-              />
-            </svg>
+          <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-6 h-6 text-orange-600" />
           </div>
         );
       case "error":
         return (
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-              <path
-                d="M14 0.666992C21.3637 0.666992 27.333 6.6362 27.333 14C27.3329 21.3637 21.3637 27.333 14 27.333C6.63629 27.333 0.667081 21.3636 0.666992 14C0.666992 6.63623 6.63624 0.667036 14 0.666992Z"
-                fill="#EF4444"
-              />
-            </svg>
+          <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-6 h-6 text-red-600" />
           </div>
         );
       case "info":
       default:
         return (
-          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-              <path
-                d="M13 0.333984C18.9709 0.333984 21.9565 0.333566 23.8115 2.18848C25.6664 4.04346 25.667 7.02899 25.667 13C25.667 18.9709 25.6663 21.9564 23.8115 23.8115C21.9565 25.6664 18.971 25.667 13 25.667C7.02888 25.667 4.04348 25.6665 2.18848 23.8115C0.333558 21.9565 0.333008 18.971 0.333008 13C0.333008 7.02899 0.333507 4.04346 2.18848 2.18848C4.04349 0.333612 7.02901 0.333984 13 0.333984Z"
-                fill="#007AFF"
-              />
-            </svg>
+          <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <Info className="w-6 h-6 text-blue-600" />
           </div>
         );
     }

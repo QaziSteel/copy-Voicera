@@ -16,62 +16,79 @@ export interface Notification {
 export const useNotifications = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // Comprehensive notification data from Dashboard
+  // Realistic notification data matching screenshot
   const notifications: Notification[] = [
     {
       id: "1",
-      type: "system",
-      title: "System Alert",
-      description: "Your AI agent is currently offline. Please check your connection.",
-      time: "2 minutes ago",
-      iconType: "warning",
+      type: "booking",
+      title: "Booking Confirmed",
+      description: "Anna Smith booked for Today • 3:00 PM",
+      time: "Today • 2:45 PM",
+      iconType: "success",
+      actionButton: {
+        text: "View",
+        action: () => {
+          console.log("View booking details");
+        },
+      },
     },
     {
       id: "2", 
-      type: "call",
-      title: "Call Completed",
-      description: "Call with John Doe completed successfully with a booking.",
-      time: "5 minutes ago",
-      iconType: "success",
+      type: "system",
+      title: "Syncing Failed",
+      description: "Google Calendar sync failed. Please check your connection.",
+      time: "Today • 2:30 PM",
+      iconType: "error",
+      actionButton: {
+        text: "Retry",
+        action: () => {
+          console.log("Retry sync");
+        },
+      },
     },
     {
       id: "3",
       type: "system", 
-      title: "System Maintenance",
-      description: "Scheduled maintenance will occur tonight from 12:00 AM to 2:00 AM.",
-      time: "1 hour ago",
-      iconType: "info",
-    },
-    {
-      id: "4",
-      type: "booking",
-      title: "New Booking",
-      description: "Sarah Johnson booked an appointment for tomorrow at 3:00 PM.",
-      time: "2 hours ago", 
+      title: "Subscription Activated",
+      description: "Voicera AI Basic Plan is now active and ready to use.",
+      time: "Today • 1:15 PM",
       iconType: "success",
     },
     {
-      id: "5",
+      id: "4",
       type: "call",
-      title: "Missed Call Alert",
-      description: "You have 3 missed calls. Please review and follow up.",
-      time: "3 hours ago",
-      iconType: "error",
+      title: "Transcript Ready",
+      description: "New call transcript is available for your review.",
+      time: "Today • 12:45 PM", 
+      iconType: "info",
+      actionButton: {
+        text: "View Transcript",
+        action: () => {
+          console.log("View transcript");
+        },
+      },
+    },
+    {
+      id: "5",
+      type: "analysis",
+      title: "AI Performance Insight",
+      description: "AI agent answered 95% of client queries correctly today.",
+      time: "Today • 11:30 AM",
+      iconType: "info",
+      actionButton: {
+        text: "View Report",
+        action: () => {
+          console.log("View performance report");
+        },
+      },
     },
     {
       id: "6",
-      type: "analysis",
-      title: "Daily Summary Ready",
-      description: "Your daily summary for today is now available for review.",
-      time: "Today · 5:00 PM",
-      iconType: "info",
-      actionButton: {
-        text: "View Summary",
-        action: () => {
-          // Navigate to daily summary or open popup
-          console.log("Navigate to daily summary");
-        },
-      },
+      type: "booking",
+      title: "Booking Cancelled",
+      description: "Emma Johnson cancelled her appointment for Today • 5:00 PM.",
+      time: "Today • 10:15 AM",
+      iconType: "warning",
     },
   ];
 
