@@ -384,11 +384,18 @@ const AgentManagement = () => {
       {/* Main Content */}
       <main className="px-4 md:px-8 lg:px-16 py-8">
         {/* Page Header */}
-        <div className="flex justify-between items-end mb-6">
+        <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-3xl font-semibold text-black mb-1">
               Agent Management
             </h1>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl font-semibold text-gray-500">Agent status:</span>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-xl font-semibold text-green-600">Live</span>
+              </div>
+            </div>
             <p className="text-xl font-semibold text-gray-500">
               Configure your AI agent settings and behavior
             </p>
@@ -396,22 +403,43 @@ const AgentManagement = () => {
 
           <div className="flex gap-3">
             <button
-              onClick={() => loadAgentSettings()}
-              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-lg font-semibold"
+              onClick={() => {
+                toast({
+                  title: "Agent Status",
+                  description: "Agent is now offline",
+                  variant: "destructive",
+                });
+              }}
+              className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg text-lg font-semibold transition-colors"
             >
-              Refresh
+              Go Offline
             </button>
             <button
-              onClick={saveChanges}
-              className="px-4 py-3 bg-black hover:bg-gray-800 text-white rounded-lg text-lg font-semibold"
+              onClick={() => {
+                toast({
+                  title: "Test Agent",
+                  description: "Testing agent functionality...",
+                });
+              }}
+              className="px-4 py-3 bg-black hover:bg-gray-800 text-white rounded-lg text-lg font-semibold transition-colors"
             >
-              Save Changes
+              Test Agent
             </button>
           </div>
         </div>
 
         <Card className="bg-white">
           <CardContent className="p-8">
+            <div className="flex justify-between items-center mb-6">
+              <div></div>
+              <button
+                onClick={saveChanges}
+                className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+            
             <Tabs defaultValue="basic-info" className="w-full">
               <TabsList className="grid w-full grid-cols-5 mb-8">
                 <TabsTrigger value="basic-info">Basic Info</TabsTrigger>
