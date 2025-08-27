@@ -36,6 +36,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
           variant: "destructive",
         });
       }
+      // Navigation is now handled by AuthContext
     } catch (error) {
       toast({
         title: "Error",

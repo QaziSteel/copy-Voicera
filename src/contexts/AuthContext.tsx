@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { hasCompletedOnboarding } from '@/lib/onboarding';
 
 interface AuthContextType {
   user: User | null;
@@ -37,6 +38,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Handle navigation after auth state change
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(async () => {
+            try {
+              const completed = await hasCompletedOnboarding();
+              if (completed) {
+                window.location.href = '/dashboard';
+              } else {
+                window.location.href = '/onboarding/business-intro';
+              }
+            } catch (error) {
+              console.error('Error checking onboarding status:', error);
+              window.location.href = '/onboarding/business-intro';
+            }
+          }, 0);
+        }
       }
     );
 

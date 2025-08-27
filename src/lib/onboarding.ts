@@ -174,3 +174,24 @@ export const getLatestOnboardingResponse = async () => {
 
   return { data, error };
 };
+
+export const hasCompletedOnboarding = async (): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('onboarding_responses')
+      .select('id')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking onboarding status:', error);
+      return false;
+    }
+
+    return !!data;
+  } catch (error) {
+    console.error('Error checking onboarding status:', error);
+    return false;
+  }
+};

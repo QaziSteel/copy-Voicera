@@ -147,6 +147,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           title: "Success",
           description: "Please check your email to verify your account"
         });
+        // Navigation will be handled by AuthContext after email verification
         onSuccess?.();
       }
     } catch (error) {
