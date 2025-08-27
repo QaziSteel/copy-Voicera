@@ -198,8 +198,8 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="px-4 md:px-8 lg:px-16 mt-4">
-          <div className="bg-gray-100 rounded-full p-2 flex items-center gap-3 w-fit">
+        <div className="flex items-center justify-center mt-4">
+          <div className="bg-gray-100 rounded-full p-2 flex items-center gap-3">
             <button
               onClick={() => navigate("/dashboard")}
               className={`px-4 py-2 rounded-full transition-colors ${
