@@ -112,9 +112,9 @@ const DailySummary: React.FC = () => {
 
   const renderSummaryPopup = () => (
     <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl w-[600px] shadow-lg">
+      <div className="bg-white rounded-3xl w-[400px] max-w-md max-h-[80vh] shadow-lg flex flex-col">
         {/* Header */}
-        <div className="flex justify-between items-center p-5 border-b border-gray-200">
+        <div className="flex justify-between items-center p-5 border-b border-gray-200 flex-shrink-0">
           <h3 className="text-xl font-medium text-gray-800">
             Summary – {selectedSummary?.date || "August 20, 2025"}
           </h3>
@@ -142,7 +142,7 @@ const DailySummary: React.FC = () => {
         </div>
 
         {/* Summary Content */}
-        <div className="p-5 space-y-8">
+        <div className="p-5 space-y-6 overflow-y-auto max-h-[60vh]">
           {/* Summary Section */}
           <div className="space-y-3">
             <h4 className="text-xl font-medium text-gray-800">Summary</h4>
