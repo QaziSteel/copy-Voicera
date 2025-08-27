@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CallLogEntry {
   id: string;
@@ -15,6 +16,7 @@ interface CallLogEntry {
 
 const CallLogs: React.FC = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [showTranscript, setShowTranscript] = useState(false);
   const [showReplay, setShowReplay] = useState(false);
   const [selectedCall, setSelectedCall] = useState<CallLogEntry | null>(null);
@@ -23,17 +25,14 @@ const CallLogs: React.FC = () => {
 
   // Check if user is logged in
   useEffect(() => {
-    const isLoggedIn = sessionStorage.getItem("isLoggedIn");
-    if (!isLoggedIn) {
-      navigate("/");
+    if (!user) {
+      navigate("/auth");
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   // Logout function
-  const handleLogout = () => {
-    sessionStorage.removeItem("isLoggedIn");
-    sessionStorage.removeItem("userEmail");
-    navigate("/");
+  const handleLogout = async () => {
+    await signOut();
   };
 
   // Mock call logs data
