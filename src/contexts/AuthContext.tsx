@@ -31,6 +31,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const handlePostSignInNavigation = async () => {
+    try {
+      const completed = await hasCompletedOnboarding();
+      if (completed) {
+        window.location.href = '/dashboard';
+      } else {
+        window.location.href = '/onboarding/business-intro';
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+      // Default to onboarding if there's an error
+      window.location.href = '/onboarding/business-intro';
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -39,21 +54,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Handle navigation after auth state change
+        // Handle navigation after auth state change - defer to avoid blocking
         if (event === 'SIGNED_IN' && session?.user) {
-          setTimeout(async () => {
-            try {
-              const completed = await hasCompletedOnboarding();
-              if (completed) {
-                window.location.href = '/dashboard';
-              } else {
-                window.location.href = '/onboarding/business-intro';
-              }
-            } catch (error) {
-              console.error('Error checking onboarding status:', error);
-              window.location.href = '/onboarding/business-intro';
-            }
-          }, 0);
+          // Use setTimeout to defer the async operation
+          setTimeout(() => {
+            handlePostSignInNavigation();
+          }, 100);
         }
       }
     );
