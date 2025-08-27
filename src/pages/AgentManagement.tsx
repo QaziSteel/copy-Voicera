@@ -384,24 +384,24 @@ const AgentManagement = () => {
       {/* Main Content */}
       <main className="px-4 md:px-8 lg:px-16 py-8">
         {/* Page Header */}
-        <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-3xl font-semibold text-black mb-1">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Agent Management
             </h1>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl font-semibold text-gray-500">Agent status:</span>
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm text-muted-foreground">Agent status:</span>
+              <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-xl font-semibold text-green-600">Live</span>
+                <span className="text-sm font-medium text-green-600">Live</span>
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-500">
+            <p className="text-base text-muted-foreground">
               Configure your AI agent settings and behavior
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <button
               onClick={() => {
                 toast({
@@ -410,7 +410,7 @@ const AgentManagement = () => {
                   variant: "destructive",
                 });
               }}
-              className="px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg text-lg font-semibold transition-colors"
+              className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md text-sm font-medium transition-colors"
             >
               Go Offline
             </button>
@@ -421,33 +421,52 @@ const AgentManagement = () => {
                   description: "Testing agent functionality...",
                 });
               }}
-              className="px-4 py-3 bg-black hover:bg-gray-800 text-white rounded-lg text-lg font-semibold transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-sm font-medium transition-colors"
             >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                <path
+                  d="M19 16V14C19 11.1716 19 9.75736 18.1213 8.87868C17.2426 8 15.8284 8 13 8H11C8.17157 8 6.75736 8 5.87868 8.87868C5 9.75736 5 11.1716 5 14V16C5 18.8284 5 20.2426 5.87868 21.1213C6.75736 22 8.17157 22 11 22H13C15.8284 22 17.2426 22 18.1213 21.1213C19 20.2426 19 18.8284 19 16Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M13.5 3.5C13.5 4.32843 12.8284 5 12 5C11.1716 5 10.5 4.32843 10.5 3.5C10.5 2.67157 11.1716 2 12 2C12.8284 2 13.5 2.67157 13.5 3.5Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M12 5V8"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
               Test Agent
             </button>
           </div>
         </div>
 
-        <Card className="bg-white">
-          <CardContent className="p-8">
-            <div className="flex justify-between items-center mb-6">
-              <div></div>
-              <button
-                onClick={saveChanges}
-                className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg text-sm font-semibold transition-colors"
-              >
-                Save Changes
-              </button>
-            </div>
-            
+        <Card className="bg-card border-border">
+          <CardContent className="p-6">
             <Tabs defaultValue="basic-info" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-8">
-                <TabsTrigger value="basic-info">Basic Info</TabsTrigger>
-                <TabsTrigger value="personality">AI Personality</TabsTrigger>
-                <TabsTrigger value="booking">Booking</TabsTrigger>
-                <TabsTrigger value="faqs">FAQs</TabsTrigger>
-                <TabsTrigger value="advanced">Advanced</TabsTrigger>
-              </TabsList>
+              <div className="flex items-center justify-between mb-6">
+                <TabsList className="bg-muted p-1 h-auto">
+                  <TabsTrigger value="basic-info" className="data-[state=active]:bg-background">Basic Info</TabsTrigger>
+                  <TabsTrigger value="personality" className="data-[state=active]:bg-background">AI Personality</TabsTrigger>
+                  <TabsTrigger value="booking" className="data-[state=active]:bg-background">Booking</TabsTrigger>
+                  <TabsTrigger value="faqs" className="data-[state=active]:bg-background">FAQs</TabsTrigger>
+                  <TabsTrigger value="advanced" className="data-[state=active]:bg-background">Advanced</TabsTrigger>
+                </TabsList>
+                
+                <button
+                  onClick={saveChanges}
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md text-sm font-medium transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
 
               <TabsContent value="basic-info" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
