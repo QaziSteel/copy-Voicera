@@ -412,21 +412,68 @@ const AgentManagement = () => {
             <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
 
             <div className="flex items-center gap-8">
-              {/* Agent Live Status */}
-              <div className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-lg bg-white">
-                <div className={`w-2 h-2 ${isAgentLive ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></div>
+              {/* Agent Live */}
+              <button
+                onClick={() => navigate("/agent-management")}
+                className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M19 16V14C19 11.1716 19 9.75736 18.1213 8.87868C17.2426 8 15.8284 8 13 8H11C8.17157 8 6.75736 8 5.87868 8.87868C5 9.75736 5 11.1716 5 14V16C5 18.8284 5 20.2426 5.87868 21.1213C6.75736 22 8.17157 22 11 22H13C15.8284 22 17.2426 22 18.1213 21.1213C19 20.2426 19 18.8284 19 16Z" stroke="#141B34" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M19 18C20.4142 18 21.1213 18 21.5607 17.5607C22 17.1213 22 16.4142 22 15C22 13.5858 22 12.8787 21.5607 12.4393C21.1213 12 20.4142 12 19 12" stroke="#141B34" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M5 18C3.58579 18 2.87868 18 2.43934 17.5607C2 17.1213 2 16.4142 2 15C2 13.5858 2 12.8787 2.43934 12.4393C2.87868 12 3.58579 12 5 12" stroke="#141B34" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M13.5 3.5C13.5 4.32843 12.8284 5 12 5C11.1716 5 10.5 4.32843 10.5 3.5C10.5 2.67157 11.1716 2 12 2C12.8284 2 13.5 2.67157 13.5 3.5Z" stroke="#141B34" strokeWidth="1.5"/>
-                  <path d="M12 5V8" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M9 13V14" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M15 13V14" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M10 17.5C10 17.5 10.6667 18 12 18C13.3333 18 14 17.5 14 17.5" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path
+                    d="M19 16V14C19 11.1716 19 9.75736 18.1213 8.87868C17.2426 8 15.8284 8 13 8H11C8.17157 8 6.75736 8 5.87868 8.87868C5 9.75736 5 11.1716 5 14V16C5 18.8284 5 20.2426 5.87868 21.1213C6.75736 22 8.17157 22 11 22H13C15.8284 22 17.2426 22 18.1213 21.1213C19 20.2426 19 18.8284 19 16Z"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M19 18C20.4142 18 21.1213 18 21.5607 17.5607C22 17.1213 22 16.4142 22 15C22 13.5858 22 12.8787 21.5607 12.4393C21.1213 12 20.4142 12 19 12"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M5 18C3.58579 18 2.87868 18 2.43934 17.5607C2 17.1213 2 16.4142 2 15C2 13.5858 2 12.8787 2.43934 12.4393C2.87868 12 3.58579 12 5 12"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M13.5 3.5C13.5 4.32843 12.8284 5 12 5C11.1716 5 10.5 4.32843 10.5 3.5C10.5 2.67157 11.1716 2 12 2C12.8284 2 13.5 2.67157 13.5 3.5Z"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M12 5V8"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M9 13V14"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M15 13V14"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10 17.5C10 17.5 10.6667 18 12 18C13.3333 18 14 17.5 14 17.5"
+                    stroke="#141B34"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
-                <span className="text-lg font-semibold text-black">Agent {isAgentLive ? 'Live' : 'Offline'}</span>
-              </div>
+                <span className="text-lg font-semibold text-black">
+                  Agent Live
+                </span>
+              </button>
 
               {/* Notification Bell */}
               <button onClick={openNotifications} className="relative">
@@ -454,17 +501,53 @@ const AgentManagement = () => {
           {/* Navigation Tabs */}
           <div className="flex items-center justify-center mt-4">
             <div className="bg-gray-100 rounded-full p-2 flex items-center gap-3">
-              <button onClick={() => navigate("/dashboard")} className={`px-4 py-2 rounded-full transition-colors ${location.pathname === "/dashboard" ? "bg-white shadow-sm" : "hover:bg-gray-200"}`}>
-                <span className={`text-lg font-semibold ${location.pathname === "/dashboard" ? "text-black" : "text-gray-500"}`}>Dashboard</span>
+              <button
+                onClick={() => navigate("/dashboard")}
+                className={`px-4 py-2 rounded-full transition-colors ${
+                  location.pathname === "/dashboard" 
+                    ? "bg-white shadow-sm" 
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                <span className={`text-lg font-semibold ${
+                  location.pathname === "/dashboard" 
+                    ? "text-black" 
+                    : "text-gray-500"
+                }`}>
+                  Dashboard
+                </span>
               </button>
-              <button onClick={() => navigate("/call-logs")} className={`px-4 py-2 rounded-full transition-colors ${location.pathname === "/call-logs" ? "bg-white shadow-sm" : "hover:bg-gray-200"}`}>
-                <span className={`text-lg font-semibold ${location.pathname === "/call-logs" ? "text-black" : "text-gray-500"}`}>Call Logs</span>
+              <button
+                onClick={() => navigate("/call-logs")}
+                className={`px-4 py-2 rounded-full transition-colors ${
+                  location.pathname === "/call-logs" 
+                    ? "bg-white shadow-sm" 
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                <span className={`text-lg font-semibold ${
+                  location.pathname === "/call-logs" 
+                    ? "text-black" 
+                    : "text-gray-500"
+                }`}>
+                  Call Logs
+                </span>
               </button>
-              <button onClick={() => navigate("/daily-summary")} className={`px-4 py-2 rounded-full transition-colors ${location.pathname === "/daily-summary" ? "bg-white shadow-sm" : "hover:bg-gray-200"}`}>
-                <span className={`text-lg font-semibold ${location.pathname === "/daily-summary" ? "text-black" : "text-gray-500"}`}>Daily Summary</span>
-              </button>
-              <button className="px-4 py-2 rounded-full bg-white shadow-sm">
-                <span className="text-lg font-semibold text-black">Agent Management</span>
+              <button
+                onClick={() => navigate("/daily-summary")}
+                className={`px-4 py-2 rounded-full transition-colors ${
+                  location.pathname === "/daily-summary" 
+                    ? "bg-white shadow-sm" 
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                <span className={`text-lg font-semibold ${
+                  location.pathname === "/daily-summary" 
+                    ? "text-black" 
+                    : "text-gray-500"
+                }`}>
+                  Daily Summary
+                </span>
               </button>
             </div>
           </div>
