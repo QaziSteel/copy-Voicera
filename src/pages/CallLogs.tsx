@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import NotificationPopup from "@/components/NotificationPopup";
+import { DateFilterPopup } from "@/components/DateFilterPopup";
+import { useDateFilter } from "@/hooks/useDateFilter";
 
 interface CallLogEntry {
   id: string;
@@ -23,6 +25,18 @@ const CallLogs: React.FC = () => {
   const [showReplay, setShowReplay] = useState(false);
   const [selectedCall, setSelectedCall] = useState<CallLogEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const {
+    showDateFilter,
+    selectedFilter,
+    fromDate,
+    toDate,
+    openDateFilter,
+    closeDateFilter,
+    setSelectedFilter,
+    setFromDate,
+    setToDate,
+    applyFilter,
+  } = useDateFilter();
   const { 
     notifications, 
     showNotifications, 
@@ -547,7 +561,10 @@ const CallLogs: React.FC = () => {
             </div>
 
             {/* Today Button */}
-            <button className="bg-black text-white px-4 py-3 rounded-lg flex items-center gap-2">
+            <button 
+              onClick={openDateFilter}
+              className="bg-black text-white px-4 py-3 rounded-lg flex items-center gap-2"
+            >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <g clipPath="url(#clip0_183_24)">
                   <path
@@ -771,6 +788,19 @@ const CallLogs: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Date Filter Popup */}
+      <DateFilterPopup
+        isVisible={showDateFilter}
+        onClose={closeDateFilter}
+        selectedFilter={selectedFilter}
+        onFilterChange={setSelectedFilter}
+        fromDate={fromDate}
+        toDate={toDate}
+        onFromDateChange={setFromDate}
+        onToDateChange={setToDate}
+        onApplyFilter={applyFilter}
+      />
 
       {/* Notification Popup */}
       <NotificationPopup 
