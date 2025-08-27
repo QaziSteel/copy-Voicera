@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Call {
@@ -10,6 +10,7 @@ interface Call {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
@@ -465,24 +466,51 @@ const Dashboard: React.FC = () => {
         {/* Navigation Tabs */}
         <div className="flex items-center justify-center mt-4">
           <div className="bg-gray-100 rounded-full p-2 flex items-center gap-3">
-            <div className="bg-white px-4 py-2 rounded-full shadow-sm">
-              <span className="text-lg font-semibold text-black">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className={`px-4 py-2 rounded-full transition-colors ${
+                location.pathname === "/dashboard" 
+                  ? "bg-white shadow-sm" 
+                  : "hover:bg-gray-200"
+              }`}
+            >
+              <span className={`text-lg font-semibold ${
+                location.pathname === "/dashboard" 
+                  ? "text-black" 
+                  : "text-gray-500"
+              }`}>
                 Dashboard
               </span>
-            </div>
+            </button>
             <button
               onClick={() => navigate("/call-logs")}
-              className="px-4 py-2 hover:bg-gray-200 rounded-full transition-colors"
+              className={`px-4 py-2 rounded-full transition-colors ${
+                location.pathname === "/call-logs" 
+                  ? "bg-white shadow-sm" 
+                  : "hover:bg-gray-200"
+              }`}
             >
-              <span className="text-lg font-semibold text-gray-500">
+              <span className={`text-lg font-semibold ${
+                location.pathname === "/call-logs" 
+                  ? "text-black" 
+                  : "text-gray-500"
+              }`}>
                 Call Logs
               </span>
             </button>
             <button
               onClick={() => navigate("/daily-summary")}
-              className="px-4 py-2 hover:bg-gray-200 rounded-full transition-colors"
+              className={`px-4 py-2 rounded-full transition-colors ${
+                location.pathname === "/daily-summary" 
+                  ? "bg-white shadow-sm" 
+                  : "hover:bg-gray-200"
+              }`}
             >
-              <span className="text-lg font-semibold text-gray-500">
+              <span className={`text-lg font-semibold ${
+                location.pathname === "/daily-summary" 
+                  ? "text-black" 
+                  : "text-gray-500"
+              }`}>
                 Daily Summary
               </span>
             </button>
