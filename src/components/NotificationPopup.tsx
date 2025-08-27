@@ -21,27 +21,47 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
     switch (iconType) {
       case "success":
         return (
-          <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center flex-shrink-0">
-            <CheckCircle className="w-6 h-6 text-green-600" />
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="16" fill="white"/>
+              <path d="M22 12L14 20L10 16" stroke="#22C55E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        );
+      case "info":
+        return (
+          <div className="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="white"/>
+              <path d="M16 12V20M16 8V10" stroke="#007AFF" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
           </div>
         );
       case "warning":
         return (
-          <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-6 h-6 text-orange-600" />
+          <div className="w-16 h-16 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <path d="M16 3L29.856 25H2.144L16 3Z" fill="white"/>
+              <path d="M16 12V18M16 22V20" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
           </div>
         );
       case "error":
         return (
-          <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-6 h-6 text-red-600" />
+          <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="16" fill="white"/>
+              <path d="M20 12L12 20M12 12L20 20" stroke="#EF4444" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
           </div>
         );
-      case "info":
       default:
         return (
-          <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-            <Info className="w-6 h-6 text-blue-600" />
+          <div className="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="white"/>
+              <path d="M16 12V20M16 8V10" stroke="#007AFF" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
           </div>
         );
     }
