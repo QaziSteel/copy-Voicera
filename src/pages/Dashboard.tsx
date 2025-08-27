@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/hooks/useNotifications";
+import NotificationPopup from "@/components/NotificationPopup";
 
 interface Call {
   id: string;
@@ -12,11 +14,17 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("today");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const { 
+    notifications, 
+    showNotifications, 
+    openNotifications, 
+    closeNotifications, 
+    notificationCount 
+  } = useNotifications();
 
   // Mock data - in a real app this would come from an API
   // Start with sample data to show the normal dashboard state
@@ -56,183 +64,6 @@ const Dashboard: React.FC = () => {
         return "Unknown";
     }
   };
-
-  const renderNotificationsPopup = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-24 px-4 z-50">
-      <div className="bg-white rounded-2xl w-full max-w-[650px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full shadow-lg">
-        {/* Header */}
-        <div className="flex justify-between items-center p-5 border-b border-gray-200">
-          <h3 className="text-xl font-medium text-gray-600">
-            Notifications <span className="text-gray-500">(6)</span>
-          </h3>
-          <button
-            onClick={() => setShowNotifications(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M13.3337 2.6665L2.66699 13.3332"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2.66699 2.6665L13.3337 13.3332"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Notifications */}
-        <div className="p-5 space-y-4">
-          {/* Booking Confirmed */}
-          <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-                <path
-                  d="M14 0.666992C21.3637 0.666992 27.333 6.6362 27.333 14C27.3329 21.3637 21.3637 27.333 14 27.333C6.63629 27.333 0.667081 21.3636 0.666992 14C0.666992 6.63623 6.63624 0.667036 14 0.666992ZM19.9912 8.30762C19.7925 7.9442 19.3371 7.81004 18.9736 8.00879C16.6688 9.26925 14.7179 11.738 13.3721 13.7988C12.6901 14.8432 12.145 15.8121 11.7705 16.5195C11.7613 16.5368 11.7521 16.5543 11.7432 16.5713C11.2772 16.038 10.769 15.5887 10.332 15.2432C9.97818 14.9634 9.65911 14.7424 9.42773 14.5908C9.31213 14.5151 9.21724 14.4557 9.15039 14.415C9.11725 14.3949 9.09014 14.3793 9.07129 14.3682C9.06211 14.3628 9.0543 14.3577 9.04883 14.3545C9.04639 14.3531 9.04366 14.3515 9.04199 14.3506L9.04004 14.3496H9.03906V14.3486H9.03809C8.67834 14.1438 8.22075 14.2692 8.01562 14.6289C7.81078 14.9885 7.93566 15.4461 8.29492 15.6514L8.29688 15.6533C8.29954 15.6548 8.30449 15.6576 8.31055 15.6611C8.32343 15.6687 8.34442 15.681 8.37109 15.6973C8.42501 15.7301 8.50612 15.78 8.60645 15.8457C8.80823 15.9779 9.08927 16.1732 9.40137 16.4199C10.0361 16.9218 10.7574 17.6062 11.2236 18.3857C11.3668 18.6243 11.6304 18.7643 11.9082 18.749C12.1862 18.7336 12.433 18.5647 12.5488 18.3115C12.549 18.3111 12.5502 18.3105 12.5508 18.3096C12.552 18.3069 12.554 18.3017 12.5566 18.2959C12.5622 18.284 12.5706 18.2654 12.582 18.2412C12.6051 18.1924 12.6403 18.119 12.6865 18.0244C12.7792 17.8349 12.9176 17.5591 13.0967 17.2207C13.4554 16.543 13.977 15.6159 14.6279 14.6191C15.9487 12.5967 17.7316 10.3981 19.6934 9.3252C20.0566 9.12657 20.1894 8.67093 19.9912 8.30762Z"
-                  fill="#22C55E"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xl text-black">
-                Booking Confirmed ·{" "}
-                <span className="text-gray-500">
-                  Anna Smith booked for 3:00 PM.
-                </span>
-              </p>
-              <p className="text-gray-500 text-sm mt-2">Today · 2:45 PM</p>
-              <button className="bg-black text-white px-5 py-2 rounded-lg text-xs font-semibold mt-3">
-                View
-              </button>
-            </div>
-          </div>
-
-          {/* Syncing Failed */}
-          <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg width="32" height="24" viewBox="0 0 28 24" fill="none">
-                <path
-                  d="M14.0005 0C16.2495 0.000268468 17.7662 2.5572 20.7993 7.6709L23.3657 11.998C26.5235 17.3219 28.1029 19.9842 26.9653 21.9922C25.8277 24.0002 22.7404 24 16.5669 24H11.4341C5.26057 24 2.17341 23.9999 1.03564 21.9922C-0.101934 19.9842 1.47648 17.3218 4.63428 11.998L7.20068 7.6709C10.234 2.55687 11.7513 0 14.0005 0ZM14.0005 11.7666C13.5034 11.7666 13.1001 12.1699 13.1001 12.667V18.667C13.1003 19.1639 13.5035 19.5664 14.0005 19.5664C14.4972 19.5662 14.9007 19.1638 14.9009 18.667V12.667C14.9009 12.1701 14.4973 11.7668 14.0005 11.7666ZM14.0005 7.08398C13.5034 7.08398 13.1001 7.48732 13.1001 7.98438V7.99805C13.1003 8.49495 13.5035 8.89746 14.0005 8.89746C14.4972 8.89722 14.9007 8.4948 14.9009 7.99805V7.98438C14.9009 7.48747 14.4973 7.08422 14.0005 7.08398Z"
-                  fill="#EF4444"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xl text-black">
-                Syncing Failed ·{" "}
-                <span className="text-gray-500">
-                  Google Calendar sync failed Please reconnect your calendar.
-                </span>
-              </p>
-              <p className="text-gray-500 text-sm mt-2">Today · 2:50 PM</p>
-              <button className="bg-black text-white px-5 py-2 rounded-lg text-xs font-semibold mt-3">
-                Retry
-              </button>
-            </div>
-          </div>
-
-          {/* Subscription Activated */}
-          <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-                <path
-                  d="M14 0.666016C21.3637 0.666016 27.333 6.6362 27.333 14C27.3329 21.3637 21.3637 27.333 14 27.333C6.63629 27.333 0.667081 21.3636 0.666992 14C0.666992 6.63623 6.63624 0.666059 14 0.666016ZM19.9912 8.30762C19.7925 7.9442 19.3371 7.81004 18.9736 8.00879C16.6688 9.26925 14.7179 11.738 13.3721 13.7988C12.6901 14.8432 12.145 15.8121 11.7705 16.5195C11.7613 16.5368 11.7521 16.5543 11.7432 16.5713C11.2772 16.038 10.769 15.5887 10.332 15.2432C9.97818 14.9634 9.65911 14.7424 9.42773 14.5908C9.31213 14.5151 9.21724 14.4557 9.15039 14.415C9.11725 14.3949 9.09014 14.3793 9.07129 14.3682C9.06211 14.3628 9.0543 14.3577 9.04883 14.3545C9.04639 14.3531 9.04366 14.3515 9.04199 14.3506L9.04004 14.3496H9.03906V14.3486H9.03809C8.67834 14.1438 8.22075 14.2692 8.01562 14.6289C7.81078 14.9885 7.93566 15.4461 8.29492 15.6514L8.29688 15.6533C8.29954 15.6548 8.30449 15.6576 8.31055 15.6611C8.32343 15.6687 8.34442 15.681 8.37109 15.6973C8.42501 15.7301 8.50612 15.78 8.60645 15.8457C8.80823 15.9779 9.08927 16.1732 9.40137 16.4199C10.0361 16.9218 10.7574 17.6062 11.2236 18.3857C11.3668 18.6243 11.6304 18.7643 11.9082 18.749C12.1862 18.7336 12.433 18.5647 12.5488 18.3115C12.549 18.3111 12.5502 18.3105 12.5508 18.3096C12.552 18.3069 12.554 18.3017 12.5566 18.2959C12.5622 18.284 12.5706 18.2654 12.582 18.2412C12.6051 18.1924 12.6403 18.119 12.6865 18.0244C12.7792 17.8349 12.9176 17.5591 13.0967 17.2207C13.4554 16.543 13.977 15.6159 14.6279 14.6191C15.9487 12.5967 17.7316 10.3981 19.6934 9.3252C20.0566 9.12657 20.1894 8.67093 19.9912 8.30762Z"
-                  fill="#22C55E"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xl text-black">
-                Subscription Activated ·{" "}
-                <span className="text-gray-500">
-                  Your Voicera AI Basic Plan is now active. You can manage your
-                  billing in account settings.
-                </span>
-              </p>
-              <p className="text-gray-500 text-sm mt-2">Today · 2:45 PM</p>
-            </div>
-          </div>
-
-          {/* Transcript */}
-          <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                <path
-                  d="M13 0.333984C18.9709 0.333984 21.9565 0.333566 23.8115 2.18848C25.6664 4.04346 25.667 7.02899 25.667 13C25.667 18.9709 25.6663 21.9564 23.8115 23.8115C21.9565 25.6664 18.971 25.667 13 25.667C7.02888 25.667 4.04348 25.6665 2.18848 23.8115C0.333558 21.9565 0.333008 18.971 0.333008 13C0.333008 7.02899 0.333507 4.04346 2.18848 2.18848C4.04349 0.333612 7.02901 0.333984 13 0.333984ZM13 11.584C12.5858 11.584 12.25 11.9198 12.25 12.334V18.334C12.2503 18.748 12.5859 19.084 13 19.084C13.4141 19.084 13.7497 18.748 13.75 18.334V12.334C13.75 11.9198 13.4142 11.584 13 11.584ZM13 6.76855C12.5029 6.76855 12.0996 7.17189 12.0996 7.66895V7.68262C12.0998 8.17952 12.5031 8.58203 13 8.58203C13.4969 8.58203 13.9002 8.17952 13.9004 7.68262V7.66895C13.9004 7.17189 13.4971 6.76855 13 6.76855Z"
-                  fill="#007AFF"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xl text-black">
-                Transcript ·{" "}
-                <span className="text-gray-500">
-                  New call transcript available Caller: 0207 123 4567
-                </span>
-              </p>
-              <p className="text-gray-500 text-sm mt-2">Today · 2:55 PM</p>
-              <button className="bg-black text-white px-5 py-2 rounded-lg text-xs font-semibold mt-3">
-                View Transcript
-              </button>
-            </div>
-          </div>
-
-          {/* AI Performance Insight */}
-          <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                <path
-                  d="M13 0.333984C18.9709 0.333984 21.9565 0.333566 23.8115 2.18848C25.6664 4.04346 25.667 7.02899 25.667 13C25.667 18.9709 25.6663 21.9564 23.8115 23.8115C21.9565 25.6664 18.971 25.667 13 25.667C7.02888 25.667 4.04348 25.6665 2.18848 23.8115C0.333558 21.9565 0.333008 18.971 0.333008 13C0.333008 7.02899 0.333507 4.04346 2.18848 2.18848C4.04349 0.333612 7.02901 0.333984 13 0.333984ZM13 11.584C12.5858 11.584 12.25 11.9198 12.25 12.334V18.334C12.2503 18.748 12.5859 19.084 13 19.084C13.4141 19.084 13.7497 18.748 13.75 18.334V12.334C13.75 11.9198 13.4142 11.584 13 11.584ZM13 6.76855C12.5029 6.76855 12.0996 7.17189 12.0996 7.66895V7.68262C12.0998 8.17952 12.5031 8.58203 13 8.58203C13.4969 8.58203 13.9002 8.17952 13.9004 7.68262V7.66895C13.9004 7.17189 13.4971 6.76855 13 6.76855Z"
-                  fill="#007AFF"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xl text-black">
-                AI Performance Insight ·{" "}
-                <span className="text-gray-500">
-                  Your AI agent answered 95% of client queries correctly this
-                  week.
-                </span>
-              </p>
-              <p className="text-gray-500 text-sm mt-2">Today · 2:55 PM</p>
-              <button className="bg-black text-white px-5 py-2 rounded-lg text-xs font-semibold mt-3">
-                View Report
-              </button>
-            </div>
-          </div>
-
-          {/* Booking Cancelled */}
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg width="32" height="24" viewBox="0 0 28 24" fill="none">
-                <path
-                  d="M14 0C16.2492 0 17.7656 2.55704 20.7988 7.6709L23.3662 11.998C26.5239 17.3218 28.1024 19.9842 26.9648 21.9922C25.8271 24.0001 22.74 24 16.5664 24H11.4336C5.25994 24 2.17285 24.0001 1.03516 21.9922C-0.10243 19.9842 1.47693 17.3219 4.63477 11.998L7.20117 7.6709C10.2344 2.55707 11.7509 1.95237e-05 14 0ZM14 11.7666C13.5029 11.7666 13.0996 12.1699 13.0996 12.667V18.667C13.0998 19.1639 13.5031 19.5664 14 19.5664C14.4969 19.5664 14.9002 19.1639 14.9004 18.667V12.667C14.9004 12.17 14.497 11.7666 14 11.7666ZM14 7.08398C13.5029 7.08398 13.0996 7.48732 13.0996 7.98438V7.99805C13.0998 8.49495 13.5031 8.89746 14 8.89746C14.4969 8.89743 14.9002 8.49493 14.9004 7.99805V7.98438C14.9004 7.48734 14.497 7.08402 14 7.08398Z"
-                  fill="#EF4444"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xl text-black">
-                Booking Cancelled ·{" "}
-                <span className="text-gray-500">
-                  Emma Johnson cancelled her 5:00 PM appointment for today.
-                </span>
-              </p>
-              <p className="text-gray-500 text-sm mt-2">Today · 2:50 PM</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   const renderDateFilterPopup = () => (
     <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-32 px-4 z-50">
@@ -415,7 +246,7 @@ const Dashboard: React.FC = () => {
 
             {/* Notification Bell */}
             <button
-              onClick={() => setShowNotifications(true)}
+              onClick={openNotifications}
               className="relative"
             >
               <svg width="29" height="33" viewBox="0 0 29 33" fill="none">
@@ -941,7 +772,12 @@ const Dashboard: React.FC = () => {
       </main>
 
       {/* Popups */}
-      {showNotifications && renderNotificationsPopup()}
+      <NotificationPopup 
+        notifications={notifications}
+        isVisible={showNotifications}
+        onClose={closeNotifications}
+        notificationCount={notificationCount}
+      />
       {showDateFilter && renderDateFilterPopup()}
     </div>
   );
