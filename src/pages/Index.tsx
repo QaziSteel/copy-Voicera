@@ -6,30 +6,15 @@ import { useEffect, useState } from "react";
 
 const Index = () => {
   const { user, loading } = useAuth();
-  const [checkingOnboarding, setCheckingOnboarding] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    const checkUserStatus = async () => {
-      if (user && !checkingOnboarding) {
-        setCheckingOnboarding(true);
-        try {
-          const completed = await hasCompletedOnboarding();
-          if (completed) {
-            window.location.href = '/dashboard';
-          } else {
-            window.location.href = '/onboarding/business-intro';
-          }
-        } catch (error) {
-          console.error('Error checking onboarding status:', error);
-          window.location.href = '/onboarding/business-intro';
-        }
-      }
-    };
+    if (user && !redirecting) {
+      setRedirecting(true);
+    }
+  }, [user, redirecting]);
 
-    checkUserStatus();
-  }, [user, checkingOnboarding]);
-
-  if (loading || (user && !checkingOnboarding)) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -40,18 +25,46 @@ const Index = () => {
     );
   }
 
-  if (user) {
+  return (
+    <>
+      {user ? <UserRedirect /> : <LoginForm />}
+    </>
+  );
+};
+
+const UserRedirect = () => {
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const completed = await hasCompletedOnboarding();
+        setOnboardingComplete(completed);
+      } catch (error) {
+        console.error('Error checking onboarding:', error);
+        setOnboardingComplete(false);
+      }
+    };
+
+    checkOnboarding();
+  }, []);
+
+  if (onboardingComplete === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Redirecting...</p>
+          <p className="mt-2 text-muted-foreground">Checking status...</p>
         </div>
       </div>
     );
   }
 
-  return <LoginForm />;
+  if (onboardingComplete) {
+    return <Navigate to="/dashboard" replace />;
+  } else {
+    return <Navigate to="/onboarding/business-intro" replace />;
+  }
 };
 
 export default Index;

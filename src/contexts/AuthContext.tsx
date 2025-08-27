@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { hasCompletedOnboarding } from '@/lib/onboarding';
 
 interface AuthContextType {
   user: User | null;
@@ -31,21 +30,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const handlePostSignInNavigation = async () => {
-    try {
-      const completed = await hasCompletedOnboarding();
-      if (completed) {
-        window.location.href = '/dashboard';
-      } else {
-        window.location.href = '/onboarding/business-intro';
-      }
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-      // Default to onboarding if there's an error
-      window.location.href = '/onboarding/business-intro';
-    }
-  };
-
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -53,14 +37,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Handle navigation after auth state change - defer to avoid blocking
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Use setTimeout to defer the async operation
-          setTimeout(() => {
-            handlePostSignInNavigation();
-          }, 100);
-        }
       }
     );
 
@@ -115,9 +91,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (err) {
         // Continue even if this fails
       }
-      
-      // Force page reload for clean state
-      window.location.href = '/auth';
     } catch (error) {
       console.error('Error signing out:', error);
     }
