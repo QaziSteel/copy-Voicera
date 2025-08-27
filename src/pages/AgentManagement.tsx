@@ -426,13 +426,6 @@ const AgentManagement = () => {
                   <path d="M10 17.5C10 17.5 10.6667 18 12 18C13.3333 18 14 17.5 14 17.5" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
                 <span className="text-lg font-semibold text-black">Agent {isAgentLive ? 'Live' : 'Offline'}</span>
-                {isAgentLive && (
-                  <div className="flex items-center gap-1 ml-2">
-                    {[1,2,3,4,5].map((i) => (
-                      <div key={i} className="pulse-bar w-1 h-4 bg-green-500 rounded-full"></div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Notification Bell */}
