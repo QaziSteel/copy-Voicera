@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
 
   const renderNotificationsPopup = () => (
     <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-24 px-4 z-50">
-      <div className="bg-white rounded-2xl w-full max-w-[650px] max-h-[936px] overflow-y-auto shadow-lg">
+      <div className="bg-white rounded-2xl w-full max-w-[650px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b border-gray-200">
           <h3 className="text-xl font-medium text-gray-600">
