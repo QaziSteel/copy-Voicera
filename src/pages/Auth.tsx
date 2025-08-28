@@ -11,10 +11,13 @@ const UserRedirect = () => {
   useEffect(() => {
     const checkOnboarding = async () => {
       try {
+        console.log('UserRedirect: Checking onboarding status...');
         const completed = await hasCompletedOnboarding();
+        console.log('UserRedirect: Onboarding completed:', completed);
         setOnboardingComplete(completed);
       } catch (error) {
-        console.error('Error checking onboarding:', error);
+        console.error('UserRedirect: Error checking onboarding:', error);
+        // Default to not completed to ensure users go to onboarding
         setOnboardingComplete(false);
       }
     };
@@ -34,8 +37,10 @@ const UserRedirect = () => {
   }
 
   if (onboardingComplete) {
+    console.log('UserRedirect: Redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   } else {
+    console.log('UserRedirect: Redirecting to onboarding');
     return <Navigate to="/onboarding/business-intro" replace />;
   }
 };
