@@ -1,10 +1,88 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { getLatestOnboardingResponse } from "@/lib/onboarding";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function Completion() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isGoingLive, setIsGoingLive] = useState(false);
 
-  const handleGoLive = () => {
-    navigate("/dashboard");
+  // You can configure this webhook URL as needed
+  const WEBHOOK_URL = "https://your-webhook-endpoint.com/go-live"; // Replace with your webhook URL
+
+  const handleGoLive = async () => {
+    setIsGoingLive(true);
+    
+    try {
+      // Fetch user information
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        throw new Error("User not authenticated");
+      }
+
+      // Fetch user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.user.id)
+        .single();
+
+      // Fetch latest onboarding response
+      const { data: onboardingData, error: onboardingError } = await getLatestOnboardingResponse();
+      if (onboardingError) {
+        throw new Error("Failed to fetch onboarding data");
+      }
+
+      // Construct webhook payload with complete data
+      const webhookPayload = {
+        event: "agent_went_live",
+        user_id: user.user.id,
+        user_email: user.user.email,
+        profile: profile,
+        onboarding_data: onboardingData,
+        timestamp: new Date().toISOString()
+      };
+
+      // Call webhook with complete payload
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook failed with status: ${response.status}`);
+      }
+
+      toast({
+        title: "Success!",
+        description: "Your AI agent has gone live successfully.",
+      });
+
+      // Navigate to dashboard after successful webhook
+      navigate("/dashboard");
+
+    } catch (error) {
+      console.error('Error going live:', error);
+      
+      toast({
+        title: "Webhook Error",
+        description: "There was an issue notifying our system, but you can still proceed to the dashboard.",
+        variant: "destructive",
+      });
+
+      // Allow user to proceed to dashboard even on webhook failure
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
+    } finally {
+      setIsGoingLive(false);
+    }
   };
 
   const handleTestAI = () => {
@@ -12,15 +90,15 @@ export default function Completion() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center">
+    <div className="min-h-screen bg-background flex flex-col items-center">
       {/* Header */}
       <div className="w-full flex justify-between items-center px-8 py-6">
         <div className="flex-1"></div>
-        <h1 className="text-4xl font-bold text-black text-center">
+        <h1 className="text-4xl font-bold text-foreground text-center">
           Voicera AI
         </h1>
         <div className="flex-1 flex justify-end">
-          <button className="flex items-center gap-3 px-4 py-2 bg-[#F3F4F6] rounded-xl">
+          <button className="flex items-center gap-3 px-4 py-2 bg-muted rounded-xl">
             <svg
               width="20"
               height="20"
@@ -30,34 +108,37 @@ export default function Completion() {
             >
               <path
                 d="M8.75 3.125H3.75V16.875H8.75"
-                stroke="#6B7280"
+                stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="text-muted-foreground"
               />
               <path
                 d="M8.75 10H17.5"
-                stroke="#6B7280"
+                stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="text-muted-foreground"
               />
               <path
                 d="M14.375 6.875L17.5 10L14.375 13.125"
-                stroke="#6B7280"
+                stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="text-muted-foreground"
               />
             </svg>
-            <span className="text-base text-[#6B7280]">Logout</span>
+            <span className="text-base text-muted-foreground">Logout</span>
           </button>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-8">
-        <div className="w-full max-w-xl bg-white border-2 border-[#E5E7EB] rounded-3xl p-8">
+        <div className="w-full max-w-xl bg-card border-2 border-border rounded-3xl p-8">
           <div className="flex flex-col items-center gap-2">
             {/* Success Icon */}
             <svg
@@ -75,10 +156,10 @@ export default function Completion() {
 
             {/* Content */}
             <div className="flex flex-col items-center gap-2 text-center">
-              <h2 className="text-2xl font-bold text-black tracking-[-0.168px] leading-9">
+              <h2 className="text-2xl font-bold text-foreground tracking-[-0.168px] leading-9">
                 Your AI Agent Is Ready!
               </h2>
-              <p className="text-lg text-[#737373] leading-6 tracking-[-0.12px] max-w-[600px]">
+              <p className="text-lg text-muted-foreground leading-6 tracking-[-0.12px] max-w-[600px]">
                 Great! We've set up your AI assistant. You can test it now or go
                 live when you're ready.
               </p>
@@ -88,13 +169,22 @@ export default function Completion() {
             <div className="flex gap-4 w-full">
               <button
                 onClick={handleGoLive}
-                className="flex-1 h-10 bg-[#F3F4F6] text-[#6B7280] text-base font-bold rounded-xl flex items-center justify-center hover:bg-[#E5E7EB] transition-colors"
+                disabled={isGoingLive}
+                className="flex-1 h-10 bg-muted text-muted-foreground text-base font-bold rounded-xl flex items-center justify-center hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Go Live
+                {isGoingLive ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Going Live...
+                  </>
+                ) : (
+                  "Go Live"
+                )}
               </button>
               <button
                 onClick={handleTestAI}
-                className="flex-1 h-10 bg-black text-white text-base font-bold rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors"
+                disabled={isGoingLive}
+                className="flex-1 h-10 bg-primary text-primary-foreground text-base font-bold rounded-xl flex items-center justify-center hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Test My AI
               </button>
