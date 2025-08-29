@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     // Use the current domain for the redirect URL (works for both preview and deployed environments)
-    const redirectUrl = window.location.origin + '/';
+    const redirectUrl = window.location.origin;
     
     const { error } = await supabase.auth.signUp({
       email,
