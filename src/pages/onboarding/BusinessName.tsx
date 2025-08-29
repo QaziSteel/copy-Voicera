@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 
 export const BusinessName: React.FC = () => {
-  const [businessName, setBusinessName] = useState("Silhouette Hair Co.");
+  const [businessName, setBusinessName] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export const BusinessName: React.FC = () => {
             type="text"
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
-            placeholder="Enter your business name..."
+            placeholder="Enter your business name"
             className="w-full p-4 text-lg font-semibold text-foreground border-2 border-border rounded-xl placeholder-muted-foreground focus:outline-none focus:border-foreground transition-colors bg-background"
           />
         </div>
