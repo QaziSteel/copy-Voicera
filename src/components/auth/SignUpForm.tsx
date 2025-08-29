@@ -41,6 +41,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         email: formData.email,
         options: {
           shouldCreateUser: true,
+          emailRedirectTo: window.location.origin,
           data: {
             full_name: formData.fullName,
           }
@@ -58,7 +59,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
 
       toast({
         title: "Verification code sent",
-        description: `Code sent to ${formData.email}. Check your email.`
+        description: `A 6-digit code has been sent to ${formData.email}. Check your email.`
       });
       return true;
     } catch (error) {
@@ -99,42 +100,42 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       setCountdown(30);
     }
     
-    if (step === 2) {
-      // Verify the OTP code
-      setLoading(true);
-      try {
-        const { error } = await supabase.auth.verifyOtp({
-          email: formData.email,
-          token: formData.verificationCode,
-          type: 'signup'
-        });
+      if (step === 2) {
+        // Verify the OTP code
+        setLoading(true);
+        try {
+          const { error } = await supabase.auth.verifyOtp({
+            email: formData.email,
+            token: formData.verificationCode,
+            type: 'email'
+          });
 
-        if (error) {
+          if (error) {
+            toast({
+              title: "Error",
+              description: error.message || "Invalid verification code",
+              variant: "destructive"
+            });
+            setLoading(false);
+            return;
+          }
+
+          toast({
+            title: "Success",
+            description: "Email verified successfully!"
+          });
+        } catch (error) {
           toast({
             title: "Error",
-            description: error.message || "Invalid verification code",
+            description: "Failed to verify code",
             variant: "destructive"
           });
           setLoading(false);
           return;
+        } finally {
+          setLoading(false);
         }
-
-        toast({
-          title: "Success",
-          description: "Email verified successfully!"
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to verify code",
-          variant: "destructive"
-        });
-        setLoading(false);
-        return;
-      } finally {
-        setLoading(false);
       }
-    }
     
     setStep(prev => prev + 1);
   };
