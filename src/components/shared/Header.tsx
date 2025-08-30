@@ -51,11 +51,11 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 md:px-8 lg:px-16 py-4">
-      <div className="flex justify-between items-center">
+      <div className="relative flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
         
-        {/* Navigation Tabs - Centered */}
-        <div className="bg-gray-100 rounded-full p-1 inline-flex">
+        {/* Navigation Tabs - Absolutely Centered */}
+        <div className="absolute left-1/2 -translate-x-1/2 bg-gray-100 rounded-full p-1 inline-flex">
           <button
             onClick={() => navigate('/dashboard')}
             className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
