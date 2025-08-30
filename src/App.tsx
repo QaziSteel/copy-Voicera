@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import DailySummary from "./pages/DailySummary";
 import CallLogs from "./pages/CallLogs";
 import AgentManagement from "./pages/AgentManagement";
+import TestAgent from "./pages/TestAgent";
 import Profile from "./pages/Profile";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
@@ -189,6 +190,11 @@ const App = () => (
             <Route path="/agent-management" element={
               <ProtectedRoute>
                 <AgentManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/test-agent" element={
+              <ProtectedRoute>
+                <TestAgent />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={
