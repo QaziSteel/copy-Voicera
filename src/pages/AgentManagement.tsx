@@ -656,8 +656,7 @@ const AgentManagement = () => {
         </div>
 
         {/* Tabs Section */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-8">
             <TabsList className="grid w-full grid-cols-5 mb-8 bg-gray-100 rounded-full p-1">
               <TabsTrigger value="basic-info" className="rounded-full">Basic Info</TabsTrigger>
               <TabsTrigger value="personality" className="rounded-full">AI Personality</TabsTrigger>
@@ -822,7 +821,6 @@ const AgentManagement = () => {
               </div>
             </TabsContent>
           </Tabs>
-        </div>
       </main>
 
       {/* Notification Popup */}
