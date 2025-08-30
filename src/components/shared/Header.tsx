@@ -5,7 +5,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import NotificationPopup from '@/components/NotificationPopup';
 
 interface HeaderProps {
-  currentPage?: 'dashboard' | 'call-logs' | 'daily-summary' | 'agent-management' | 'profile';
+  currentPage?: 'dashboard' | 'call-logs' | 'daily-summary' | 'agent-management' | 'profile' | 'test-agent';
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => {
