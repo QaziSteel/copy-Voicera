@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ChevronDown } from "lucide-react";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading, signIn, updatePassword } = useAuth();
+  const { user, loading, signIn, updatePassword, signOut } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // Password form states
   const [currentPassword, setCurrentPassword] = useState("");
@@ -28,6 +31,18 @@ const Profile: React.FC = () => {
   // Profile data states
   const [profileData, setProfileData] = useState<any>(null);
   const [showCurrentPasswordDisplay, setShowCurrentPasswordDisplay] = useState(false);
+
+  // Click outside handler for dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Check if user is logged in using useAuth
   useEffect(() => {
@@ -227,6 +242,20 @@ const Profile: React.FC = () => {
       case "confirm":
         setShowConfirmPassword(!showConfirmPassword);
         break;
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/auth");
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -786,19 +815,47 @@ const Profile: React.FC = () => {
             </button>
 
             {/* Profile */}
-            <div className="flex items-center gap-5">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                <span className="text-lg font-semibold text-gray-800">H</span>
-              </div>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            <div className="relative" ref={profileDropdownRef}>
+              <button
+                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                className="flex items-center gap-5 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors"
+              >
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                  <span className="text-lg font-semibold text-gray-800">
+                    {profileData?.full_name?.[0] || user?.user_metadata?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || "U"}
+                  </span>
+                </div>
+                <ChevronDown 
+                  size={20} 
+                  className={`text-gray-600 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} 
                 />
-              </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showProfileDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="py-2">
+                    <button
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        // Could navigate to profile settings in the future
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Profile Settings
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        handleLogout();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
