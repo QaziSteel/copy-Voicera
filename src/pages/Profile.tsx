@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Eye, EyeOff } from "lucide-react";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
@@ -23,12 +25,42 @@ const Profile: React.FC = () => {
   const [generatedCode, setGeneratedCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Profile data states
+  const [profileData, setProfileData] = useState<any>(null);
+  const [showCurrentPasswordDisplay, setShowCurrentPasswordDisplay] = useState(false);
+
   // Check if user is logged in using useAuth
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
     }
   }, [user, loading, navigate]);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching profile:', error);
+            return;
+          }
+          
+          setProfileData(data);
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
+      }
+    };
+
+    fetchProfileData();
+  }, [user]);
 
   // Countdown for verification
   useEffect(() => {
@@ -825,7 +857,9 @@ const Profile: React.FC = () => {
                   Full Name
                 </label>
                 <div className="bg-gray-100 rounded-xl px-4 py-4">
-                  <span className="text-gray-500">John Doe</span>
+                  <span className="text-gray-500">
+                    {profileData?.full_name || user?.user_metadata?.full_name || "Not provided"}
+                  </span>
                 </div>
               </div>
 
@@ -837,7 +871,7 @@ const Profile: React.FC = () => {
                     Email Address
                   </label>
                   <div className="bg-gray-100 rounded-xl px-4 py-4">
-                    <span className="text-gray-500">john@gmail.com</span>
+                    <span className="text-gray-500">{user?.email || "Not provided"}</span>
                   </div>
                   <button className="bg-black text-white px-4 py-2 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors">
                     Change Email
@@ -849,8 +883,21 @@ const Profile: React.FC = () => {
                   <label className="text-lg font-semibold text-black">
                     Current Password
                   </label>
-                  <div className="bg-gray-100 rounded-xl px-4 py-4">
-                    <span className="text-gray-500 text-2xl">············</span>
+                  <div className="bg-gray-100 rounded-xl px-4 py-4 flex justify-between items-center">
+                    <span className="text-gray-500 text-2xl">
+                      {showCurrentPasswordDisplay ? "••••••••••••" : "············"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPasswordDisplay(!showCurrentPasswordDisplay)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showCurrentPasswordDisplay ? (
+                        <EyeOff size={20} />
+                      ) : (
+                        <Eye size={20} />
+                      )}
+                    </button>
                   </div>
                   <button
                     onClick={handleChangePasswordClick}
