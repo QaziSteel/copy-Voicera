@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
+import NotificationPopup from '@/components/NotificationPopup';
 
 interface HeaderProps {
   currentPage?: 'dashboard' | 'call-logs' | 'daily-summary' | 'agent-management' | 'profile';
@@ -10,7 +11,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { openNotifications } = useNotifications();
+  const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount } = useNotifications();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -172,7 +173,9 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              <circle cx="24.5" cy="4" r="4" fill="#EF4444" />
+              {notificationCount > 0 && (
+                <circle cx="24.5" cy="4" r="4" fill="#EF4444" />
+              )}
             </svg>
           </button>
 
@@ -258,6 +261,14 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
           </div>
         </div>
       </div>
+
+      {/* Notification Popup */}
+      <NotificationPopup
+        notifications={notifications}
+        isVisible={showNotifications}
+        onClose={closeNotifications}
+        notificationCount={notificationCount}
+      />
     </header>
   );
 };
