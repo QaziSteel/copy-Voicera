@@ -226,39 +226,39 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
       </div>
 
       {/* Navigation Tabs */}
-      <div className="mt-6 border-b border-gray-200">
-        <nav className="flex space-x-8">
+      <div className="mt-6">
+        <div className="bg-gray-100 rounded-full p-1 inline-flex">
           <button
             onClick={() => navigate('/dashboard')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
               currentPage === 'dashboard'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-gray-600 hover:text-gray-800'
             }`}
           >
             Dashboard
           </button>
           <button
             onClick={() => navigate('/call-logs')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
               currentPage === 'call-logs'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-gray-600 hover:text-gray-800'
             }`}
           >
             Call Logs
           </button>
           <button
             onClick={() => navigate('/daily-summary')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
               currentPage === 'daily-summary'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-gray-600 hover:text-gray-800'
             }`}
           >
             Daily Summary
           </button>
-        </nav>
+        </div>
       </div>
     </header>
   );
