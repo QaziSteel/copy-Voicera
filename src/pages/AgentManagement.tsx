@@ -77,6 +77,8 @@ const AgentManagement = () => {
   // FAQs
   const [faqEnabled, setFaqEnabled] = useState(false);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [newQuestion, setNewQuestion] = useState('');
+  const [newAnswer, setNewAnswer] = useState('');
   
   // Advanced
   const [dailySummary, setDailySummary] = useState(false);
@@ -248,13 +250,24 @@ const AgentManagement = () => {
   }, [loadAgentSettings]);
 
   const addFaq = useCallback(() => {
+    if (!newQuestion.trim() || !newAnswer.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter both question and answer",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const newFaq: FAQ = {
       id: Date.now().toString(),
-      question: '',
-      answer: ''
+      question: newQuestion.trim(),
+      answer: newAnswer.trim()
     };
     setFaqs(prev => [...prev, newFaq]);
-  }, []);
+    setNewQuestion('');
+    setNewAnswer('');
+  }, [newQuestion, newAnswer, toast]);
 
   const updateFaq = useCallback((id: string, field: 'question' | 'answer', value: string) => {
     setFaqs(prev => prev.map(faq => 
@@ -1094,56 +1107,94 @@ const AgentManagement = () => {
                   </div>
                 </div>
 
+                {/* FAQs Content Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Switch checked={faqEnabled} onCheckedChange={setFaqEnabled} />
-                      <Label className="text-lg font-semibold">Enable FAQ System</Label>
-                    </div>
-                    {faqEnabled && (
-                      <Button onClick={addFaq} className="flex items-center gap-2">
-                        <Plus className="w-4 h-4" />
-                        Add FAQ
-                      </Button>
-                    )}
-                  </div>
-                  
-                  {faqEnabled && (
-                    <div className="space-y-4">
+                  <div className="space-y-3">
+                    {/* FAQ Section Label */}
+                    <h3 className="text-lg font-semibold text-black mb-3">FAQ</h3>
+
+                    {/* Existing FAQ Items */}
+                    <div className="space-y-3">
                       {faqs.map((faq) => (
-                        <Card key={faq.id} className="p-4">
-                          <div className="space-y-4">
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1 space-y-2">
-                                <Label className="text-sm font-medium">Question</Label>
-                                <Input
-                                  value={faq.question}
-                                  onChange={(e) => updateFaq(faq.id, 'question', e.target.value)}
-                                  placeholder="Enter FAQ question"
-                                />
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeFaq(faq.id)}
-                                className="ml-2 text-red-500 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            <div className="space-y-2">
-                              <Label className="text-sm font-medium">Answer</Label>
-                              <Input
-                                value={faq.answer}
-                                onChange={(e) => updateFaq(faq.id, 'answer', e.target.value)}
-                                placeholder="Enter FAQ answer"
-                              />
-                            </div>
+                        <div key={faq.id} className="flex items-start gap-5">
+                          {/* Checkbox Placeholder */}
+                          <div className="w-6 h-6 border-2 border-gray-200 rounded-sm mt-1 flex-shrink-0"></div>
+                          
+                          {/* FAQ Content */}
+                          <div className="flex-1">
+                            <h4 className="text-lg font-semibold text-black mb-1">
+                              {faq.question}
+                            </h4>
+                            <p className="text-sm font-semibold text-gray-500">
+                              {faq.answer}
+                            </p>
                           </div>
-                        </Card>
+                        </div>
                       ))}
                     </div>
-                  )}
+
+                    {/* Add New FAQ Section */}
+                    <div className="flex gap-5 pt-5">
+                      {/* Question Input */}
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          Question
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Enter your question"
+                          value={newQuestion}
+                          onChange={(e) => setNewQuestion(e.target.value)}
+                          className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                        />
+                      </div>
+                      
+                      {/* Answer Input */}
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          Answer
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Enter an answer to your question"
+                          value={newAnswer}
+                          onChange={(e) => setNewAnswer(e.target.value)}
+                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Add FAQ Button */}
+                    <button 
+                      onClick={addFaq}
+                      className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <g clipPath="url(#clip0_70_202)">
+                          <path
+                            d="M3.125 10H16.875"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M10 3.125V16.875"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_70_202">
+                            <rect width="20" height="20" fill="white" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      <span className="text-base font-medium">Add FAQ</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </TabsContent>
