@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Trash2, Plus } from "lucide-react";
 import { AgentToggle } from "@/components/ui/agent-toggle";
 import { useToast } from "@/hooks/use-toast";
@@ -80,7 +81,7 @@ const AgentManagement = () => {
     loadAgentSettings();
   }, []);
 
-  const loadAgentSettings = async () => {
+  const loadAgentSettings = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -133,9 +134,9 @@ const AgentManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const saveChanges = async () => {
+  const saveChanges = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
@@ -180,26 +181,26 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [businessName, businessType, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast]);
 
-  const addFaq = () => {
+  const addFaq = useCallback(() => {
     const newFaq: FAQ = {
       id: Date.now().toString(),
       question: '',
       answer: ''
     };
-    setFaqs([...faqs, newFaq]);
-  };
+    setFaqs(prev => [...prev, newFaq]);
+  }, []);
 
-  const updateFaq = (id: string, field: 'question' | 'answer', value: string) => {
-    setFaqs(faqs.map(faq => 
+  const updateFaq = useCallback((id: string, field: 'question' | 'answer', value: string) => {
+    setFaqs(prev => prev.map(faq => 
       faq.id === id ? { ...faq, [field]: value } : faq
     ));
-  };
+  }, []);
 
-  const removeFaq = (id: string) => {
-    setFaqs(faqs.filter(faq => faq.id !== id));
-  };
+  const removeFaq = useCallback((id: string) => {
+    setFaqs(prev => prev.filter(faq => faq.id !== id));
+  }, []);
 
 
   const renderBasicInfo = () => (
@@ -308,15 +309,61 @@ const AgentManagement = () => {
   );
 
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading agent settings...</p>
+  const LoadingSkeleton = useMemo(() => (
+    <div className="min-h-screen bg-[#F9FAFB] animate-fade-in">
+      {/* Header Skeleton */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="px-4 md:px-8 lg:px-16 py-4">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-8 w-32" />
+            <div className="flex items-center gap-8">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </div>
         </div>
-      </div>
-    );
+        
+        {/* Agent Toggle Skeleton */}
+        <div className="px-4 md:px-8 lg:px-16 py-4 border-t border-gray-100">
+          <Skeleton className="h-12 w-80 mx-auto" />
+        </div>
+
+        {/* Navigation Skeleton */}
+        <div className="px-4 md:px-8 lg:px-16">
+          <div className="flex items-center justify-center mt-4">
+            <div className="bg-gray-100 rounded-full p-2 flex items-center gap-3">
+              <Skeleton className="h-10 w-24 rounded-full" />
+              <Skeleton className="h-10 w-24 rounded-full" />
+              <Skeleton className="h-10 w-32 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Content Skeleton */}
+      <main className="px-4 md:px-8 lg:px-16 py-8">
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+            <Skeleton className="h-48 w-full" />
+          </div>
+        </div>
+      </main>
+    </div>
+  ), []);
+
+  if (loading) {
+    return LoadingSkeleton;
   }
 
   return (
