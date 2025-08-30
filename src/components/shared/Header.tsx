@@ -51,15 +51,15 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 md:px-8 lg:px-16 py-4">
+    <header className="bg-white border-b border-gray-200 px-3 md:px-6 lg:px-12 py-3">
       <div className="relative flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
+        <h1 className="text-xl font-semibold text-black">Voicera AI</h1>
         
         {/* Navigation Tabs - Absolutely Centered */}
-        <div className="absolute left-1/2 -translate-x-1/2 bg-gray-100 rounded-full p-1 inline-flex">
+        <div className="absolute left-1/2 -translate-x-1/2 bg-gray-100 rounded-full p-0.5 inline-flex">
           <button
             onClick={() => navigate('/dashboard')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               currentPage === 'dashboard'
                 ? 'bg-white text-black shadow-sm'
                 : 'text-gray-600 hover:text-gray-800'
@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
           </button>
           <button
             onClick={() => navigate('/call-logs')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               currentPage === 'call-logs'
                 ? 'bg-white text-black shadow-sm'
                 : 'text-gray-600 hover:text-gray-800'
@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
           </button>
           <button
             onClick={() => navigate('/daily-summary')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               currentPage === 'daily-summary'
                 ? 'bg-white text-black shadow-sm'
                 : 'text-gray-600 hover:text-gray-800'
@@ -89,14 +89,14 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
           </button>
         </div>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
           {/* Agent Live Button */}
           <button
             onClick={() => navigate("/agent-management")}
-            className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path
                 d="M19 16V14C19 11.1716 19 9.75736 18.1213 8.87868C17.2426 8 15.8284 8 13 8H11C8.17157 8 6.75736 8 5.87868 8.87868C5 9.75736 5 11.1716 5 14V16C5 18.8284 5 20.2426 5.87868 21.1213C6.75736 22 8.17157 22 11 22H13C15.8284 22 17.2426 22 18.1213 21.1213C19 20.2426 19 18.8284 19 16Z"
                 stroke="#141B34"
@@ -148,7 +148,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
                 strokeLinecap="round"
               />
             </svg>
-            <span className="text-lg font-semibold text-black">
+            <span className="text-base font-semibold text-black">
               Agent Live
             </span>
           </button>
@@ -158,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
             onClick={openNotifications}
             className="relative"
           >
-            <svg width="29" height="33" viewBox="0 0 29 33" fill="none">
+            <svg width="24" height="27" viewBox="0 0 29 33" fill="none">
               <path
                 d="M15.5 27C15.5 28.933 13.933 30.5 12 30.5C10.067 30.5 8.5 28.933 8.5 27"
                 stroke="#141B34"
@@ -181,12 +181,12 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
 
           {/* User Avatar with Dropdown */}
           <div className="relative" ref={dropdownRef}>
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-3">
               <button
-                className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
                 title="Profile"
               >
-                <span className="text-lg font-semibold text-gray-800">
+                <span className="text-base font-semibold text-gray-800">
                   {user?.email?.[0]?.toUpperCase() || "U"}
                 </span>
               </button>
@@ -194,7 +194,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
                 onClick={toggleDropdown}
                 className="hover:opacity-70 transition-opacity"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
                     stroke="#141B34"
