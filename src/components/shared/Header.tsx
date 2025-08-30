@@ -52,7 +52,43 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
   return (
     <header className="bg-white border-b border-gray-200 px-4 md:px-8 lg:px-16 py-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
+        <div className="flex items-center gap-8">
+          <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
+          
+          {/* Navigation Tabs */}
+          <div className="bg-gray-100 rounded-full p-1 inline-flex">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                currentPage === 'dashboard'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => navigate('/call-logs')}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                currentPage === 'call-logs'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Call Logs
+            </button>
+            <button
+              onClick={() => navigate('/daily-summary')}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                currentPage === 'daily-summary'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Daily Summary
+            </button>
+          </div>
+        </div>
 
         <div className="flex items-center gap-8">
           {/* Agent Live Button */}
@@ -222,42 +258,6 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="mt-6">
-        <div className="bg-gray-100 rounded-full p-1 inline-flex">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-              currentPage === 'dashboard'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => navigate('/call-logs')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-              currentPage === 'call-logs'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Call Logs
-          </button>
-          <button
-            onClick={() => navigate('/daily-summary')}
-            className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-              currentPage === 'daily-summary'
-                ? 'bg-white text-black shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
-          >
-            Daily Summary
-          </button>
         </div>
       </div>
     </header>
