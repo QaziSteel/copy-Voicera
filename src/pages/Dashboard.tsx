@@ -81,14 +81,14 @@ const Dashboard: React.FC = () => {
       <Header currentPage="dashboard" />
 
       {/* Main Content */}
-      <main className="px-4 md:px-8 lg:px-16 py-8">
+      <main className="px-3 md:px-6 lg:px-12 py-6">
         {/* Dashboard Header */}
-        <div className="flex justify-between items-end mb-6">
+        <div className="flex justify-between items-end mb-4">
           <div>
-            <h1 className="text-3xl font-semibold text-black mb-1">
+            <h1 className="text-2xl font-semibold text-black mb-1">
               Dashboard
             </h1>
-            <p className="text-xl font-semibold text-gray-500">
+            <p className="text-lg font-semibold text-gray-500">
               Monitor your AI agent performance and call analytics
             </p>
           </div>
@@ -97,9 +97,9 @@ const Dashboard: React.FC = () => {
             {/* Today Button */}
             <button 
               onClick={openDateFilter}
-              className="bg-black text-white px-4 py-3 rounded-lg flex items-center gap-2"
+              className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <g clipPath="url(#clip0_195_35)">
                   <path
                     d="M19.5 3.75H4.5C4.08579 3.75 3.75 4.08579 3.75 4.5V19.5C3.75 19.9142 4.08579 20.25 4.5 20.25H19.5C19.9142 20.25 20.25 19.9142 20.25 19.5V4.5C20.25 4.08579 19.9142 3.75 19.5 3.75Z"
@@ -163,16 +163,16 @@ const Dashboard: React.FC = () => {
 
         <div className="flex flex-col md:flex-row gap-6">
           {/* Left Column */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-4">
             {/* Metrics Cards */}
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-4">
               {/* Total Calls */}
-              <div className="bg-white rounded-2xl p-5">
-                <div className="flex justify-between items-center mb-9">
-                  <h3 className="text-lg font-semibold text-black">
+              <div className="bg-white rounded-2xl p-4">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-base font-semibold text-black">
                     Total Calls
                   </h3>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M9.1585 5.71223L8.75584 4.80625C8.49256 4.21388 8.36092 3.91768 8.16405 3.69101C7.91732 3.40694 7.59571 3.19794 7.23592 3.08785C6.94883 3 6.6247 3 5.97645 3C5.02815 3 4.554 3 4.15597 3.18229C3.68711 3.39702 3.26368 3.86328 3.09497 4.3506C2.95175 4.76429 2.99278 5.18943 3.07482 6.0397C3.94815 15.0902 8.91006 20.0521 17.9605 20.9254C18.8108 21.0075 19.236 21.0485 19.6496 20.9053C20.137 20.7366 20.6032 20.3131 20.818 19.8443C21.0002 19.4462 21.0002 18.9721 21.0002 18.0238C21.0002 17.3755 21.0002 17.0514 20.9124 16.7643C20.8023 16.4045 20.5933 16.0829 20.3092 15.8362C20.0826 15.6393 19.7864 15.5077 19.194 15.2444L18.288 14.8417C17.6465 14.5566 17.3257 14.4141 16.9998 14.3831C16.6878 14.3534 16.3733 14.3972 16.0813 14.5109C15.7762 14.6297 15.5066 14.8544 14.9672 15.3038C14.4304 15.7512 14.162 15.9749 13.834 16.0947C13.5432 16.2009 13.1588 16.2403 12.8526 16.1951C12.5071 16.1442 12.2426 16.0029 11.7135 15.7201C10.0675 14.8405 9.15977 13.9328 8.28011 12.2867C7.99738 11.7577 7.85602 11.4931 7.80511 11.1477C7.75998 10.8414 7.79932 10.457 7.90554 10.1663C8.02536 9.83828 8.24905 9.56986 8.69643 9.033C9.14586 8.49368 9.37058 8.22402 9.48939 7.91891C9.60309 7.62694 9.64686 7.3124 9.61719 7.00048C9.58618 6.67452 9.44362 6.35376 9.1585 5.71223Z"
                       stroke="#6B7280"
@@ -182,7 +182,7 @@ const Dashboard: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-3xl font-semibold text-black mb-2">
+                  <div className="text-2xl font-semibold text-black mb-2">
                     {calls.length}
                   </div>
                   <div className="text-gray-500">
@@ -192,12 +192,12 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Total Bookings */}
-              <div className="bg-white rounded-2xl p-5">
-                <div className="flex justify-between items-center mb-9">
-                  <h3 className="text-lg font-semibold text-black">
+              <div className="bg-white rounded-2xl p-4">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-base font-semibold text-black">
                     Total Bookings
                   </h3>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M16 2V6M8 2V6"
                       stroke="#6B7280"
@@ -222,7 +222,7 @@ const Dashboard: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-3xl font-semibold text-black mb-2">
+                  <div className="text-2xl font-semibold text-black mb-2">
                     {calls.filter((call) => call.status === "booked").length}
                   </div>
                   <div className="text-gray-500">Appointments Scheduled</div>
@@ -230,12 +230,12 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Conversion Rate */}
-              <div className="bg-white rounded-2xl p-5">
-                <div className="flex justify-between items-center mb-9">
-                  <h3 className="text-lg font-semibold text-black">
+              <div className="bg-white rounded-2xl p-4">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-base font-semibold text-black">
                     Conversion Rate
                   </h3>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M18.7781 9.12121L13.1212 14.7781L10.4999 11.9998L6.49993 15.5M18.7781 9.12121C19.0257 11.8436 19.1318 13.0103 19.1318 13.0103M18.7781 9.12121C16.4447 8.90915 14.8891 8.7677 14.8891 8.7677"
                       stroke="#6B7280"
@@ -244,7 +244,7 @@ const Dashboard: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-3xl font-semibold text-black mb-2">
+                  <div className="text-2xl font-semibold text-black mb-2">
                     0.0%
                   </div>
                   <div className="text-gray-500">Calls to bookings</div>
@@ -252,12 +252,12 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Avg Call Duration */}
-              <div className="bg-white rounded-2xl p-5">
-                <div className="flex justify-between items-center mb-9">
-                  <h3 className="text-lg font-semibold text-black">
+              <div className="bg-white rounded-2xl p-4">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-base font-semibold text-black">
                     Avg Call Duration
                   </h3>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
                       stroke="#6B7280"
@@ -273,7 +273,7 @@ const Dashboard: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-3xl font-semibold text-black mb-2">
+                  <div className="text-2xl font-semibold text-black mb-2">
                     0s
                   </div>
                   <div className="text-gray-500">Avg Call Duration</div>
@@ -282,12 +282,12 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Call Outcomes */}
-            <div className="bg-white rounded-2xl p-5">
-              <div className="mb-5">
-                <h3 className="text-xl font-semibold text-black mb-1">
+            <div className="bg-white rounded-2xl p-4">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-black mb-1">
                   Call Outcomes
                 </h3>
-                <p className="text-lg font-semibold text-gray-500">
+                <p className="text-base font-semibold text-gray-500">
                   Distribution of call results
                 </p>
               </div>
@@ -452,12 +452,12 @@ const Dashboard: React.FC = () => {
 
           {/* Right Column - Recent Calls */}
           <div className="w-full md:w-[400px] lg:w-[500px] lg:flex-shrink-0">
-            <div className="bg-white rounded-2xl p-5">
-              <div className="mb-5">
-                <h3 className="text-xl font-semibold text-black mb-1">
+            <div className="bg-white rounded-2xl p-4">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-black mb-1">
                   Recent Calls
                 </h3>
-                <p className="text-lg font-semibold text-gray-500">
+                <p className="text-base font-semibold text-gray-500">
                   Latest call activity from your AI agent
                 </p>
               </div>
@@ -473,11 +473,11 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {calls.map((call) => (
                     <div
                       key={call.id}
-                      className="flex justify-between items-center p-3 bg-gray-50 rounded-xl"
+                      className="flex justify-between items-center p-2 bg-gray-50 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
