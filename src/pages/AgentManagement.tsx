@@ -711,50 +711,119 @@ const AgentManagement = () => {
                   </div>
                 </div>
 
+                {/* Form Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="assistant-name" className="text-lg font-semibold">AI Assistant Name</Label>
-                      <Input id="assistant-name" value={aiAssistantName} onChange={(e) => setAiAssistantName(e.target.value)} placeholder="Enter assistant name" />
+                  <div className="space-y-5">
+                    {/* First Row - AI Voice Style & Assistant Name */}
+                    <div className="flex gap-5">
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          AI voice style
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>Friendly Female</option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          AI assistant name
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>Your [Business Name] Assistant</option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="voice-style" className="text-lg font-semibold">Voice Style</Label>
-                      <Select value={voiceStyle} onValueChange={setVoiceStyle}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select voice style" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="friendly">Friendly</SelectItem>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="casual">Casual</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="handling-unknown" className="text-lg font-semibold">Handling Unknown Questions</Label>
-                      <Select value={handlingUnknown} onValueChange={setHandlingUnknown}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select handling method" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="transfer">Transfer to Human</SelectItem>
-                          <SelectItem value="polite-decline">Polite Decline</SelectItem>
-                          <SelectItem value="take-message">Take Message</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="answer-time" className="text-lg font-semibold">Answer Time</Label>
-                      <Select value={answerTime} onValueChange={setAnswerTime}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select answer time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="immediate">Immediate</SelectItem>
-                          <SelectItem value="2-rings">After 2 rings</SelectItem>
-                          <SelectItem value="3-rings">After 3 rings</SelectItem>
-                        </SelectContent>
-                      </Select>
+
+                    {/* Second Row - Answering Hours & Greeting Style */}
+                    <div className="space-y-5">
+                      <div>
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          Answering Hours
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>During business hours</option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          AI greeting style
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>
+                              Warm & Reassuring: "Hello, you're through to [Business Name]. I'm here to help, how can I assist?"
+                            </option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
