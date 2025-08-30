@@ -279,7 +279,7 @@ const AgentManagement = () => {
             </svg>
             <h2 className="text-xl font-semibold text-black">Business Information</h2>
           </div>
-          <p className="text-lg font-semibold text-gray-500">Basic information about your business that the AI agent will use</p>
+          <p className="text-lg font-semibold text-gray-500">Basic information about your business that the AI agent will use.</p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white">
