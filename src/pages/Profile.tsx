@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, signIn, updatePassword } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -19,6 +20,8 @@ const Profile: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [countdown, setCountdown] = useState(30);
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Check if user is logged in using useAuth
   useEffect(() => {
@@ -40,26 +43,135 @@ const Profile: React.FC = () => {
     setShowChangePasswordModal(true);
   };
 
-  const handleSavePassword = () => {
-    // Validation logic here
-    if (
-      currentPassword &&
-      newPassword &&
-      confirmPassword &&
-      newPassword === confirmPassword
-    ) {
+  const handleSavePassword = async () => {
+    // Validation logic
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user?.email) {
+      toast({
+        title: "Error",
+        description: "User email not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Verify current password by attempting to sign in
+      const { error: signInError } = await signIn(user.email, currentPassword);
+      
+      if (signInError) {
+        toast({
+          title: "Error",
+          description: "Current password is incorrect",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Generate 6-digit verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedCode(code);
+      console.log(`Verification code: ${code}`);
+
+      toast({
+        title: "Verification Code Sent",
+        description: "Check the console for your 6-digit verification code",
+      });
+
       setShowChangePasswordModal(false);
       setShowVerificationModal(true);
       setCountdown(30);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to verify password. Please try again.",
+        variant: "destructive",
+      });
     }
+    
+    setIsLoading(false);
   };
 
-  const handleVerifyAndContinue = () => {
-    // Verification logic here
-    if (verificationCode) {
+  const handleVerifyAndContinue = async () => {
+    if (!verificationCode) {
+      toast({
+        title: "Error",
+        description: "Please enter the verification code",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (verificationCode !== generatedCode) {
+      toast({
+        title: "Error",
+        description: "Invalid verification code",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Actually update the password in Supabase
+      const { error } = await updatePassword(newPassword);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update password. Please try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Password updated successfully",
+      });
+
       setShowVerificationModal(false);
       setShowSuccessModal(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update password. Please try again.",
+        variant: "destructive",
+      });
     }
+    
+    setIsLoading(false);
   };
 
   const handleCloseSuccess = () => {
@@ -69,6 +181,7 @@ const Profile: React.FC = () => {
     setNewPassword("");
     setConfirmPassword("");
     setVerificationCode("");
+    setGeneratedCode("");
   };
 
   const togglePasswordVisibility = (field: "current" | "new" | "confirm") => {
@@ -411,9 +524,10 @@ const Profile: React.FC = () => {
             </button>
             <button
               onClick={handleSavePassword}
-              className="flex-1 py-4 px-5 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition-colors"
+              disabled={isLoading}
+              className="flex-1 py-4 px-5 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save Password
+              {isLoading ? "Verifying..." : "Save Password"}
             </button>
           </div>
         </div>
@@ -487,9 +601,10 @@ const Profile: React.FC = () => {
             </button>
             <button
               onClick={handleVerifyAndContinue}
-              className="flex-1 py-4 px-5 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition-colors"
+              disabled={isLoading}
+              className="flex-1 py-4 px-5 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Verify & Continue
+              {isLoading ? "Updating Password..." : "Verify & Continue"}
             </button>
           </div>
         </div>
