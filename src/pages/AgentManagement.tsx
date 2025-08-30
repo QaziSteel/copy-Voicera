@@ -872,42 +872,180 @@ const AgentManagement = () => {
                   </div>
                 </div>
 
+                {/* Form Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-lg font-semibold">Services Offered</Label>
-                      <div className="space-y-2">
-                        {['Haircut', 'Beard Trim', 'Hair Wash', 'Styling'].map((service) => (
-                          <div key={service} className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={service}
-                              checked={services.includes(service)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setServices([...services, service]);
-                                } else {
-                                  setServices(services.filter(s => s !== service));
-                                }
-                              }}
+                  <div className="space-y-5">
+                    {/* First Row - Services & Duration */}
+                    <div className="flex gap-5">
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          What can customers book?
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>
+                              Select the services you want your customers to book
+                            </option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                             />
-                            <Label htmlFor={service}>{service}</Label>
-                          </div>
-                        ))}
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          How long is each appointment?
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>
+                              Select the duration you want each appointment to last
+                            </option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="appointment-duration" className="text-lg font-semibold">Default Appointment Duration</Label>
-                      <Select value={appointmentDuration} onValueChange={setAppointmentDuration}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select duration" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="30">30 minutes</SelectItem>
-                          <SelectItem value="45">45 minutes</SelectItem>
-                          <SelectItem value="60">1 hour</SelectItem>
-                          <SelectItem value="90">1.5 hours</SelectItem>
-                        </SelectContent>
-                      </Select>
+
+                    {/* Second Row - Business Days & Hours */}
+                    <div className="flex gap-5">
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-6">
+                          Select your business days
+                        </label>
+                        <div className="flex gap-3">
+                          {["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"].map(
+                            (day) => (
+                              <button
+                                key={day}
+                                className="px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-500 hover:border-gray-300 transition-colors"
+                              >
+                                {day}
+                              </button>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          Enter your business hours
+                        </label>
+                        <div className="flex gap-3">
+                          <div className="flex-1 relative">
+                            <input
+                              type="text"
+                              placeholder="From"
+                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                            />
+                            <svg
+                              className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <path
+                                d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+                                stroke="#6B7280"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M12 6.75V12H17.25"
+                                stroke="#6B7280"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex-1 relative">
+                            <input
+                              type="text"
+                              placeholder="To"
+                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                            />
+                            <svg
+                              className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <path
+                                d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+                                stroke="#6B7280"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M12 6.75V12H17.25"
+                                stroke="#6B7280"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Third Row - Schedule Management */}
+                    <div>
+                      <label className="block text-lg font-semibold text-black mb-4">
+                        If your schedule is full, what should the AI do?
+                      </label>
+                      <div className="relative">
+                        <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                          <option>Select Options</option>
+                        </select>
+                        <svg
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <path
+                            d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                            stroke="#141B34"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
