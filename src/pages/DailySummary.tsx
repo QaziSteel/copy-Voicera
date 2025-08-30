@@ -232,14 +232,14 @@ const DailySummary: React.FC = () => {
       <Header currentPage="daily-summary" />
 
       {/* Main Content */}
-      <main className="px-4 md:px-8 lg:px-16 py-8">
+      <main className="px-3 md:px-6 lg:px-12 py-6">
         {/* Page Header */}
-        <div className="flex justify-between items-end mb-7">
+        <div className="flex justify-between items-end mb-4">
           <div>
-            <h1 className="text-3xl font-semibold text-black mb-1">
+            <h1 className="text-2xl font-semibold text-black mb-1">
               Daily Summary
             </h1>
-            <p className="text-xl font-semibold text-gray-500">
+            <p className="text-lg font-semibold text-gray-500">
               Review and analyze the day's call performance at a glance.
             </p>
           </div>
@@ -247,7 +247,7 @@ const DailySummary: React.FC = () => {
           {/* Today Button */}
           <button 
             onClick={openDateFilter}
-            className="bg-black text-white px-4 py-3 rounded-lg flex items-center gap-2"
+            className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <g clipPath="url(#clip0_82_219)">
@@ -306,7 +306,7 @@ const DailySummary: React.FC = () => {
                 </clipPath>
               </defs>
             </svg>
-            <span className="text-base font-medium">Today</span>
+            <span className="text-sm font-medium">Today</span>
           </button>
         </div>
 

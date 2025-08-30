@@ -377,22 +377,22 @@ const CallLogs: React.FC = () => {
       <Header currentPage="call-logs" />
 
       {/* Main Content */}
-      <main className="px-4 md:px-8 lg:px-16 py-8">
+      <main className="px-3 md:px-6 lg:px-12 py-6">
         {/* Page Header */}
-        <div className="flex justify-between items-end mb-7">
+        <div className="flex justify-between items-end mb-4">
           <div>
-            <h1 className="text-3xl font-semibold text-black mb-1">
+            <h1 className="text-2xl font-semibold text-black mb-1">
               Call Logs
             </h1>
-            <p className="text-xl font-semibold text-gray-500">
+            <p className="text-lg font-semibold text-gray-500">
               View and analyze all call interactions
             </p>
           </div>
 
           <div className="flex gap-3">
             {/* Search */}
-            <div className="flex items-center gap-5 px-5 py-3 bg-white border border-gray-200 rounded-lg">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <div className="flex items-center gap-4 px-4 py-2 bg-white border border-gray-200 rounded-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M17 17L21 21"
                   stroke="#6B7280"
@@ -413,14 +413,14 @@ const CallLogs: React.FC = () => {
                 placeholder="Search by caller, call ID, or customer name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="text-gray-500 text-base bg-transparent border-none outline-none w-80"
+                className="text-gray-500 text-sm bg-transparent border-none outline-none w-72"
               />
             </div>
 
             {/* Today Button */}
             <button 
               onClick={openDateFilter}
-              className="bg-black text-white px-4 py-3 rounded-lg flex items-center gap-2"
+              className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <g clipPath="url(#clip0_183_24)">

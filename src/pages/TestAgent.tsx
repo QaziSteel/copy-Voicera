@@ -43,20 +43,20 @@ const TestAgent = () => {
   };
 
   const renderTestMode = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
       {/* Left Column - Conversation Area */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Live Conversation */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 h-96">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-black">Live Conversation</h3>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 h-80">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-black">Live Conversation</h3>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-green-600 font-medium">Active Call</span>
             </div>
           </div>
           
-          <div className="space-y-4 h-80 overflow-y-auto">
+          <div className="space-y-3 h-64 overflow-y-auto">
             <div className="bg-blue-50 rounded-lg p-3 max-w-xs">
               <p className="text-sm text-gray-800">Hello! Thanks for calling The Gents' Chair. How can I help you today?</p>
               <span className="text-xs text-gray-500 mt-1">Agent • 2:34 PM</span>
@@ -73,9 +73,9 @@ const TestAgent = () => {
         </div>
 
         {/* Call History */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-xl font-semibold text-black mb-4">Recent Test Calls</h3>
-          <div className="space-y-3">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h3 className="text-lg font-semibold text-black mb-3">Recent Test Calls</h3>
+          <div className="space-y-2">
             {testCalls.map((call, index) => (
               <div key={index} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
                 <div>
@@ -93,10 +93,10 @@ const TestAgent = () => {
       </div>
 
       {/* Right Column - Controls */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Call Controls */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-xl font-semibold text-black mb-4">Call Controls</h3>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h3 className="text-lg font-semibold text-black mb-3">Call Controls</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-4">
@@ -131,8 +131,8 @@ const TestAgent = () => {
         </div>
 
         {/* Test Scenarios */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-xl font-semibold text-black mb-4">Test Scenarios</h3>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h3 className="text-lg font-semibold text-black mb-3">Test Scenarios</h3>
           <div className="space-y-2">
             {testScenarios.map((scenario, index) => (
               <button
@@ -168,21 +168,21 @@ const TestAgent = () => {
       <Header currentPage="test-agent" />
 
       {/* Main Content */}
-      <main className="px-4 md:px-8 lg:px-16 py-8">
+      <main className="px-3 md:px-6 lg:px-12 py-6">
         {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-black mb-1">Test Agent</h1>
-          <p className="text-xl font-semibold text-gray-500">Test your AI agent with real-time scenarios</p>
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold text-black mb-1">Test Agent</h1>
+          <p className="text-lg font-semibold text-gray-500">Test your AI agent with real-time scenarios</p>
         </div>
 
         {/* Agent Status Section */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl font-semibold text-gray-500">Agent status:</span>
+              <span className="text-lg font-semibold text-gray-500">Agent status:</span>
               <div className="flex items-center gap-1">
                 <div className={`w-2 h-2 ${isAgentLive ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></div>
-                <span className={`text-xl font-semibold ${isAgentLive ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`text-lg font-semibold ${isAgentLive ? 'text-green-600' : 'text-red-600'}`}>
                   {isAgentLive ? 'Live' : 'Offline'}
                 </span>
               </div>
@@ -191,7 +191,7 @@ const TestAgent = () => {
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => setIsAgentLive(!isAgentLive)}
-                className={`px-4 py-3 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-lg font-semibold transition-colors`}
+                className={`px-3 py-2 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-base font-semibold transition-colors`}
               >
                 {isAgentLive ? 'Go Offline' : 'Go Live'}
               </button>
@@ -201,7 +201,7 @@ const TestAgent = () => {
         </div>
 
         {/* Test Agent Content */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 min-h-[600px]">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 min-h-[500px]">
           {renderTestMode()}
         </div>
       </main>

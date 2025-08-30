@@ -488,28 +488,28 @@ const Profile: React.FC = () => {
       <Header currentPage="profile" />
 
       {/* Main Content */}
-      <main className="px-16 py-8">
+      <main className="px-3 md:px-6 lg:px-12 py-6">
         {/* Profile Header */}
-        <div className="mb-5">
-          <h1 className="text-3xl font-semibold text-black mb-1">Profile</h1>
-          <p className="text-xl font-semibold text-gray-500">
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold text-black mb-1">Profile</h1>
+          <p className="text-lg font-semibold text-gray-500">
             Manage your account information and team access.
           </p>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           {/* Account Information */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black">
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-black">
               Account Information
             </h2>
-            <div className="bg-white rounded-3xl border border-gray-200 p-5 space-y-5">
+            <div className="bg-white rounded-3xl border border-gray-200 p-4 space-y-4">
               {/* Full Name */}
-              <div className="space-y-3">
-                <label className="text-lg font-semibold text-black">
+              <div className="space-y-2">
+                <label className="text-base font-semibold text-black">
                   Full Name
                 </label>
-                <div className="bg-gray-100 rounded-xl px-4 py-4">
+                <div className="bg-gray-100 rounded-xl px-4 py-3">
                   <span className="text-gray-500">
                     {profileData?.full_name || user?.user_metadata?.full_name || "Not provided"}
                   </span>
@@ -517,27 +517,27 @@ const Profile: React.FC = () => {
               </div>
 
               {/* Email and Password Row */}
-              <div className="flex gap-5">
+              <div className="flex gap-4">
                 {/* Email Address */}
-                <div className="flex-1 space-y-3">
-                  <label className="text-lg font-semibold text-black">
+                <div className="flex-1 space-y-2">
+                  <label className="text-base font-semibold text-black">
                     Email Address
                   </label>
-                  <div className="bg-gray-100 rounded-xl px-4 py-4">
+                  <div className="bg-gray-100 rounded-xl px-4 py-3">
                     <span className="text-gray-500">{user?.email || "Not provided"}</span>
                   </div>
-                  <button className="bg-black text-white px-4 py-2 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors">
+                  <button className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
                     Change Email
                   </button>
                 </div>
 
                 {/* Current Password */}
-                <div className="flex-1 space-y-3">
-                  <label className="text-lg font-semibold text-black">
+                <div className="flex-1 space-y-2">
+                  <label className="text-base font-semibold text-black">
                     Current Password
                   </label>
-                  <div className="bg-gray-100 rounded-xl px-4 py-4 flex justify-between items-center">
-                    <span className="text-gray-500 text-2xl">
+                  <div className="bg-gray-100 rounded-xl px-4 py-3 flex justify-between items-center">
+                    <span className="text-gray-500 text-xl">
                       {showCurrentPasswordDisplay ? "••••••••••••" : "············"}
                     </span>
                     <button
@@ -546,15 +546,15 @@ const Profile: React.FC = () => {
                       className="text-gray-400 hover:text-gray-600 transition-colors"
                     >
                       {showCurrentPasswordDisplay ? (
-                        <EyeOff size={20} />
+                        <EyeOff size={18} />
                       ) : (
-                        <Eye size={20} />
+                        <Eye size={18} />
                       )}
                     </button>
                   </div>
                   <button
                     onClick={handleChangePasswordClick}
-                    className="bg-black text-white px-4 py-2 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors"
+                    className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
                   >
                     Change Password
                   </button>
@@ -564,11 +564,11 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Team & User Management */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black">
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-black">
               Team & User Management
             </h2>
-            <div className="bg-white rounded-3xl border border-gray-200 p-5 space-y-5">
+            <div className="bg-white rounded-3xl border border-gray-200 p-4 space-y-4">
               {/* Add team member form */}
               <div className="flex gap-5">
                 <div className="flex-1 space-y-3">
