@@ -670,154 +670,162 @@ const AgentManagement = () => {
             </TabsContent>
 
             <TabsContent value="personality" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="assistant-name" className="text-lg font-semibold">AI Assistant Name</Label>
-                  <Input id="assistant-name" value={aiAssistantName} onChange={(e) => setAiAssistantName(e.target.value)} placeholder="Enter assistant name" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="voice-style" className="text-lg font-semibold">Voice Style</Label>
-                  <Select value={voiceStyle} onValueChange={setVoiceStyle}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select voice style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="friendly">Friendly</SelectItem>
-                      <SelectItem value="professional">Professional</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="handling-unknown" className="text-lg font-semibold">Handling Unknown Questions</Label>
-                  <Select value={handlingUnknown} onValueChange={setHandlingUnknown}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select handling method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="transfer">Transfer to Human</SelectItem>
-                      <SelectItem value="polite-decline">Polite Decline</SelectItem>
-                      <SelectItem value="take-message">Take Message</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="answer-time" className="text-lg font-semibold">Answer Time</Label>
-                  <Select value={answerTime} onValueChange={setAnswerTime}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select answer time" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="immediate">Immediate</SelectItem>
-                      <SelectItem value="2-rings">After 2 rings</SelectItem>
-                      <SelectItem value="3-rings">After 3 rings</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="assistant-name" className="text-lg font-semibold">AI Assistant Name</Label>
+                    <Input id="assistant-name" value={aiAssistantName} onChange={(e) => setAiAssistantName(e.target.value)} placeholder="Enter assistant name" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="voice-style" className="text-lg font-semibold">Voice Style</Label>
+                    <Select value={voiceStyle} onValueChange={setVoiceStyle}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select voice style" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="friendly">Friendly</SelectItem>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="casual">Casual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="handling-unknown" className="text-lg font-semibold">Handling Unknown Questions</Label>
+                    <Select value={handlingUnknown} onValueChange={setHandlingUnknown}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select handling method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="transfer">Transfer to Human</SelectItem>
+                        <SelectItem value="polite-decline">Polite Decline</SelectItem>
+                        <SelectItem value="take-message">Take Message</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="answer-time" className="text-lg font-semibold">Answer Time</Label>
+                    <Select value={answerTime} onValueChange={setAnswerTime}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select answer time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="immediate">Immediate</SelectItem>
+                        <SelectItem value="2-rings">After 2 rings</SelectItem>
+                        <SelectItem value="3-rings">After 3 rings</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="booking" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-lg font-semibold">Services Offered</Label>
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    {['Haircut', 'Beard Trim', 'Hair Wash', 'Styling'].map((service) => (
-                      <div key={service} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={service}
-                          checked={services.includes(service)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setServices([...services, service]);
-                            } else {
-                              setServices(services.filter(s => s !== service));
-                            }
-                          }}
-                        />
-                        <Label htmlFor={service}>{service}</Label>
-                      </div>
-                    ))}
+                    <Label className="text-lg font-semibold">Services Offered</Label>
+                    <div className="space-y-2">
+                      {['Haircut', 'Beard Trim', 'Hair Wash', 'Styling'].map((service) => (
+                        <div key={service} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={service}
+                            checked={services.includes(service)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setServices([...services, service]);
+                              } else {
+                                setServices(services.filter(s => s !== service));
+                              }
+                            }}
+                          />
+                          <Label htmlFor={service}>{service}</Label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="appointment-duration" className="text-lg font-semibold">Default Appointment Duration</Label>
-                  <Select value={appointmentDuration} onValueChange={setAppointmentDuration}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 minutes</SelectItem>
-                      <SelectItem value="45">45 minutes</SelectItem>
-                      <SelectItem value="60">1 hour</SelectItem>
-                      <SelectItem value="90">1.5 hours</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-2">
+                    <Label htmlFor="appointment-duration" className="text-lg font-semibold">Default Appointment Duration</Label>
+                    <Select value={appointmentDuration} onValueChange={setAppointmentDuration}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="45">45 minutes</SelectItem>
+                        <SelectItem value="60">1 hour</SelectItem>
+                        <SelectItem value="90">1.5 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="faqs" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Switch checked={faqEnabled} onCheckedChange={setFaqEnabled} />
-                  <Label className="text-lg font-semibold">Enable FAQ System</Label>
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch checked={faqEnabled} onCheckedChange={setFaqEnabled} />
+                    <Label className="text-lg font-semibold">Enable FAQ System</Label>
+                  </div>
+                  {faqEnabled && (
+                    <Button onClick={addFaq} className="flex items-center gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add FAQ
+                    </Button>
+                  )}
                 </div>
+                
                 {faqEnabled && (
-                  <Button onClick={addFaq} className="flex items-center gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add FAQ
-                  </Button>
-                )}
-              </div>
-              
-              {faqEnabled && (
-                <div className="space-y-4">
-                  {faqs.map((faq) => (
-                    <Card key={faq.id} className="p-4">
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 space-y-2">
-                            <Label className="text-sm font-medium">Question</Label>
+                  <div className="space-y-4">
+                    {faqs.map((faq) => (
+                      <Card key={faq.id} className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 space-y-2">
+                              <Label className="text-sm font-medium">Question</Label>
+                              <Input
+                                value={faq.question}
+                                onChange={(e) => updateFaq(faq.id, 'question', e.target.value)}
+                                placeholder="Enter FAQ question"
+                              />
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeFaq(faq.id)}
+                              className="ml-2 text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium">Answer</Label>
                             <Input
-                              value={faq.question}
-                              onChange={(e) => updateFaq(faq.id, 'question', e.target.value)}
-                              placeholder="Enter FAQ question"
+                              value={faq.answer}
+                              onChange={(e) => updateFaq(faq.id, 'answer', e.target.value)}
+                              placeholder="Enter FAQ answer"
                             />
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFaq(faq.id)}
-                            className="ml-2 text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Answer</Label>
-                          <Input
-                            value={faq.answer}
-                            onChange={(e) => updateFaq(faq.id, 'answer', e.target.value)}
-                            placeholder="Enter FAQ answer"
-                          />
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="advanced" className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch checked={dailySummary} onCheckedChange={setDailySummary} />
-                  <Label className="text-lg font-semibold">Daily Summary Reports</Label>
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch checked={dailySummary} onCheckedChange={setDailySummary} />
+                    <Label className="text-lg font-semibold">Daily Summary Reports</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Receive daily summaries of all calls and interactions
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Receive daily summaries of all calls and interactions
-                </p>
               </div>
             </TabsContent>
           </Tabs>
