@@ -82,6 +82,8 @@ const AgentManagement = () => {
   
   // Advanced
   const [dailySummary, setDailySummary] = useState(false);
+  const [emailConfirmations, setEmailConfirmations] = useState(false);
+  const [autoReminders, setAutoReminders] = useState(false);
 
   // Load data on component mount
   useEffect(() => {
@@ -1241,15 +1243,190 @@ const AgentManagement = () => {
                   </div>
                 </div>
 
+                {/* Advanced Settings Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Switch checked={dailySummary} onCheckedChange={setDailySummary} />
-                      <Label className="text-lg font-semibold">Daily Summary Reports</Label>
+                  <div className="space-y-5">
+                    {/* First Row - AI Handling & Daily Summary */}
+                    <div className="flex gap-5">
+                      {/* AI Handling Dropdown */}
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          How should your AI handle common questions that it can't answer?
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>Select what the AI should do</option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      {/* Daily Summary Toggle */}
+                      <div className="flex-1 space-y-4">
+                        <label className="block text-lg font-semibold text-black">
+                          Do you want a daily summary of all calls and bookings?
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <span className="text-lg font-semibold text-gray-500">No</span>
+                          <button
+                            onClick={() => setDailySummary(!dailySummary)}
+                            className={`flex p-1 rounded-full transition-colors ${
+                              dailySummary ? "bg-gray-200" : "bg-gray-200"
+                            }`}
+                          >
+                            <div
+                              className={`w-6 h-6 rounded-full transition-all ${
+                                dailySummary ? "bg-black translate-x-6" : "bg-transparent"
+                              }`}
+                            ></div>
+                            <div
+                              className={`w-6 h-6 rounded-full transition-all ${
+                                !dailySummary ? "bg-black -translate-x-6" : "bg-transparent"
+                              }`}
+                            ></div>
+                          </button>
+                          <span className="text-lg font-semibold text-gray-500">Yes</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Receive daily summaries of all calls and interactions
-                    </p>
+
+                    {/* Second Row - Email Confirmations & Auto Reminders */}
+                    <div className="flex gap-5">
+                      {/* Email Confirmations Toggle */}
+                      <div className="flex-1 space-y-4">
+                        <label className="block text-lg font-semibold text-black">
+                          Should customers receive booking confirmations by Email?
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <span className="text-lg font-semibold text-gray-500">No</span>
+                          <button
+                            onClick={() => setEmailConfirmations(!emailConfirmations)}
+                            className={`flex p-1 rounded-full transition-colors ${
+                              emailConfirmations ? "bg-gray-200" : "bg-gray-200"
+                            }`}
+                          >
+                            <div
+                              className={`w-6 h-6 rounded-full transition-all ${
+                                emailConfirmations ? "bg-black translate-x-6" : "bg-transparent"
+                              }`}
+                            ></div>
+                            <div
+                              className={`w-6 h-6 rounded-full transition-all ${
+                                !emailConfirmations ? "bg-black -translate-x-6" : "bg-transparent"
+                              }`}
+                            ></div>
+                          </button>
+                          <span className="text-lg font-semibold text-gray-500">Yes</span>
+                        </div>
+                      </div>
+                      
+                      {/* Auto Reminders Toggle */}
+                      <div className="flex-1 space-y-4">
+                        <label className="block text-lg font-semibold text-black">
+                          Would you like your AI to send automatic reminders before each appointment?
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <span className="text-lg font-semibold text-gray-500">No</span>
+                          <button
+                            onClick={() => setAutoReminders(!autoReminders)}
+                            className={`flex p-1 rounded-full transition-colors ${
+                              autoReminders ? "bg-gray-200" : "bg-transparent"
+                            }`}
+                          >
+                            <div
+                              className={`w-6 h-6 rounded-full transition-all ${
+                                autoReminders ? "bg-black translate-x-6" : "bg-transparent"
+                              }`}
+                            ></div>
+                            <div
+                              className={`w-6 h-6 rounded-full transition-all ${
+                                !autoReminders ? "bg-black -translate-x-6" : "bg-transparent"
+                              }`}
+                            ></div>
+                          </button>
+                          <span className="text-lg font-semibold text-gray-500">Yes</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Third Row - Calendar Integration */}
+                    <div className="flex justify-between items-end gap-5">
+                      {/* Calendar Integration Dropdown */}
+                      <div className="flex-1">
+                        <label className="block text-lg font-semibold text-black mb-3">
+                          Calendar Integration
+                        </label>
+                        <div className="relative">
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>Google Calendar</option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      {/* Sync Account Button */}
+                      <button className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <g clipPath="url(#clip0_183_684)">
+                            <path
+                              d="M7.5 12.5L12.5 7.5"
+                              stroke="white"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M8.75 5.94598L11.0984 3.60223C11.8036 2.90843 12.7544 2.52139 13.7437 2.52542C14.7329 2.52945 15.6805 2.92422 16.3801 3.62374C17.0796 4.32326 17.4743 5.27086 17.4784 6.26012C17.4824 7.24938 17.0954 8.20016 16.4016 8.90536L14.0531 11.2499"
+                              stroke="white"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M5.94598 8.75L3.60223 11.0984C2.90843 11.8036 2.52139 12.7544 2.52542 13.7437C2.52945 14.7329 2.92422 15.6805 3.62374 16.3801C4.32326 17.0796 5.27086 17.4743 6.26012 17.4784C7.24938 17.4824 8.20016 17.0954 8.90536 16.4016L11.2499 14.0531"
+                              stroke="white"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </g>
+                          <defs>
+                            <clipPath id="clip0_183_684">
+                              <rect width="20" height="20" fill="white" />
+                            </clipPath>
+                          </defs>
+                        </svg>
+                        <span className="text-base font-medium">Sync Account</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
