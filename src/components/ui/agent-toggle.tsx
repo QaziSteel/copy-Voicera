@@ -77,10 +77,36 @@ export const AgentToggle = ({ className }: AgentToggleProps) => {
             strokeLinejoin="round"
           />
           <path
-            d="M8 5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V8H8V5Z"
+            d="M13.5 3.5C13.5 4.32843 12.8284 5 12 5C11.1716 5 10.5 4.32843 10.5 3.5C10.5 2.67157 11.1716 2 12 2C12.8284 2 13.5 2.67157 13.5 3.5Z"
             stroke="currentColor"
             strokeWidth="1.5"
+          />
+          <path
+            d="M12 5V8"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
             strokeLinejoin="round"
+          />
+          <path
+            d="M10 13V14"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M15 13V14"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M10 17.5C10 17.5 10.6669 18 12.0002 18C13.3334 18 14.0002 17.5 14.0002 17.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
           />
         </svg>
         <span className="text-sm font-medium">Test Agent</span>
