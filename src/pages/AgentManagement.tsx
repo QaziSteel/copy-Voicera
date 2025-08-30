@@ -37,6 +37,7 @@ const isFAQData = (value: any): value is { enabled: boolean; questions: FAQ[] } 
   Array.isArray(value.questions);
 
 const AgentManagement = () => {
+  // Force rebuild - removed isTestMode references
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
