@@ -1,20 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff, ChevronDown } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { Header } from "@/components/shared/Header";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading, signIn, updatePassword, signOut } = useAuth();
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  
-  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // Password form states
   const [currentPassword, setCurrentPassword] = useState("");
@@ -31,18 +28,6 @@ const Profile: React.FC = () => {
   // Profile data states
   const [profileData, setProfileData] = useState<any>(null);
   const [showCurrentPasswordDisplay, setShowCurrentPasswordDisplay] = useState(false);
-
-  // Click outside handler for dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
-        setShowProfileDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // Check if user is logged in using useAuth
   useEffect(() => {
@@ -245,74 +230,6 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate("/auth");
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const renderNotificationsPopup = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-end z-50">
-      <div className="bg-white w-[600px] h-full shadow-lg overflow-y-auto">
-        {/* Header */}
-        <div className="bg-white p-5 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-black">Notifications</h2>
-            <button
-              onClick={() => setShowNotifications(false)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18 6L6 18M6 6L18 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Notifications */}
-        <div className="p-5 space-y-4">
-          {/* Sample Notifications */}
-          <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-                <path
-                  d="M13 0.333984C18.9709 0.333984 21.9565 0.333566 23.8115 2.18848C25.6664 4.04346 25.667 7.02899 25.667 13C25.667 18.9709 25.6663 21.9564 23.8115 23.8115C21.9565 25.6664 18.971 25.667 13 25.667C7.02888 25.667 4.04348 25.6665 2.18848 23.8115C0.333558 21.9565 0.333008 18.971 0.333008 13C0.333008 7.02899 0.333507 4.04346 2.18848 2.18848C4.04349 0.333612 7.02901 0.333984 13 0.333984ZM13 11.584C12.5858 11.584 12.25 11.9198 12.25 12.334V18.334C12.2503 18.748 12.5859 19.084 13 19.084C13.4141 19.084 13.7497 18.748 13.75 18.334V12.334C13.75 11.9198 13.4142 11.584 13 11.584ZM13 6.76855C12.5029 6.76855 12.0996 7.17189 12.0996 7.66895V7.68262C12.0998 8.17952 12.5031 8.58203 13 8.58203C13.4969 8.58203 13.9002 8.17952 13.9004 7.68262V7.66895C13.9004 7.17189 13.4971 6.76855 13 6.76855Z"
-                  fill="#007AFF"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-xl text-black">
-                Daily Summary Ready ·{" "}
-                <span className="text-gray-500">
-                  Your daily summary for August 20, 2025 is now available.
-                </span>
-              </p>
-              <p className="text-gray-500 text-sm mt-2">Today · 5:00 PM</p>
-              <button className="bg-black text-white px-5 py-2 rounded-lg text-xs font-semibold mt-3">
-                View Summary
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   const renderChangePasswordModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
       <div className="bg-white rounded-2xl w-[600px] shadow-lg">
@@ -360,60 +277,9 @@ const Profile: React.FC = () => {
                 className="absolute right-4 top-1/2 transform -translate-y-1/2"
               >
                 {showCurrentPassword ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <Eye size={24} className="text-gray-500" />
                 ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M3 9.75C4.57594 11.7009 7.46531 14.25 12 14.25C16.5347 14.25 19.4241 11.7009 21 9.75"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M21 15.7504L18.8081 11.915"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14.9999 17.9998L14.3352 14.0107"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M9 17.9998L9.66469 14.0107"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M3 15.7504L5.19187 11.915"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <EyeOff size={24} className="text-gray-500" />
                 )}
               </button>
             </div>
@@ -438,60 +304,9 @@ const Profile: React.FC = () => {
                 className="absolute right-4 top-1/2 transform -translate-y-1/2"
               >
                 {showNewPassword ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <Eye size={24} className="text-gray-500" />
                 ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M3 9.75C4.57594 11.7009 7.46531 14.25 12 14.25C16.5347 14.25 19.4241 11.7009 21 9.75"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M21 15.7504L18.8081 11.915"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14.9999 17.9998L14.3352 14.0107"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M9 17.9998L9.66469 14.0107"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M3 15.7504L5.19187 11.915"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <EyeOff size={24} className="text-gray-500" />
                 )}
               </button>
             </div>
@@ -516,60 +331,9 @@ const Profile: React.FC = () => {
                 className="absolute right-4 top-1/2 transform -translate-y-1/2"
               >
                 {showConfirmPassword ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 5.25C4.5 5.25 1.5 12 1.5 12C1.5 12 4.5 18.75 12 18.75C19.5 18.75 22.5 12 22.5 12C22.5 12 19.5 5.25 12 5.25Z"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75Z"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <Eye size={24} className="text-gray-500" />
                 ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M3 9.75C4.57594 11.7009 7.46531 14.25 12 14.25C16.5347 14.25 19.4241 11.7009 21 9.75"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M21 15.7504L18.8081 11.915"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M14.9999 17.9998L14.3352 14.0107"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M9 17.9998L9.66469 14.0107"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M3 15.7504L5.19187 11.915"
-                      stroke="#6B7280"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <EyeOff size={24} className="text-gray-500" />
                 )}
               </button>
             </div>
@@ -625,7 +389,7 @@ const Profile: React.FC = () => {
             </h2>
             <p className="text-gray-500 text-base">
               We've sent a 6-digit verification code to{" "}
-              <span className="font-semibold">john@gmail.com</span>. Enter it
+              <span className="font-semibold">{user?.email}</span>. Enter it
               below to confirm your identity.
             </p>
           </div>
@@ -721,175 +485,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-16 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-black">Voicera AI</h1>
-
-          <div className="flex items-center gap-8">
-            {/* Agent Live */}
-            <button
-              onClick={() => navigate("/agent-management")}
-              className="flex items-center gap-2 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors"
-            >
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M19 16V14C19 11.1716 19 9.75736 18.1213 8.87868C17.2426 8 15.8284 8 13 8H11C8.17157 8 6.75736 8 5.87868 8.87868C5 9.75736 5 11.1716 5 14V16C5 18.8284 5 20.2426 5.87868 21.1213C6.75736 22 8.17157 22 11 22H13C15.8284 22 17.2426 22 18.1213 21.1213C19 20.2426 19 18.8284 19 16Z"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M19 18C20.4142 18 21.1213 18 21.5607 17.5607C22 17.1213 22 16.4142 22 15C22 13.5858 22 12.8787 21.5607 12.4393C21.1213 12 20.4142 12 19 12"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M5 18C3.58579 18 2.87868 18 2.43934 17.5607C2 17.1213 2 16.4142 2 15C2 13.5858 2 12.8787 2.43934 12.4393C2.87868 12 3.58579 12 5 12"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M13.5 3.5C13.5 4.32843 12.8284 5 12 5C11.1716 5 10.5 4.32843 10.5 3.5C10.5 2.67157 11.1716 2 12 2C12.8284 2 13.5 2.67157 13.5 3.5Z"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M12 5V8"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M9 13V14"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M15 13V14"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M10 17.5C10 17.5 10.6667 18 12 18C13.3333 18 14 17.5 14 17.5"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className="text-lg font-semibold text-black">
-                Agent Live
-              </span>
-            </button>
-
-            {/* Notifications */}
-            <button
-              onClick={() => setShowNotifications(true)}
-              className="relative"
-            >
-              <svg width="29" height="33" viewBox="0 0 29 33" fill="none">
-                <path
-                  d="M15.5 27C15.5 28.933 13.933 30.5 12 30.5C10.067 30.5 8.5 28.933 8.5 27"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M19.2311 27H4.76887C3.79195 27 3 26.208 3 25.2311C3 24.762 3.18636 24.3121 3.51809 23.9803L4.12132 23.3771C4.68393 22.8145 5 22.0514 5 21.2558V18.5C5 14.634 8.13401 11.5 12 11.5C15.866 11.5 19 14.634 19 18.5V21.2558C19 22.0514 19.3161 22.8145 19.8787 23.3771L20.4819 23.9803C20.8136 24.3121 21 24.762 21 25.2311C21 26.208 20.208 27 19.2311 27Z"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="24.5" cy="4" r="4" fill="#EF4444" />
-              </svg>
-            </button>
-
-            {/* Profile */}
-            <div className="relative" ref={profileDropdownRef}>
-              <button
-                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="flex items-center gap-5 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors"
-              >
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg font-semibold text-gray-800">
-                    {profileData?.full_name?.[0] || user?.user_metadata?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || "U"}
-                  </span>
-                </div>
-                <ChevronDown 
-                  size={20} 
-                  className={`text-gray-600 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} 
-                />
-              </button>
-
-              {/* Dropdown Menu */}
-              {showProfileDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                  <div className="py-2">
-                    <button
-                      onClick={() => {
-                        setShowProfileDropdown(false);
-                        // Could navigate to profile settings in the future
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Profile Settings
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowProfileDropdown(false);
-                        handleLogout();
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="flex items-center justify-center mt-4">
-          <div className="bg-gray-100 rounded-full p-2 flex items-center gap-3">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="px-4 py-2 hover:bg-gray-200 rounded-full transition-colors"
-            >
-              <span className="text-lg font-semibold text-gray-500">
-                Dashboard
-              </span>
-            </button>
-            <button
-              onClick={() => navigate("/call-logs")}
-              className="px-4 py-2 hover:bg-gray-200 rounded-full transition-colors"
-            >
-              <span className="text-lg font-semibold text-gray-500">
-                Call Logs
-              </span>
-            </button>
-            <button
-              onClick={() => navigate("/daily-summary")}
-              className="px-4 py-2 hover:bg-gray-200 rounded-full transition-colors"
-            >
-              <span className="text-lg font-semibold text-gray-500">
-                Daily Summary
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header currentPage="profile" />
 
       {/* Main Content */}
       <main className="px-16 py-8">
@@ -1134,7 +730,6 @@ const Profile: React.FC = () => {
       </main>
 
       {/* Modals */}
-      {showNotifications && renderNotificationsPopup()}
       {showChangePasswordModal && renderChangePasswordModal()}
       {showVerificationModal && renderVerificationModal()}
       {showSuccessModal && renderSuccessModal()}
