@@ -94,6 +94,7 @@ const AgentManagement = () => {
       const { data, error } = await supabase
         .from('onboarding_responses')
         .select('id, business_name, ai_assistant_name, created_at')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error && error.code !== 'PGRST116') {
@@ -638,14 +639,10 @@ const AgentManagement = () => {
                     {userAgents.map((agent) => {
                       const displayName = agent.business_name || 'Unnamed Agent';
                       const assistantName = agent.ai_assistant_name || 'No Name';
-                      const createdDate = new Date(agent.created_at).toLocaleDateString();
                       
                       return (
                         <SelectItem key={agent.id} value={agent.id} className="hover:bg-gray-50">
-                          <div className="flex flex-col">
-                            <span className="font-medium">{displayName} - {assistantName}</span>
-                            <span className="text-xs text-gray-500">Created: {createdDate}</span>
-                          </div>
+                          <span className="font-medium">{displayName} - {assistantName}</span>
                         </SelectItem>
                       );
                     })}
