@@ -50,6 +50,11 @@ const AgentManagement = () => {
   const [isAgentLive, setIsAgentLive] = useState(true);
   const [activeTab, setActiveTab] = useState('basic-info');
   
+  // Multi-agent state
+  const [userAgents, setUserAgents] = useState<any[]>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  
   // Basic Info
   const [businessName, setBusinessName] = useState('The Gents\' Chair');
   const [businessType, setBusinessType] = useState('Barbing Saloon');
@@ -78,17 +83,54 @@ const AgentManagement = () => {
 
   // Load data on component mount
   useEffect(() => {
-    loadAgentSettings();
+    loadUserAgents();
   }, []);
 
-  const loadAgentSettings = useCallback(async () => {
+  const loadUserAgents = useCallback(async () => {
+    try {
+      setLoading(true);
+      setAgentsLoading(true);
+      
+      const { data, error } = await supabase
+        .from('onboarding_responses')
+        .select('id, business_name, ai_assistant_name, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading user agents:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setUserAgents(data);
+        const defaultAgent = data[0]; // Most recent agent
+        setSelectedAgentId(defaultAgent.id);
+        await loadAgentSettings(defaultAgent.id);
+      } else {
+        // No agents found, set empty state
+        setUserAgents([]);
+        setSelectedAgentId(null);
+      }
+    } catch (error) {
+      console.error('Error loading user agents:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load agents",
+        variant: "destructive",
+      });
+    } finally {
+      setAgentsLoading(false);
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const loadAgentSettings = useCallback(async (agentId: string) => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('onboarding_responses')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('id', agentId)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -134,7 +176,7 @@ const AgentManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const saveChanges = useCallback(async () => {
     try {
@@ -160,14 +202,30 @@ const AgentManagement = () => {
         wants_daily_summary: dailySummary,
       };
 
-      const { error } = await supabase
-        .from('onboarding_responses')
-        .upsert(agentData, { 
-          onConflict: 'user_id',
-          ignoreDuplicates: false 
-        });
+      if (selectedAgentId) {
+        // Update existing agent
+        const { error } = await supabase
+          .from('onboarding_responses')
+          .update(agentData)
+          .eq('id', selectedAgentId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Create new agent
+        const { data, error } = await supabase
+          .from('onboarding_responses')
+          .insert(agentData)
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        // Update state with new agent
+        if (data) {
+          setSelectedAgentId(data.id);
+          await loadUserAgents(); // Refresh the agents list
+        }
+      }
 
       toast({
         title: "Success",
@@ -181,7 +239,12 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [businessName, businessType, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast]);
+  }, [selectedAgentId, businessName, businessType, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents]);
+
+  const handleAgentSelection = useCallback(async (agentId: string) => {
+    setSelectedAgentId(agentId);
+    await loadAgentSettings(agentId);
+  }, [loadAgentSettings]);
 
   const addFaq = useCallback(() => {
     const newFaq: FAQ = {
@@ -560,6 +623,36 @@ const AgentManagement = () => {
               >
                 {isAgentLive ? 'Go Offline' : 'Go Live'}
               </button>
+              
+              {/* Agent Selector */}
+              {userAgents.length > 0 && (
+                <Select
+                  value={selectedAgentId || undefined}
+                  onValueChange={handleAgentSelection}
+                  disabled={agentsLoading}
+                >
+                  <SelectTrigger className="w-64 bg-white border-gray-200">
+                    <SelectValue placeholder="Select an agent" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                    {userAgents.map((agent) => {
+                      const displayName = agent.business_name || 'Unnamed Agent';
+                      const assistantName = agent.ai_assistant_name || 'No Name';
+                      const createdDate = new Date(agent.created_at).toLocaleDateString();
+                      
+                      return (
+                        <SelectItem key={agent.id} value={agent.id} className="hover:bg-gray-50">
+                          <div className="flex flex-col">
+                            <span className="font-medium">{displayName} - {assistantName}</span>
+                            <span className="text-xs text-gray-500">Created: {createdDate}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              )}
+              
               <AgentToggle />
             </div>
           </div>
