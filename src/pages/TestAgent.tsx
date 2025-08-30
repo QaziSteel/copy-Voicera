@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { AgentToggle } from "@/components/ui/agent-toggle";
 import { useNotifications } from "@/hooks/useNotifications";
 import NotificationPopup from "@/components/NotificationPopup";
 
@@ -12,6 +13,7 @@ const TestAgent = () => {
   const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount } = useNotifications();
   
   const [showTestCallModal, setShowTestCallModal] = useState(false);
+  const [isAgentLive, setIsAgentLive] = useState(true);
   const [testCalls] = useState([
     {
       name: "John Doe",
@@ -261,59 +263,6 @@ const TestAgent = () => {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex items-center justify-center mt-4">
-            <div className="bg-gray-100 rounded-full p-2 flex items-center gap-3">
-              <button
-                onClick={() => navigate("/dashboard")}
-                className={`px-4 py-2 rounded-full transition-colors ${
-                  location.pathname === "/dashboard" 
-                    ? "bg-white shadow-sm" 
-                    : "hover:bg-gray-200"
-                }`}
-              >
-                <span className={`text-lg font-semibold ${
-                  location.pathname === "/dashboard" 
-                    ? "text-black" 
-                    : "text-gray-500"
-                }`}>
-                  Dashboard
-                </span>
-              </button>
-              <button
-                onClick={() => navigate("/call-logs")}
-                className={`px-4 py-2 rounded-full transition-colors ${
-                  location.pathname === "/call-logs" 
-                    ? "bg-white shadow-sm" 
-                    : "hover:bg-gray-200"
-                }`}
-              >
-                <span className={`text-lg font-semibold ${
-                  location.pathname === "/call-logs" 
-                    ? "text-black" 
-                    : "text-gray-500"
-                }`}>
-                  Call Logs
-                </span>
-              </button>
-              <button
-                onClick={() => navigate("/daily-summary")}
-                className={`px-4 py-2 rounded-full transition-colors ${
-                  location.pathname === "/daily-summary" 
-                    ? "bg-white shadow-sm" 
-                    : "hover:bg-gray-200"
-                }`}
-              >
-                <span className={`text-lg font-semibold ${
-                  location.pathname === "/daily-summary" 
-                    ? "text-black" 
-                    : "text-gray-500"
-                }`}>
-                  Daily Summary
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
       </header>
 
@@ -323,6 +272,31 @@ const TestAgent = () => {
         <div className="mb-6">
           <h1 className="text-3xl font-semibold text-black mb-1">Test Agent</h1>
           <p className="text-xl font-semibold text-gray-500">Test your AI agent with real-time scenarios</p>
+        </div>
+
+        {/* Agent Status Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl font-semibold text-gray-500">Agent status:</span>
+              <div className="flex items-center gap-1">
+                <div className={`w-2 h-2 ${isAgentLive ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></div>
+                <span className={`text-xl font-semibold ${isAgentLive ? 'text-green-600' : 'text-red-600'}`}>
+                  {isAgentLive ? 'Live' : 'Offline'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setIsAgentLive(!isAgentLive)}
+                className={`px-4 py-3 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-lg font-semibold transition-colors`}
+              >
+                {isAgentLive ? 'Go Offline' : 'Go Live'}
+              </button>
+              <AgentToggle />
+            </div>
+          </div>
         </div>
 
         {/* Test Agent Content */}
