@@ -56,7 +56,7 @@ export default function BusinessDays() {
         </div>
 
         {/* Days Selection */}
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-3">
           {daysOfWeek.map((day) => (
             <button
               key={day.short}
