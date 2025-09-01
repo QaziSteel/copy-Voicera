@@ -451,7 +451,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Right Column - Recent Calls */}
-          <div className="w-full md:w-[400px] lg:w-[500px] lg:flex-shrink-0">
+          <div className="flex-1">
             <div className="bg-white rounded-2xl p-4">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-black mb-1">
