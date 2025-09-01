@@ -60,18 +60,19 @@ export default function AnswerTime() {
       nextDisabled={isNextDisabled}
       leftAligned={true}
     >
-      {/* Header */}
-      <div className="flex flex-col gap-3 mb-8">
-        <h2 className="text-xl font-bold text-black">
-          When should your AI answer calls?
-        </h2>
-        <p className="text-base italic text-[#737373] leading-6">
-          We'll make sure it only answers when you want it to.
-        </p>
-      </div>
+      <div className="flex flex-col gap-8 w-full">
+        {/* Header */}
+        <div className="flex flex-col gap-3 w-full">
+          <h2 className="text-xl font-bold text-black">
+            When should your AI answer calls?
+          </h2>
+          <p className="text-base italic text-[#737373] leading-6">
+            We'll make sure it only answers when you want it to.
+          </p>
+        </div>
 
-      {/* Schedule Selection - Full Width */}
-      <div className="flex flex-col gap-2 w-full">
+        {/* Schedule Selection - Full Width */}
+        <div className="flex flex-col gap-2 w-full">
         {/* Dropdown Header */}
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -151,6 +152,7 @@ export default function AnswerTime() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </OnboardingLayout>
   );
