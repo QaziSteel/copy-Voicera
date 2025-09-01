@@ -39,10 +39,11 @@ export default function BusinessLocation() {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-black">
             Enter your business location?
           </h2>
@@ -52,7 +53,7 @@ export default function BusinessLocation() {
         </div>
 
         {/* Primary Location */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h3 className="text-xl font-bold text-black">Location</h3>
           <input
             type="text"

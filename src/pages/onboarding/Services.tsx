@@ -52,10 +52,11 @@ export default function Services() {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-black">
             What can customers book?
           </h2>
@@ -65,7 +66,7 @@ export default function Services() {
         </div>
 
         {/* Service Selection */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-full">
           {/* Dropdown Header */}
           <button
             onClick={() => setIsOpen(!isOpen)}

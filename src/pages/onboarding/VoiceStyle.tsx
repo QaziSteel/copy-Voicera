@@ -44,10 +44,11 @@ export const VoiceStyle: React.FC = () => {
       nextButtonText="Next"
       nextDisabled={!selectedVoice}
       showPrevious={true}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-black">
             What's your preferred AI voice style?
           </h2>
@@ -57,7 +58,7 @@ export const VoiceStyle: React.FC = () => {
         </div>
 
         {/* Voice Style Selection */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-full">
           {/* Dropdown Header */}
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}

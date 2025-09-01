@@ -70,10 +70,11 @@ export const Greetings = () => {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-black">
             How should your AI greet callers?
           </h2>
@@ -83,7 +84,7 @@ export const Greetings = () => {
         </div>
 
         {/* Greeting Options */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full">
           {greetingOptions.map((option) => (
             <button
               key={option.id}

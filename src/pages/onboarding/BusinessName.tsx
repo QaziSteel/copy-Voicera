@@ -34,10 +34,11 @@ export const BusinessName: React.FC = () => {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-foreground">
             What's your business name?
           </h2>
@@ -47,7 +48,7 @@ export const BusinessName: React.FC = () => {
         </div>
 
         {/* Business Name Input */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 w-full">
           <input
             type="text"
             value={businessName}

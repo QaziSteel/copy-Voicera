@@ -10,6 +10,7 @@ interface OnboardingLayoutProps {
   nextButtonText?: string;
   showPrevious?: boolean;
   nextDisabled?: boolean;
+  leftAligned?: boolean;
 }
 
 export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
@@ -18,7 +19,8 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   onNext,
   nextButtonText = "Next",
   showPrevious = true,
-  nextDisabled = false
+  nextDisabled = false,
+  leftAligned = false
 }) => {
   const { signOut } = useAuth();
   const location = useLocation();
@@ -134,7 +136,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       <div className="flex-1 flex justify-center items-center px-8 pb-8">
         <div className="w-[800px] bg-white rounded-[28px] border-2 border-[#E5E7EB] p-8">
           {/* Page Content */}
-          <div className="flex flex-col items-center gap-8">
+          <div className={`flex flex-col gap-8 ${leftAligned ? 'items-start w-full' : 'items-center'}`}>
             {children}
           </div>
           

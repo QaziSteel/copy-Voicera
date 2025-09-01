@@ -53,10 +53,11 @@ export default function ContactNumber() {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-black">
             Which contact number do you want for agent?
           </h2>
@@ -66,7 +67,7 @@ export default function ContactNumber() {
         </div>
 
         {/* Contact Number Selection */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h3 className="text-xl font-bold text-black">Contact Number</h3>
           <Select value={selectedNumber} onValueChange={handleSelectNumber}>
             <SelectTrigger className="w-full p-4 text-lg font-semibold text-muted-foreground border-2 border-muted rounded-xl">

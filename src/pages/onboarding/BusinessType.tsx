@@ -46,10 +46,11 @@ export const BusinessType: React.FC = () => {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-foreground">
             What type of business do you run?
           </h2>
@@ -59,7 +60,7 @@ export const BusinessType: React.FC = () => {
         </div>
 
         {/* Business Type Selection */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-full">
           {/* Dropdown Header */}
           <button
             onClick={() => setIsOpen(!isOpen)}
