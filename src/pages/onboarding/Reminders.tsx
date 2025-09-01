@@ -69,6 +69,7 @@ export default function Reminders() {
       showPrevious={true}
       nextDisabled={isNextDisabled}
       nextButtonText={buttonText}
+      leftAligned={true}
     >
       <div className="flex flex-col gap-12">
         {/* Main Question */}

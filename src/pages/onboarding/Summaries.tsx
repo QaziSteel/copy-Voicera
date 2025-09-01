@@ -25,6 +25,7 @@ export default function Summaries() {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={false}
+      leftAligned={true}
     >
       <div className="flex flex-col gap-12">
         {/* Question */}

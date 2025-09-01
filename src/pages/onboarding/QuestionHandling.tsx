@@ -37,6 +37,7 @@ export default function QuestionHandling() {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
       <div className="flex flex-col gap-12">
         {/* Question Section */}

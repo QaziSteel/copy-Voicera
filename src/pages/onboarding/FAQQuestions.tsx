@@ -69,6 +69,7 @@ export default function FAQQuestions() {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={selectedFAQs.length === 0}
+      leftAligned={true}
     >
       <div className="flex flex-col gap-12">
         {/* Header */}
