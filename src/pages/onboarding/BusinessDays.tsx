@@ -73,14 +73,6 @@ export default function BusinessDays() {
           ))}
         </div>
 
-        {/* Selected Days Summary */}
-        {selectedDays.length > 0 && (
-          <div className="mt-4 p-4 bg-[#F3F4F6] rounded-xl">
-            <p className="text-sm text-[#6B7280]">
-              Selected days: {selectedDays.join(", ")}
-            </p>
-          </div>
-        )}
       </div>
     </OnboardingLayout>
   );
