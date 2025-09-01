@@ -56,7 +56,7 @@ export default function BusinessHours() {
         </div>
 
         {/* Time Selection */}
-        <div className="flex gap-3">
+        <div className="flex gap-0">
           {/* From Time */}
           <div className="flex-1">
             <Select value={fromTime} onValueChange={setFromTime}>
