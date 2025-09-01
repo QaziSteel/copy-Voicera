@@ -114,7 +114,7 @@ export default function AppointmentTime() {
                   showHourDropdown || customHour !== "00 hr" ? "border-black" : "border-[#E5E7EB]"
                 }`}
               >
-                <span className="text-black">{customHour}</span>
+                <span className="text-muted-foreground">{customHour}</span>
                 <svg
                   width="24"
                   height="24"
@@ -156,7 +156,7 @@ export default function AppointmentTime() {
                   showMinuteDropdown || customMinute !== "00 min" ? "border-black" : "border-[#E5E7EB]"
                 }`}
               >
-                <span className="text-black">{customMinute}</span>
+                <span className="text-muted-foreground">{customMinute}</span>
                 <svg
                   width="24"
                   height="24"
