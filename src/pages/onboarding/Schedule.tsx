@@ -41,53 +41,53 @@ export default function Schedule() {
     >
       <div className="flex flex-col gap-12">
         {/* Question */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full">
           <h2 className="text-xl font-bold text-black">
             If your schedule is full, what should the AI do?
           </h2>
-        </div>
 
-        {/* Dropdown - full width with proper padding */}
-        <div className="relative w-full -mx-4">
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="flex justify-between items-center w-full p-4 px-8 border-2 border-[#E5E7EB] rounded-xl text-left bg-white"
-          >
-            <span
-              className={`text-lg ${selectedOption ? "text-black" : "text-[#6B7280]"}`}
+          {/* Dropdown */}
+          <div className="relative w-full">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex justify-between items-center w-full min-w-0 p-4 border-2 border-[#E5E7EB] rounded-xl text-left"
             >
-              {selectedOption || "Select Options"}
-            </span>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                stroke="#141B34"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+              <span
+                className={`text-lg ${selectedOption ? "text-black" : "text-[#6B7280]"}`}
+              >
+                {selectedOption || "Select Options"}
+              </span>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                  stroke="#141B34"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
 
-          {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 border-2 border-[#E5E7EB] rounded-xl bg-white z-10">
-              {options.map((option, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleOptionSelect(option)}
-                  className="px-4 py-3 text-lg text-[#6B7280] hover:bg-[#F3F4F6] cursor-pointer border-b border-[#F3F4F6] last:border-b-0"
-                >
-                  {option}
-                </div>
-              ))}
-            </div>
-          )}
+            {showDropdown && (
+              <div className="absolute top-full left-0 right-0 mt-2 border-2 border-[#E5E7EB] rounded-xl bg-white z-10">
+                {options.map((option, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleOptionSelect(option)}
+                    className="px-4 py-3 text-lg text-[#6B7280] hover:bg-[#F3F4F6] cursor-pointer border-b border-[#F3F4F6] last:border-b-0"
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </OnboardingLayout>
