@@ -63,10 +63,9 @@ export default function BusinessHours() {
             </p>
           </div>
         )}
-      </div>
 
-      {/* Time Selection - Full Width */}
-      <div className="flex gap-0 mt-12">
+        {/* Time Selection - Full Width */}
+        <div className="flex gap-0 mt-12">
         {/* From Time */}
         <div className="flex-1">
           <Select value={fromTime} onValueChange={setFromTime}>
@@ -141,6 +140,7 @@ export default function BusinessHours() {
               ))}
             </SelectContent>
           </Select>
+        </div>
         </div>
       </div>
     </OnboardingLayout>
