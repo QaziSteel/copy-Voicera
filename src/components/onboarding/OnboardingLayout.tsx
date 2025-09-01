@@ -85,7 +85,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
       {/* Header Section */}
       <div className="grid grid-cols-3 items-center px-8 py-6 mb-8">
         <div></div>
@@ -131,7 +131,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       )}
 
       {/* Main Content Section */}
-      <div className="flex justify-center items-center min-h-[calc(100vh-300px)] px-8 pb-8">
+      <div className="flex-1 flex justify-center items-center px-8 pb-8">
         <div className="w-[800px] bg-white rounded-[28px] border-2 border-[#E5E7EB] p-8">
           {/* Page Content */}
           <div className="flex flex-col items-center gap-8">
