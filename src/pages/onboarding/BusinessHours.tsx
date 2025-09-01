@@ -44,9 +44,9 @@ export default function BusinessHours() {
       nextDisabled={isNextDisabled}
       leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-black">
             Enter your business hours
           </h2>
@@ -57,7 +57,7 @@ export default function BusinessHours() {
 
         {/* Hours Summary */}
         {fromTime && toTime && (
-          <div className="p-4 bg-[#F3F4F6] rounded-xl">
+          <div className="p-4 bg-[#F3F4F6] rounded-xl w-full">
             <p className="text-sm text-[#6B7280]">
               Business hours: {fromTime} - {toTime}
             </p>
@@ -65,7 +65,7 @@ export default function BusinessHours() {
         )}
 
         {/* Time Selection - Full Width */}
-        <div className="flex gap-0 mt-12">
+        <div className="flex gap-0 w-full">
         {/* From Time */}
         <div className="flex-1">
           <Select value={fromTime} onValueChange={setFromTime}>
