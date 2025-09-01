@@ -71,7 +71,7 @@ export default function FAQQuestions() {
       nextDisabled={selectedFAQs.length === 0}
       leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8">
         {/* Header */}
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-bold text-black leading-[22px]">
