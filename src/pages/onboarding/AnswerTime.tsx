@@ -61,7 +61,7 @@ export default function AnswerTime() {
       leftAligned={true}
     >
       {/* Header */}
-      <div className="flex flex-col gap-3 mb-12">
+      <div className="flex flex-col gap-3 mb-8">
         <h2 className="text-xl font-bold text-black">
           When should your AI answer calls?
         </h2>
