@@ -111,7 +111,7 @@ export default function AppointmentTime() {
               <button
                 onClick={handleHourClick}
                 className={`flex items-center gap-5 px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
-                  showHourDropdown ? "border-black" : "border-black"
+                  showHourDropdown || customHour !== "00 hr" ? "border-black" : "border-[#E5E7EB]"
                 }`}
               >
                 <span className="text-black">{customHour}</span>
@@ -153,7 +153,7 @@ export default function AppointmentTime() {
               <button
                 onClick={handleMinuteClick}
                 className={`flex items-center gap-5 px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
-                  showMinuteDropdown ? "border-black" : "border-black"
+                  showMinuteDropdown || customMinute !== "00 min" ? "border-black" : "border-[#E5E7EB]"
                 }`}
               >
                 <span className="text-black">{customMinute}</span>
