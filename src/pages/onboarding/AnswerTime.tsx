@@ -72,11 +72,11 @@ export default function AnswerTime() {
         </div>
 
         {/* Schedule Selection */}
-        <div className="flex flex-col gap-2 w-full">
+        <div className="flex flex-col gap-2 w-full min-w-0">
           {/* Dropdown Header */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center justify-between w-full p-4 border-2 border-[#E5E7EB] rounded-xl hover:border-black transition-colors"
+            className="flex items-center justify-between w-full min-w-0 p-4 border-2 border-[#E5E7EB] rounded-xl hover:border-black transition-colors"
           >
             <span
               className={`text-lg ${selectedSchedule ? "text-black" : "text-[#6B7280]"}`}
