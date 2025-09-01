@@ -39,9 +39,9 @@ export default function QuestionHandling() {
       nextDisabled={isNextDisabled}
       leftAligned={true}
     >
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-8">
         {/* Question Section */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3">
           <h2 className="text-lg font-bold text-black leading-[22px]">
             How should your AI handle common questions that it can't answer?
           </h2>
