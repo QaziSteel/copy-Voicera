@@ -65,11 +65,11 @@ export default function BusinessHours() {
         )}
 
         {/* Time Selection - Full Width */}
-        <div className="flex gap-0 w-full">
+        <div className="flex gap-2 w-full">
         {/* From Time */}
         <div className="flex-1">
           <Select value={fromTime} onValueChange={setFromTime}>
-            <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] border-r-0 rounded-l-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
+            <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
               <SelectValue placeholder="From" className="text-[#6B7280]" />
               <svg
                 width="24"
@@ -107,7 +107,7 @@ export default function BusinessHours() {
         {/* To Time */}
         <div className="flex-1">
           <Select value={toTime} onValueChange={setToTime}>
-            <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-r-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
+            <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
               <SelectValue placeholder="To" className="text-[#6B7280]" />
               <svg
                 width="24"
