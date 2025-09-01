@@ -47,11 +47,11 @@ export default function Schedule() {
           </h2>
         </div>
 
-        {/* Dropdown - extends full width by breaking out of container padding */}
-        <div className="relative w-full -mx-8">
+        {/* Dropdown - full width with proper padding */}
+        <div className="relative w-full -mx-4">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex justify-between items-center w-full p-4 border-2 border-[#E5E7EB] rounded-none text-left bg-white"
+            className="flex justify-between items-center w-full p-4 px-8 border-2 border-[#E5E7EB] rounded-xl text-left bg-white"
           >
             <span
               className={`text-lg ${selectedOption ? "text-black" : "text-[#6B7280]"}`}
