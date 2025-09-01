@@ -55,14 +55,6 @@ export default function BusinessHours() {
           </p>
         </div>
 
-        {/* Hours Summary */}
-        {fromTime && toTime && (
-          <div className="p-4 bg-[#F3F4F6] rounded-xl w-full">
-            <p className="text-sm text-[#6B7280]">
-              Business hours: {fromTime} - {toTime}
-            </p>
-          </div>
-        )}
 
         {/* Time Selection - Full Width */}
         <div className="flex gap-2 w-full">
