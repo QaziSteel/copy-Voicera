@@ -43,6 +43,7 @@ export default function BusinessDays() {
       onNext={handleNext}
       showPrevious={true}
       nextDisabled={isNextDisabled}
+      leftAligned={true}
     >
       <div className="flex flex-col gap-6">
         {/* Header */}
@@ -56,12 +57,12 @@ export default function BusinessDays() {
         </div>
 
         {/* Days Selection */}
-        <div className="flex gap-3">
+        <div className="grid grid-cols-7 gap-3">
           {daysOfWeek.map((day) => (
             <button
               key={day.short}
               onClick={() => handleDayToggle(day.short)}
-              className={`px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
+              className={`w-full px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
                 selectedDays.includes(day.short)
                   ? "border-black bg-black text-white"
                   : "border-[#E5E7EB] text-[#6B7280] hover:border-gray-400"
