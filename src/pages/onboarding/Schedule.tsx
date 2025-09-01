@@ -41,7 +41,7 @@ export default function Schedule() {
     >
       <div className="flex flex-col gap-12">
         {/* Question */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full">
           <h2 className="text-xl font-bold text-black">
             If your schedule is full, what should the AI do?
           </h2>
