@@ -47,7 +47,7 @@ export default function Schedule() {
           </h2>
 
           {/* Dropdown */}
-          <div className="relative">
+          <div className="relative w-full">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex justify-between items-center w-full p-4 border-2 border-[#E5E7EB] rounded-xl text-left"
