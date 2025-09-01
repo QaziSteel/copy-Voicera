@@ -131,8 +131,8 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       )}
 
       {/* Main Content Section */}
-      <div className="flex justify-center px-8 pb-8">
-        <div className="w-full max-w-xl mx-auto bg-white rounded-[28px] border-2 border-[#E5E7EB] p-8">
+      <div className="flex justify-center items-center min-h-[calc(100vh-300px)] px-8 pb-8">
+        <div className="w-full max-w-xl bg-white rounded-[28px] border-2 border-[#E5E7EB] p-8">
           {/* Page Content */}
           <div className="flex flex-col items-center gap-8">
             {children}
