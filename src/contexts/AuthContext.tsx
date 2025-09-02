@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const sendMagicLink = async (email: string, fullName?: string) => {
-    const redirectUrl = `${window.location.origin}/auth`;
+    const redirectUrl = `${window.location.origin}/auth/complete-signup`;
     
     const { error } = await supabase.auth.signInWithOtp({
       email,

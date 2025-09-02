@@ -14,6 +14,7 @@ import AgentManagement from "./pages/AgentManagement";
 import TestAgent from "./pages/TestAgent";
 import Profile from "./pages/Profile";
 import { SignUpForm } from "@/components/auth/SignUpForm";
+import MagicLinkHandler from "@/components/auth/MagicLinkHandler";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
@@ -52,6 +53,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/signup" element={<SignUpForm />} />
+            <Route path="/auth/complete-signup" element={<MagicLinkHandler />} />
             <Route path="/onboarding/business-intro" element={
               <ProtectedRoute>
                 <BusinessIntro />

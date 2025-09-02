@@ -206,9 +206,6 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
           Back
         </Button>
-        <Button onClick={handleNext} className="flex-1">
-          Continue to Password
-        </Button>
       </div>
     </>;
   const renderStep3 = () => <form onSubmit={handleSubmit} className="space-y-6">
