@@ -248,7 +248,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
-                {step === 2 && "We need to verify your email address before you can continue"}
+                {step === 2 && `A magic link will be sent to ${formData.email}. Click on the link to verify your identity`}
                 {step === 3 && "Secure your account with a strong password to keep your information safe."}
               </p>
             </div>
