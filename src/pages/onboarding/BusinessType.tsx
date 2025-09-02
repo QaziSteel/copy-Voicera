@@ -69,7 +69,7 @@ export const BusinessType: React.FC = () => {
             <span
               className={`text-lg ${selectedType ? "text-foreground" : "text-muted-foreground"}`}
             >
-              {selectedType || "Select your business type"}
+              {(selectedType === "Other (Custom)" && customType) ? customType : selectedType || "Select your business type"}
             </span>
             <svg
               width="24"
