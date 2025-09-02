@@ -28,7 +28,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const [sentVerificationCode, setSentVerificationCode] = useState('');
 
   const {
-    signUp
+    signUp,
+    sendMagicLink
   } = useAuth();
   const {
     toast
@@ -39,19 +40,36 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       [e.target.name]: e.target.value
     }));
   };
-  const sendVerificationCode = async () => {
-    // Generate 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setSentVerificationCode(code);
-    
-    // In a real implementation, you'd send this via email
-    // For now, we'll just log it (in production, use an edge function)
-    console.log('Verification code:', code);
-    
-    toast({
-      title: "Verification code sent",
-      description: `Code sent to ${formData.email}. Check your email.`
-    });
+  const sendVerificationEmail = async () => {
+    setLoading(true);
+    try {
+      const { error } = await sendMagicLink(formData.email, formData.fullName);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+        setLoading(false);
+        return false;
+      }
+      
+      toast({
+        title: "Verification email sent",
+        description: `We've sent a verification link to ${formData.email}`
+      });
+      setLoading(false);
+      return true;
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: "Failed to send verification email",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return false;
+    }
   };
 
   const handleNext = async () => {
@@ -64,43 +82,24 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       return;
     }
     
-    if (step === 2 && !formData.verificationCode) {
-      toast({
-        title: "Error",
-        description: "Please enter the verification code",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     if (step === 1) {
-      // Send verification code when moving to step 2
-      await sendVerificationCode();
+      // Send verification email when moving to step 2
+      const success = await sendVerificationEmail();
+      if (success) {
+        setCountdown(30);
+        setStep(2);
+      }
+    } else if (step === 2) {
+      // Move to password creation step
+      setStep(3);
+    }
+  };
+
+  const handleResend = async () => {
+    const success = await sendVerificationEmail();
+    if (success) {
       setCountdown(30);
     }
-    
-    if (step === 2) {
-      // Verify the code
-      if (formData.verificationCode !== sentVerificationCode) {
-        toast({
-          title: "Error",
-          description: "Invalid verification code",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (countdown <= 0) {
-        toast({
-          title: "Error",
-          description: "Verification code has expired",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-    
-    setStep(prev => prev + 1);
   };
 
   // Countdown timer for step 2
@@ -171,35 +170,44 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter your business email" className="mt-1" />
         </div>
       </div>
-      <Button onClick={handleNext} className="w-full" disabled={!formData.fullName || !formData.email}>
-        Continue
+      <Button onClick={handleNext} className="w-full" disabled={loading || !formData.fullName || !formData.email}>
+        {loading ? "Sending..." : "Send Verification Email"}
       </Button>
     </>;
   const renderStep2 = () => <>
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="verificationCode">Enter Code</Label>
-          <Input 
-            id="verificationCode" 
-            name="verificationCode" 
-            type="text" 
-            value={formData.verificationCode} 
-            onChange={handleChange} 
-            placeholder="Enter the 6 digit code" 
-            className="mt-1"
-            maxLength={6}
-          />
-          <p className="text-sm text-auth-subtle mt-2 text-center">
-            Didn't receive the code? Resend in <span className="font-bold text-foreground">{countdown}s</span>
+      <div className="space-y-4 text-center">
+        <div className="space-y-2">
+          <p className="text-base font-medium">Check your email</p>
+          <p className="text-sm text-muted-foreground">
+            We've sent a verification link to <span className="font-medium text-foreground">{formData.email}</span>
           </p>
+          <p className="text-sm text-muted-foreground">
+            Click the link in your email to continue to password creation
+          </p>
+        </div>
+        <div className="mt-4">
+          {countdown > 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Didn't receive the email? Resend in <span className="font-bold text-foreground">{countdown}s</span>
+            </p>
+          ) : (
+            <Button 
+              onClick={handleResend} 
+              variant="link" 
+              className="text-sm p-0 h-auto"
+              disabled={loading}
+            >
+              {loading ? "Sending..." : "Resend verification email"}
+            </Button>
+          )}
         </div>
       </div>
       <div className="flex gap-2">
         <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
-          Cancel
+          Back
         </Button>
-        <Button onClick={handleNext} className="flex-1" disabled={!formData.verificationCode}>
-          Verify & Continue
+        <Button onClick={handleNext} className="flex-1">
+          Continue to Password
         </Button>
       </div>
     </>;
@@ -239,12 +247,12 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
             <div className="text-center">
               <h2 className="text-xl font-semibold">
                 {step === 1 && "Create an Account"}
-                {step === 2 && "Verify your identity"}
+                {step === 2 && "Verify Your Email"}
                 {step === 3 && "Create your password"}
               </h2>
-              <p className="text-sm text-auth-subtle mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
-                {step === 2 && `We've sent a 6-digit verification code to ${formData.email}. Enter it below to verify your identity`}
+                {step === 2 && "We need to verify your email address before you can continue"}
                 {step === 3 && "Secure your account with a strong password to keep your information safe."}
               </p>
             </div>
