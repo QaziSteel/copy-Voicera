@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ export const MagicLinkHandler: React.FC = () => {
   const { user, signUp, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -71,7 +72,7 @@ export const MagicLinkHandler: React.FC = () => {
           title: "Success",
           description: "Account created successfully! Redirecting to onboarding..."
         });
-        // The AuthContext will handle redirection to onboarding
+        navigate('/onboarding/business-intro');
       }
     } catch (error) {
       toast({
