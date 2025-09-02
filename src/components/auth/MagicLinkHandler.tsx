@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,21 +8,31 @@ import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 
 export const MagicLinkHandler: React.FC = () => {
-  const { user, signUp } = useAuth();
+  const { user, signUp, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated via magic link
-    if (user) {
+    // Check if this is a magic link with auth tokens
+    const urlParams = new URLSearchParams(location.search || location.hash.substring(1));
+    const hasAuthTokens = urlParams.get('access_token') || urlParams.get('refresh_token');
+    
+    // If we have auth tokens in URL or user is already authenticated, consider verified
+    if (hasAuthTokens || user) {
       setIsVerified(true);
+      setIsChecking(false);
+    } else if (!authLoading) {
+      // Only set as not verified if auth is not loading
+      setIsChecking(false);
     }
-  }, [user]);
+  }, [user, authLoading, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +83,18 @@ export const MagicLinkHandler: React.FC = () => {
     
     setLoading(false);
   };
+
+  // Show loading while checking authentication status
+  if (isChecking || authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Verifying magic link...</p>
+        </div>
+      </div>
+    );
+  }
 
   // If not verified via magic link, redirect to auth
   if (!isVerified) {
