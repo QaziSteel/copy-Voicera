@@ -170,7 +170,7 @@ export default function ContactNumber() {
 
       {/* Confirmation Popup */}
       <AlertDialog open={showConfirmationPopup} onOpenChange={setShowConfirmationPopup}>
-        <AlertDialogContent className="rounded-xl">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold text-black text-center">
               Contact Number
@@ -179,11 +179,11 @@ export default function ContactNumber() {
               The number you've selected is {selectedNumber}. Please confirm as this cannot be changed later.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-row justify-between">
-            <Button variant="outline" onClick={handleDiscard} className="rounded-xl">
+          <AlertDialogFooter className="flex flex-row gap-2 justify-center">
+            <Button variant="outline" onClick={handleDiscard}>
               Discard
             </Button>
-            <Button onClick={handleConfirmPurchase} className="rounded-xl">
+            <Button onClick={handleConfirmPurchase}>
               Buy now
             </Button>
           </AlertDialogFooter>
