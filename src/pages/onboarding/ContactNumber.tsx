@@ -18,12 +18,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function ContactNumber() {
   const [selectedNumber, setSelectedNumber] = useState("");
   const [contactNumbers, setContactNumbers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [showPurchaseSuccessPopup, setShowPurchaseSuccessPopup] = useState(false);
+  const [isNumberPurchased, setIsNumberPurchased] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -35,8 +40,31 @@ export default function ContactNumber() {
     "+1-234-567-8903"
   ];
 
+  // Generate or get onboarding ID
+  const getOnboardingId = () => {
+    let onboardingId = sessionStorage.getItem("onboardingId");
+    if (!onboardingId) {
+      onboardingId = `onboarding_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem("onboardingId", onboardingId);
+    }
+    return onboardingId;
+  };
+
   useEffect(() => {
-    // Load any previously saved contact number
+    const onboardingId = getOnboardingId();
+    
+    // Check if number is already purchased for this onboarding session
+    const purchasedNumber = sessionStorage.getItem(`purchasedContactNumber_${onboardingId}`);
+    const isPurchased = sessionStorage.getItem(`contactNumberPurchased_${onboardingId}`) === "true";
+    
+    if (isPurchased && purchasedNumber) {
+      setIsNumberPurchased(true);
+      setSelectedNumber(purchasedNumber);
+      setContactNumbers([purchasedNumber]); // Show only the purchased number
+      return;
+    }
+
+    // Load any previously saved contact number (not yet purchased)
     const savedNumber = sessionStorage.getItem("contactNumber");
     if (savedNumber) {
       setSelectedNumber(savedNumber);
@@ -100,32 +128,109 @@ export default function ContactNumber() {
     }
   };
 
+  const purchaseContactNumber = async (number: string, onboardingId: string) => {
+    try {
+      // TODO: Replace with your actual purchase webhook URL
+      const purchaseWebhookUrl = "https://teamhypergrowth.app.n8n.cloud/webhook-purchase/contact-number";
+      
+      const response = await fetch(purchaseWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contactNumber: number,
+          onboardingId: onboardingId,
+          timestamp: new Date().toISOString()
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to purchase contact number');
+      }
+
+      const data = await response.json();
+      
+      // Check if purchase was successful
+      if (data.success || data.purchased) {
+        return { success: true, data };
+      } else {
+        throw new Error(data.message || 'Purchase failed');
+      }
+    } catch (error) {
+      console.error('Error purchasing contact number:', error);
+      throw error;
+    }
+  };
+
   const handlePrevious = () => {
+    // If number is already purchased, user can still go back but cannot change number
     navigate("/onboarding/business-location");
   };
 
   const handleNext = () => {
-    if (selectedNumber) {
+    if (isNumberPurchased) {
+      // If number is already purchased, proceed directly
+      navigate("/onboarding/personality-intro");
+    } else if (selectedNumber) {
       setShowConfirmationPopup(true);
     }
   };
 
-  const handleConfirmPurchase = () => {
-    // Store contact number and navigate
-    sessionStorage.setItem("contactNumber", selectedNumber);
-    setShowConfirmationPopup(false);
+  const handleConfirmPurchase = async () => {
+    const onboardingId = getOnboardingId();
+    setIsPurchasing(true);
+    setPurchaseError(null);
+    
+    try {
+      const result = await purchaseContactNumber(selectedNumber, onboardingId);
+      
+      if (result.success) {
+        // Mark number as purchased
+        sessionStorage.setItem(`contactNumberPurchased_${onboardingId}`, "true");
+        sessionStorage.setItem(`purchasedContactNumber_${onboardingId}`, selectedNumber);
+        sessionStorage.setItem("contactNumber", selectedNumber);
+        
+        // Update component state
+        setIsNumberPurchased(true);
+        setShowConfirmationPopup(false);
+        setShowPurchaseSuccessPopup(true);
+        
+        toast({
+          title: "Success!",
+          description: `Contact number ${selectedNumber} has been purchased successfully.`,
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to purchase number';
+      setPurchaseError(errorMessage);
+      toast({
+        title: "Purchase Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
+
+  const handlePurchaseSuccess = () => {
+    setShowPurchaseSuccessPopup(false);
     navigate("/onboarding/personality-intro");
   };
 
   const handleDiscard = () => {
     setShowConfirmationPopup(false);
+    setPurchaseError(null);
   };
 
   const handleSelectNumber = (value: string) => {
-    setSelectedNumber(value);
+    if (!isNumberPurchased) {
+      setSelectedNumber(value);
+    }
   };
 
-  const isNextDisabled = !selectedNumber || isLoading;
+  const isNextDisabled = !selectedNumber || isLoading || isPurchasing;
 
   return (
     <OnboardingLayout
@@ -139,32 +244,57 @@ export default function ContactNumber() {
         {/* Header */}
         <div className="flex flex-col gap-3 w-full">
           <h2 className="text-xl font-bold text-black">
-            Which contact number do you want for agent?
+            {isNumberPurchased 
+              ? "Your purchased contact number" 
+              : "Which contact number do you want for agent?"
+            }
           </h2>
           <p className="text-base italic text-[#737373] leading-6">
-            Pick the contact number where your agent should respond
+            {isNumberPurchased 
+              ? "This number has been purchased and locked for your agent" 
+              : "Pick the contact number where your agent should respond"
+            }
           </p>
         </div>
 
         {/* Contact Number Selection */}
         <div className="flex flex-col gap-3 w-full">
-          <h3 className="text-xl font-bold text-black">Contact Number</h3>
+          <h3 className="text-xl font-bold text-black">
+            {isNumberPurchased ? "Purchased Number" : "Contact Number"}
+          </h3>
           <Select 
             value={selectedNumber} 
             onValueChange={handleSelectNumber}
-            disabled={isLoading}
+            disabled={isLoading || isNumberPurchased}
           >
-            <SelectTrigger className="w-full p-4 text-lg font-semibold text-muted-foreground border-2 border-muted rounded-xl">
-              <SelectValue placeholder={isLoading ? "Loading numbers..." : "Select here"} />
+            <SelectTrigger className={`w-full p-4 text-lg font-semibold border-2 rounded-xl ${
+              isNumberPurchased 
+                ? "text-green-600 border-green-200 bg-green-50" 
+                : "text-muted-foreground border-muted"
+            }`}>
+              <SelectValue placeholder={
+                isLoading 
+                  ? "Loading numbers..." 
+                  : isNumberPurchased 
+                    ? "Number purchased and locked" 
+                    : "Select here"
+              } />
             </SelectTrigger>
             <SelectContent>
               {contactNumbers.map((number) => (
                 <SelectItem key={number} value={number}>
                   {number}
+                  {isNumberPurchased && number === selectedNumber && " (Purchased)"}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          
+          {isNumberPurchased && (
+            <p className="text-sm text-green-600 font-medium">
+              ✓ This number has been purchased and cannot be changed
+            </p>
+          )}
         </div>
       </div>
 
@@ -173,18 +303,61 @@ export default function ContactNumber() {
         <AlertDialogContent className="rounded-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold text-black text-center">
-              Contact Number
+              Purchase Contact Number
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground text-center">
-              The number you've selected is {selectedNumber}. Please confirm as this cannot be changed later.
+              You are about to purchase {selectedNumber}. This action cannot be undone and the number cannot be changed later.
             </AlertDialogDescription>
+            {purchaseError && (
+              <div className="text-red-600 text-sm text-center mt-2">
+                {purchaseError}
+              </div>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-row gap-2 justify-between">
-            <Button variant="outline" onClick={handleDiscard} className="rounded-xl">
+            <Button 
+              variant="outline" 
+              onClick={handleDiscard} 
+              className="rounded-xl"
+              disabled={isPurchasing}
+            >
               Discard
             </Button>
-            <Button onClick={handleConfirmPurchase} className="rounded-xl">
-              Buy now
+            <Button 
+              onClick={handleConfirmPurchase} 
+              className="rounded-xl"
+              disabled={isPurchasing}
+            >
+              {isPurchasing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Purchasing...
+                </>
+              ) : (
+                "Buy now"
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Purchase Success Popup */}
+      <AlertDialog open={showPurchaseSuccessPopup} onOpenChange={setShowPurchaseSuccessPopup}>
+        <AlertDialogContent className="rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-black text-center">
+              Number Purchased Successfully! 🎉
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground text-center">
+              Your contact number {selectedNumber} has been successfully purchased and is now ready for your agent.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex justify-center">
+            <Button 
+              onClick={handlePurchaseSuccess} 
+              className="rounded-xl w-full"
+            >
+              Continue to Next Step
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
