@@ -8,10 +8,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ContactNumber() {
   const [selectedNumber, setSelectedNumber] = useState("");
+  const [contactNumbers, setContactNumbers] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Default fallback numbers
+  const defaultNumbers = [
+    "+1-234-567-8900",
+    "+1-234-567-8901", 
+    "+1-234-567-8902",
+    "+1-234-567-8903"
+  ];
 
   useEffect(() => {
     // Load any previously saved contact number
@@ -19,7 +31,64 @@ export default function ContactNumber() {
     if (savedNumber) {
       setSelectedNumber(savedNumber);
     }
+
+    // Check if webhook has been called before
+    const hasCalledWebhook = sessionStorage.getItem("contactNumbersWebhookCalled");
+    
+    if (!hasCalledWebhook) {
+      fetchContactNumbers();
+    } else {
+      // Use cached numbers or fallback to defaults
+      const cachedNumbers = sessionStorage.getItem("cachedContactNumbers");
+      if (cachedNumbers) {
+        setContactNumbers(JSON.parse(cachedNumbers));
+      } else {
+        setContactNumbers(defaultNumbers);
+      }
+    }
   }, []);
+
+  const fetchContactNumbers = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: Replace with your actual n8n webhook URL
+      const webhookUrl = "YOUR_N8N_WEBHOOK_URL_HERE";
+      
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contact numbers');
+      }
+
+      const data = await response.json();
+      const numbers = data.contactNumbers || data;
+      
+      if (Array.isArray(numbers) && numbers.length > 0) {
+        setContactNumbers(numbers);
+        // Cache the numbers and mark webhook as called
+        sessionStorage.setItem("cachedContactNumbers", JSON.stringify(numbers));
+        sessionStorage.setItem("contactNumbersWebhookCalled", "true");
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Error fetching contact numbers:', error);
+      toast({
+        title: "Unable to load contact numbers",
+        description: "Using default numbers. Please try again later.",
+        variant: "destructive",
+      });
+      // Fallback to default numbers
+      setContactNumbers(defaultNumbers);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePrevious = () => {
     navigate("/onboarding/business-location");
@@ -37,15 +106,7 @@ export default function ContactNumber() {
     setSelectedNumber(value);
   };
 
-  const isNextDisabled = !selectedNumber;
-
-  // Sample contact numbers - you can modify these as needed
-  const contactNumbers = [
-    "+1-234-567-8900",
-    "+1-234-567-8901", 
-    "+1-234-567-8902",
-    "+1-234-567-8903"
-  ];
+  const isNextDisabled = !selectedNumber || isLoading;
 
   return (
     <OnboardingLayout
@@ -69,9 +130,13 @@ export default function ContactNumber() {
         {/* Contact Number Selection */}
         <div className="flex flex-col gap-3 w-full">
           <h3 className="text-xl font-bold text-black">Contact Number</h3>
-          <Select value={selectedNumber} onValueChange={handleSelectNumber}>
+          <Select 
+            value={selectedNumber} 
+            onValueChange={handleSelectNumber}
+            disabled={isLoading}
+          >
             <SelectTrigger className="w-full p-4 text-lg font-semibold text-muted-foreground border-2 border-muted rounded-xl">
-              <SelectValue placeholder="Select here" />
+              <SelectValue placeholder={isLoading ? "Loading numbers..." : "Select here"} />
             </SelectTrigger>
             <SelectContent>
               {contactNumbers.map((number) => (
