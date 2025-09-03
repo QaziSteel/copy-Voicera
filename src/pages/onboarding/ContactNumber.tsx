@@ -8,12 +8,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ContactNumber() {
   const [selectedNumber, setSelectedNumber] = useState("");
   const [contactNumbers, setContactNumbers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -96,10 +106,19 @@ export default function ContactNumber() {
 
   const handleNext = () => {
     if (selectedNumber) {
-      // Store contact number
-      sessionStorage.setItem("contactNumber", selectedNumber);
-      navigate("/onboarding/personality-intro");
+      setShowConfirmationPopup(true);
     }
+  };
+
+  const handleConfirmPurchase = () => {
+    // Store contact number and navigate
+    sessionStorage.setItem("contactNumber", selectedNumber);
+    setShowConfirmationPopup(false);
+    navigate("/onboarding/personality-intro");
+  };
+
+  const handleDiscard = () => {
+    setShowConfirmationPopup(false);
   };
 
   const handleSelectNumber = (value: string) => {
@@ -148,6 +167,28 @@ export default function ContactNumber() {
           </Select>
         </div>
       </div>
+
+      {/* Confirmation Popup */}
+      <AlertDialog open={showConfirmationPopup} onOpenChange={setShowConfirmationPopup}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-black text-center">
+              Contact Number
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground text-center">
+              The number you've selected is {selectedNumber}. Please confirm as this cannot be changed later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex flex-row gap-2 justify-center">
+            <Button variant="outline" onClick={handleDiscard}>
+              Discard
+            </Button>
+            <Button onClick={handleConfirmPurchase}>
+              Buy now
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </OnboardingLayout>
   );
 }
