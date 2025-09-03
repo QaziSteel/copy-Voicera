@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
         <div className="flex items-center gap-6">
           {/* Agent Live Button */}
           <button
-            onClick={() => navigate("/agent-management")}
+            onClick={() => navigate("/agents")}
             className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
