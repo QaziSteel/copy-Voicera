@@ -157,6 +157,9 @@ export default function ContactNumber() {
       } else if (Array.isArray(data) && data.length > 0 && data[0].id && data[0].number) {
         // New rich response format - array with phone number details
         return { success: true, data: data[0] };
+      } else if (data.id && data.number && data.status) {
+        // Single phone number object format
+        return { success: true, data };
       } else {
         throw new Error(data.message || 'Purchase failed');
       }
