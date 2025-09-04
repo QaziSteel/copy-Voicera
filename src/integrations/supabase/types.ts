@@ -31,6 +31,7 @@ export type Database = {
           faq_data: Json | null
           id: string
           primary_location: string | null
+          purchased_number_details: Json | null
           reminder_settings: Json | null
           schedule_full_action: string | null
           services: Json | null
@@ -55,6 +56,7 @@ export type Database = {
           faq_data?: Json | null
           id?: string
           primary_location?: string | null
+          purchased_number_details?: Json | null
           reminder_settings?: Json | null
           schedule_full_action?: string | null
           services?: Json | null
@@ -79,6 +81,7 @@ export type Database = {
           faq_data?: Json | null
           id?: string
           primary_location?: string | null
+          purchased_number_details?: Json | null
           reminder_settings?: Json | null
           schedule_full_action?: string | null
           services?: Json | null
