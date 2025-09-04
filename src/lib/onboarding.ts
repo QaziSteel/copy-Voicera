@@ -5,6 +5,19 @@ export interface OnboardingData {
   businessType?: string;
   primaryLocation?: string;
   contactNumber?: string;
+  purchasedNumberDetails?: {
+    id?: string;
+    orgId?: string;
+    number?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    twilioAccountSid?: string;
+    name?: string;
+    provider?: string;
+    status?: string;
+    smsEnabled?: boolean;
+    workflowId?: string;
+  };
   aiVoiceStyle?: string;
   aiGreetingStyle?: {
     label: string;
@@ -48,6 +61,15 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
 
   const contactNumber = sessionStorage.getItem('contactNumber');
   if (contactNumber) data.contactNumber = contactNumber;
+
+  const purchasedNumberDetails = sessionStorage.getItem('purchasedNumberDetails');
+  if (purchasedNumberDetails) {
+    try {
+      data.purchasedNumberDetails = JSON.parse(purchasedNumberDetails);
+    } catch (e) {
+      console.warn('Failed to parse purchasedNumberDetails from sessionStorage');
+    }
+  }
 
   const aiVoiceStyle = sessionStorage.getItem('aiVoiceStyle');
   if (aiVoiceStyle) data.aiVoiceStyle = aiVoiceStyle;
@@ -143,6 +165,7 @@ export const saveOnboardingResponse = async (data: OnboardingData) => {
       business_type: data.businessType,
       primary_location: data.primaryLocation,
       contact_number: data.contactNumber,
+      purchased_number_details: data.purchasedNumberDetails,
       ai_voice_style: data.aiVoiceStyle,
       ai_greeting_style: data.aiGreetingStyle,
       ai_assistant_name: data.aiAssistantName,

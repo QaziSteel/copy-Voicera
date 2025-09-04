@@ -151,9 +151,12 @@ export default function ContactNumber() {
 
       const data = await response.json();
       
-      // Check if purchase was successful
+      // Check if purchase was successful - handle both old and new response formats
       if (data.success || data.purchased) {
         return { success: true, data };
+      } else if (Array.isArray(data) && data.length > 0 && data[0].id && data[0].number) {
+        // New rich response format - array with phone number details
+        return { success: true, data: data[0] };
       } else {
         throw new Error(data.message || 'Purchase failed');
       }
@@ -190,6 +193,11 @@ export default function ContactNumber() {
         sessionStorage.setItem(`contactNumberPurchased_${onboardingId}`, "true");
         sessionStorage.setItem(`purchasedContactNumber_${onboardingId}`, selectedNumber);
         sessionStorage.setItem("contactNumber", selectedNumber);
+        
+        // Store rich phone number details if available
+        if (result.data && result.data.id) {
+          sessionStorage.setItem("purchasedNumberDetails", JSON.stringify(result.data));
+        }
         
         // Update component state
         setIsNumberPurchased(true);
