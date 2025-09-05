@@ -392,15 +392,12 @@ const AgentManagement = () => {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-lg font-semibold text-black mb-3">Business Hours</label>
+              <label className="block text-lg font-semibold text-black mb-3">Contact Number</label>
               <input 
                 type="text" 
-                value={`${businessHours.from} - ${businessHours.to}`}
-                onChange={(e) => {
-                  const [from, to] = e.target.value.split(' - ');
-                  setBusinessHours({ from: from || '', to: to || '' });
-                }}
-                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500"
+                value={contactNumber}
+                readOnly
+                className="w-full px-4 py-4 border-2 border-gray-100 rounded-xl text-lg text-gray-600 bg-gray-50 cursor-not-allowed"
               />
             </div>
           </div>
