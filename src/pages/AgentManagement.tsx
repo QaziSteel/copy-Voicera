@@ -1200,9 +1200,9 @@ const AgentManagement = () => {
                             onChange={(e) => setHandlingUnknown(e.target.value)}
                           >
                             <option value="">Select what the AI should do</option>
-                            <option value="politely_decline">Politely decline and offer to take a message</option>
-                            <option value="transfer_to_human">Transfer the call to a human representative</option>
-                            <option value="schedule_callback">Schedule a callback for later</option>
+                            <option value="Politely transfer the call to you (or your voicemail)">Politely transfer the call to you (or your voicemail)</option>
+                            <option value="Take a message and email it to you">Take a message and email it to you</option>
+                            <option value="Offer to call the customer back later">Offer to call the customer back later</option>
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
