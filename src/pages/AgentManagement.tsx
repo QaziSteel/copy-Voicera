@@ -179,6 +179,7 @@ const AgentManagement = () => {
         setAppointmentDuration(data.appointment_duration || '');
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
+        setScheduleFullAction(data.schedule_full_action || '');
         
         // FAQs
         const faqData = isFAQData(data.faq_data) ? data.faq_data : { enabled: false, questions: [] };
@@ -220,6 +221,7 @@ const AgentManagement = () => {
         appointment_duration: appointmentDuration,
         business_days: businessDays as any,
         business_hours: businessHours as any,
+        schedule_full_action: scheduleFullAction,
         faq_data: { enabled: faqEnabled, questions: faqs } as any,
         wants_daily_summary: dailySummary,
       };
@@ -774,39 +776,21 @@ const AgentManagement = () => {
                         <label className="block text-lg font-semibold text-black mb-3">
                           What can customers book?
                         </label>
-                        <div className="relative">
-                          <select 
-                            value={services.length > 0 ? services.join(', ') : ''}
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                setServices(e.target.value.split(', '));
-                              }
-                            }}
-                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
-                          >
-                            <option value="">
-                              Select the services you want your customers to book
-                            </option>
-                            <option value="Appointment">Appointment</option>
-                            <option value="Consultation">Consultation</option>
-                            <option value="Service">Service</option>
-                            <option value="Class">Class</option>
-                          </select>
-                          <svg
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                              stroke="#141B34"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
+                        <div className="w-full px-4 py-4 border-2 border-gray-100 rounded-xl bg-gray-50">
+                          {services.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {services.map((service, index) => (
+                                <span 
+                                  key={index}
+                                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                                >
+                                  {service}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-lg text-gray-500">No services configured</span>
+                          )}
                         </div>
                       </div>
                       
@@ -961,11 +945,10 @@ const AgentManagement = () => {
                           onChange={(e) => setScheduleFullAction(e.target.value)}
                           className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
                         >
-                          <option value="">Select Options</option>
-                          <option value="take_message">Take a message</option>
-                          <option value="offer_callback">Offer callback</option>
-                          <option value="suggest_waitlist">Suggest waitlist</option>
-                          <option value="redirect_voicemail">Redirect to voicemail</option>
+                          <option value="">Select an option</option>
+                          <option value="Offer the next available slot">Offer the next available slot</option>
+                          <option value="Take a message for you">Take a message for you</option>
+                          <option value="Add the customer to a waitlist">Add the customer to a waitlist</option>
                         </select>
                         <svg
                           className="absolute right-4 top-1/2 transform -translate-y-1/2"
