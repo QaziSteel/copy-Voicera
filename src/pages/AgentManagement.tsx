@@ -212,6 +212,15 @@ const AgentManagement = () => {
         
         // Advanced
         setDailySummary(data.wants_daily_summary || false);
+        setEmailConfirmations(data.wants_email_confirmations || false);
+        
+        // Handle reminder settings (jsonb format)
+        if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
+          const reminderData = data.reminder_settings as { wantsReminders?: boolean };
+          setAutoReminders(reminderData.wantsReminders || false);
+        } else {
+          setAutoReminders(false);
+        }
       }
     } catch (error) {
       console.error('Error loading agent settings:', error);
@@ -248,6 +257,8 @@ const AgentManagement = () => {
         schedule_full_action: scheduleFullAction,
         faq_data: { enabled: faqEnabled, questions: faqs } as any,
         wants_daily_summary: dailySummary,
+        wants_email_confirmations: emailConfirmations,
+        reminder_settings: { wantsReminders: autoReminders } as any,
       };
 
       if (selectedAgentId) {
@@ -287,7 +298,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, businessType, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents]);
+  }, [selectedAgentId, businessName, businessType, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -1182,9 +1193,16 @@ const AgentManagement = () => {
                         <label className="block text-lg font-semibold text-black mb-3">
                           How should your AI handle common questions that it can't answer?
                         </label>
-                        <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>Select what the AI should do</option>
+                         <div className="relative">
+                          <select 
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                            value={handlingUnknown}
+                            onChange={(e) => setHandlingUnknown(e.target.value)}
+                          >
+                            <option value="">Select what the AI should do</option>
+                            <option value="politely_decline">Politely decline and offer to take a message</option>
+                            <option value="transfer_to_human">Transfer the call to a human representative</option>
+                            <option value="schedule_callback">Schedule a callback for later</option>
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
