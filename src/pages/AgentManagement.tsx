@@ -877,72 +877,15 @@ const AgentManagement = () => {
                       
                       <div className="flex-1">
                         <label className="block text-lg font-semibold text-black mb-3">
-                          Enter your business hours
+                          Contact Number
                         </label>
-                        <div className="flex gap-3">
-                          <div className="flex-1 relative">
-                            <input
-                              type="text"
-                              placeholder="From"
-                              value={businessHours.from}
-                              onChange={(e) => setBusinessHours({...businessHours, from: e.target.value})}
-                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
-                            />
-                            <svg
-                              className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                            >
-                              <path
-                                d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M12 6.75V12H17.25"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                          <div className="flex-1 relative">
-                            <input
-                              type="text"
-                              placeholder="To"
-                              value={businessHours.to}
-                              onChange={(e) => setBusinessHours({...businessHours, to: e.target.value})}
-                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
-                            />
-                            <svg
-                              className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                            >
-                              <path
-                                d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M12 6.75V12H17.25"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                        </div>
+                        <input
+                          type="text"
+                          value={contactNumber}
+                          readOnly
+                          className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-400 bg-gray-50 cursor-not-allowed"
+                          placeholder="Contact number"
+                        />
                       </div>
                     </div>
 
