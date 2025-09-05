@@ -57,9 +57,9 @@ const AgentManagement = () => {
   const [agentsLoading, setAgentsLoading] = useState(false);
   
   // Basic Info
-  const [businessName, setBusinessName] = useState('The Gents\' Chair');
-  const [businessType, setBusinessType] = useState('Barbing Saloon');
-  const [businessLocation, setBusinessLocation] = useState('350 5th Avenue, Suite 2100, New York, NY 10118');
+  const [businessName, setBusinessName] = useState('');
+  const [businessType, setBusinessType] = useState('');
+  const [businessLocation, setBusinessLocation] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   
   // AI Personality  
@@ -91,6 +91,10 @@ const AgentManagement = () => {
     loadUserAgents();
   }, []);
 
+  // Extract agentId from URL
+  const urlParams = new URLSearchParams(location.search);
+  const urlAgentId = urlParams.get('agentId');
+
   const loadUserAgents = useCallback(async () => {
     try {
       setLoading(true);
@@ -109,9 +113,20 @@ const AgentManagement = () => {
 
       if (data && data.length > 0) {
         setUserAgents(data);
-        const defaultAgent = data[0]; // Most recent agent
-        setSelectedAgentId(defaultAgent.id);
-        await loadAgentSettings(defaultAgent.id);
+        
+        // Check for URL agentId first, then fall back to most recent
+        const urlParams = new URLSearchParams(location.search);
+        const urlAgentId = urlParams.get('agentId');
+        
+        let targetAgent;
+        if (urlAgentId && data.find(agent => agent.id === urlAgentId)) {
+          targetAgent = data.find(agent => agent.id === urlAgentId);
+        } else {
+          targetAgent = data[0]; // Most recent agent as fallback
+        }
+        
+        setSelectedAgentId(targetAgent.id);
+        await loadAgentSettings(targetAgent.id);
       } else {
         // No agents found, set empty state
         setUserAgents([]);
@@ -128,7 +143,7 @@ const AgentManagement = () => {
       setAgentsLoading(false);
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, location]);
 
   const loadAgentSettings = useCallback(async (agentId: string) => {
     try {
@@ -250,7 +265,12 @@ const AgentManagement = () => {
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
     await loadAgentSettings(agentId);
-  }, [loadAgentSettings]);
+    
+    // Update URL with selected agentId
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set('agentId', agentId);
+    navigate(`${location.pathname}?${urlParams.toString()}`, { replace: true });
+  }, [loadAgentSettings, navigate, location]);
 
   const addFaq = useCallback(() => {
     if (!newQuestion.trim() || !newAnswer.trim()) {
