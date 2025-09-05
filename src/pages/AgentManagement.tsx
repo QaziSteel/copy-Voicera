@@ -33,6 +33,30 @@ const isBusinessHours = (value: any): value is { from: string; to: string } =>
   typeof value === 'object' && value !== null && 
   typeof value.from === 'string' && typeof value.to === 'string';
 
+// Convert onboarding FAQ format to Agent Management format
+const convertOnboardingFAQs = (faqData: any): { enabled: boolean; questions: FAQ[] } => {
+  if (!faqData || typeof faqData !== 'object') {
+    return { enabled: false, questions: [] };
+  }
+
+  // Handle Agent Management format (already converted)
+  if (Array.isArray(faqData.questions) && faqData.questions.every((q: any) => q.id && q.question && q.answer)) {
+    return { enabled: faqData.enabled || false, questions: faqData.questions };
+  }
+
+  // Handle onboarding format (separate questions and answers arrays)
+  if (Array.isArray(faqData.questions) && Array.isArray(faqData.answers)) {
+    const convertedQuestions: FAQ[] = faqData.questions.map((question: string, index: number) => ({
+      id: `faq-${index + 1}`,
+      question: question,
+      answer: faqData.answers[index] || ''
+    }));
+    return { enabled: faqData.enabled || false, questions: convertedQuestions };
+  }
+
+  return { enabled: false, questions: [] };
+};
+
 const isFAQData = (value: any): value is { enabled: boolean; questions: FAQ[] } =>
   typeof value === 'object' && value !== null &&
   typeof value.enabled === 'boolean' && 
@@ -181,10 +205,10 @@ const AgentManagement = () => {
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
         setScheduleFullAction(data.schedule_full_action || '');
         
-        // FAQs
-        const faqData = isFAQData(data.faq_data) ? data.faq_data : { enabled: false, questions: [] };
-        setFaqEnabled(faqData.enabled || false);
-        setFaqs(faqData.questions || []);
+        // FAQs - Convert from onboarding format to Agent Management format
+        const faqData = convertOnboardingFAQs(data.faq_data);
+        setFaqEnabled(faqData.enabled);
+        setFaqs(faqData.questions);
         
         // Advanced
         setDailySummary(data.wants_daily_summary || false);
