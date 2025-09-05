@@ -74,6 +74,7 @@ const AgentManagement = () => {
   const [appointmentDuration, setAppointmentDuration] = useState('');
   const [businessDays, setBusinessDays] = useState<string[]>([]);
   const [businessHours, setBusinessHours] = useState({ from: '8:00am', to: '05:00pm' });
+  const [scheduleFullAction, setScheduleFullAction] = useState('');
   
   // FAQs
   const [faqEnabled, setFaqEnabled] = useState(false);
@@ -770,10 +771,22 @@ const AgentManagement = () => {
                           What can customers book?
                         </label>
                         <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>
+                          <select 
+                            value={services.length > 0 ? services.join(', ') : ''}
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                setServices(e.target.value.split(', '));
+                              }
+                            }}
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                          >
+                            <option value="">
                               Select the services you want your customers to book
                             </option>
+                            <option value="Appointment">Appointment</option>
+                            <option value="Consultation">Consultation</option>
+                            <option value="Service">Service</option>
+                            <option value="Class">Class</option>
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
@@ -798,10 +811,19 @@ const AgentManagement = () => {
                           How long is each appointment?
                         </label>
                         <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>
+                          <select 
+                            value={appointmentDuration}
+                            onChange={(e) => setAppointmentDuration(e.target.value)}
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                          >
+                            <option value="">
                               Select the duration you want each appointment to last
                             </option>
+                            <option value="30 minutes">30 minutes</option>
+                            <option value="45 minutes">45 minutes</option>
+                            <option value="1 hour">1 hour</option>
+                            <option value="1.5 hours">1.5 hours</option>
+                            <option value="2 hours">2 hours</option>
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
@@ -833,7 +855,18 @@ const AgentManagement = () => {
                             (day) => (
                               <button
                                 key={day}
-                                className="px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-500 hover:border-gray-300 transition-colors"
+                                onClick={() => {
+                                  if (businessDays.includes(day)) {
+                                    setBusinessDays(businessDays.filter(d => d !== day));
+                                  } else {
+                                    setBusinessDays([...businessDays, day]);
+                                  }
+                                }}
+                                className={`px-4 py-3 border-2 rounded-xl text-lg transition-colors ${
+                                  businessDays.includes(day)
+                                    ? 'border-black bg-black text-white'
+                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                }`}
                               >
                                 {day}
                               </button>
@@ -851,6 +884,8 @@ const AgentManagement = () => {
                             <input
                               type="text"
                               placeholder="From"
+                              value={businessHours.from}
+                              onChange={(e) => setBusinessHours({...businessHours, from: e.target.value})}
                               className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
                             />
                             <svg
@@ -880,6 +915,8 @@ const AgentManagement = () => {
                             <input
                               type="text"
                               placeholder="To"
+                              value={businessHours.to}
+                              onChange={(e) => setBusinessHours({...businessHours, to: e.target.value})}
                               className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
                             />
                             <svg
@@ -915,8 +952,16 @@ const AgentManagement = () => {
                         If your schedule is full, what should the AI do?
                       </label>
                       <div className="relative">
-                        <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                          <option>Select Options</option>
+                        <select 
+                          value={scheduleFullAction}
+                          onChange={(e) => setScheduleFullAction(e.target.value)}
+                          className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                        >
+                          <option value="">Select Options</option>
+                          <option value="take_message">Take a message</option>
+                          <option value="offer_callback">Offer callback</option>
+                          <option value="suggest_waitlist">Suggest waitlist</option>
+                          <option value="redirect_voicemail">Redirect to voicemail</option>
                         </select>
                         <svg
                           className="absolute right-4 top-1/2 transform -translate-y-1/2"
