@@ -368,10 +368,17 @@ const AgentManagement = () => {
                   onChange={(e) => setBusinessType(e.target.value)}
                   className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
                 >
-                  <option>Barbing Saloon</option>
-                  <option>Restaurant</option>
-                  <option>Clinic</option>
-                  <option>Spa</option>
+                  <option value="">Select business type</option>
+                  <option value="Hairdressers">Hairdressers</option>
+                  <option value="Nail Salon">Nail Salon</option>
+                  <option value="Health Clinic">Health Clinic</option>
+                  <option value="Fitness Studio">Fitness Studio</option>
+                  <option value="Coaching/Consulting">Coaching/Consulting</option>
+                  <option value="Physiotherapy">Physiotherapy</option>
+                  <option value="Chiropractor">Chiropractor</option>
+                  {businessType && !["Hairdressers", "Nail Salon", "Health Clinic", "Fitness Studio", "Coaching/Consulting", "Physiotherapy", "Chiropractor"].includes(businessType) && (
+                    <option value={businessType}>{businessType} (Custom)</option>
+                  )}
                 </select>
                 <svg className="absolute right-4 top-1/2 transform -translate-y-1/2" width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
