@@ -90,7 +90,7 @@ export default function ContactNumber() {
     setIsLoading(true);
     try {
       // TODO: Replace with your actual n8n webhook URL
-      const webhookUrl = "https://teamhypergrowth.app.n8n.cloud/webhook-test/9ae119ed-1b4c-4d41-bd34-5b0cfc8b403b";
+      const webhookUrl = "https://teamhypergrowth.app.n8n.cloud/webhook/9ae119ed-1b4c-4d41-bd34-5b0cfc8b403b";
       
       const response = await fetch(webhookUrl, {
         method: 'POST',
@@ -131,7 +131,7 @@ export default function ContactNumber() {
   const purchaseContactNumber = async (number: string, onboardingId: string) => {
     try {
       // TODO: Replace with your actual purchase webhook URL
-      const purchaseWebhookUrl = "https://teamhypergrowth.app.n8n.cloud/webhook-test/fbd1d588-31bb-4ba3-a01d-be2e09de2e3a";
+      const purchaseWebhookUrl = "https://teamhypergrowth.app.n8n.cloud/webhook/fbd1d588-31bb-4ba3-a01d-be2e09de2e3a";
       
       const response = await fetch(purchaseWebhookUrl, {
         method: 'POST',
