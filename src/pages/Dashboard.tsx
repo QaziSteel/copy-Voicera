@@ -37,17 +37,8 @@ const Dashboard: React.FC = () => {
   } = useNotifications();
 
   // Mock data - in a real app this would come from an API
-  // Start with sample data to show the normal dashboard state
-  const [calls, setCalls] = useState<Call[]>([
-    { id: "1000", time: "16:54:03", status: "booked" },
-    { id: "1001", time: "16:55:10", status: "dropped" },
-    { id: "1002", time: "16:56:45", status: "inquiry" },
-    { id: "1003", time: "16:57:30", status: "booked" },
-    { id: "1004", time: "16:58:15", status: "inquiry" },
-    { id: "1005", time: "16:55:10", status: "dropped" },
-    { id: "1006", time: "16:57:30", status: "booked" },
-    { id: "1007", time: "16:58:15", status: "inquiry" },
-  ]);
+  // Initialize with empty array to show zero state
+  const [calls, setCalls] = useState<Call[]>([]);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -302,7 +293,7 @@ const Dashboard: React.FC = () => {
                 const droppedMissed = calls.filter(
                   (call) => call.status === "dropped",
                 ).length;
-                const unsuccessful = 1; // Static for now
+                const unsuccessful = 0; // Set to 0 to match zero state
 
                 return (
                   <div className="space-y-3">
