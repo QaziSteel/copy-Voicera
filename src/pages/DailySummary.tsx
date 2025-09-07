@@ -6,16 +6,7 @@ import NotificationPopup from "@/components/NotificationPopup";
 import { DateFilterPopup } from "@/components/DateFilterPopup";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { Header } from "@/components/shared/Header";
-
-interface DailySummaryEntry {
-  id: string;
-  date: string;
-  callsTaken: number;
-  avgDuration: string;
-  bookingsMade: number;
-  missed: number;
-  agentName?: string;
-}
+import { useDailySummary, DailySummaryEntry } from "@/hooks/useDailySummary";
 
 const DailySummary: React.FC = () => {
   const navigate = useNavigate();
@@ -43,89 +34,8 @@ const DailySummary: React.FC = () => {
     notificationCount 
   } = useNotifications();
 
-  // Mock daily summary data
-  const dailySummaryEntries: DailySummaryEntry[] = [
-    {
-      id: "01",
-      date: "August 20, 2025",
-      callsTaken: 6,
-      avgDuration: "3m 45s",
-      bookingsMade: 4,
-      missed: 0,
-    },
-    {
-      id: "02",
-      date: "August 19, 2023",
-      callsTaken: 4,
-      avgDuration: "2m 15s",
-      bookingsMade: 2,
-      missed: 1,
-    },
-    {
-      id: "03",
-      date: "August 20, 2023",
-      callsTaken: 8,
-      avgDuration: "5m 30s",
-      bookingsMade: 5,
-      missed: 0,
-    },
-    {
-      id: "04",
-      date: "August 21, 2023",
-      callsTaken: 5,
-      avgDuration: "4m 10s",
-      bookingsMade: 3,
-      missed: 2,
-    },
-    {
-      id: "05",
-      date: "August 22, 2023",
-      callsTaken: 7,
-      avgDuration: "3m 55s",
-      bookingsMade: 6,
-      missed: 1,
-    },
-    {
-      id: "06",
-      date: "August 23, 2023",
-      callsTaken: 9,
-      avgDuration: "4m 25s",
-      bookingsMade: 7,
-      missed: 0,
-    },
-    {
-      id: "07",
-      date: "August 24, 2023",
-      callsTaken: 3,
-      avgDuration: "2m 50s",
-      bookingsMade: 1,
-      missed: 2,
-    },
-    {
-      id: "08",
-      date: "August 25, 2023",
-      callsTaken: 10,
-      avgDuration: "6m 00s",
-      bookingsMade: 8,
-      missed: 0,
-    },
-    {
-      id: "09",
-      date: "August 26, 2023",
-      callsTaken: 2,
-      avgDuration: "1m 30s",
-      bookingsMade: 1,
-      missed: 3,
-    },
-    {
-      id: "10",
-      date: "August 27, 2023",
-      callsTaken: 11,
-      avgDuration: "7m 10s",
-      bookingsMade: 9,
-      missed: 1,
-    },
-  ];
+  // Get real daily summary data from database
+  const { dailySummaryEntries, loading } = useDailySummary();
 
   const openSummaryPopup = (entry: DailySummaryEntry) => {
     setSelectedSummary(entry);
@@ -328,7 +238,7 @@ const DailySummary: React.FC = () => {
               AVG DURATION
             </div>
             <div className="flex-1 text-xs font-bold text-gray-700 uppercase tracking-wide">
-              BOOKINGS MADE
+              INFO INQUIRIES
             </div>
             <div className="flex-1 text-xs font-bold text-gray-700 uppercase tracking-wide">
               MISSED
@@ -338,44 +248,37 @@ const DailySummary: React.FC = () => {
             </div>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <p className="ml-2 text-muted-foreground">Loading summaries...</p>
+            </div>
+          )}
+
           {/* Table Rows */}
-          {dailySummaryEntries.map((entry) => (
+          {!loading && dailySummaryEntries.map((entry) => (
             <div
               key={entry.id}
-              className={`flex items-center gap-4 p-3 h-16 bg-white border-b border-gray-200 ${
-                entry.id === "06" ? "border-b-black border-opacity-10" : ""
-              }`}
+              className="flex items-center gap-4 p-3 h-16 bg-white border-b border-gray-200"
             >
               <div className="w-4 h-4 border border-gray-300"></div>
-              <div
-                className={`w-8 font-semibold text-gray-700 ${entry.id === "06" ? "text-xs" : "text-sm"}`}
-              >
+              <div className="w-8 font-semibold text-gray-700 text-sm">
                 {entry.id}
               </div>
-              <div
-                className={`flex-1 text-gray-700 ${entry.id === "06" ? "text-xs font-semibold uppercase" : "text-sm"}`}
-              >
-                {entry.date}
+              <div className="flex-1 text-gray-700 text-sm">
+                {entry.formattedDate}
               </div>
-              <div
-                className={`flex-1 text-gray-700 ${entry.id === "06" ? "text-xs font-semibold uppercase" : "text-sm"}`}
-              >
+              <div className="flex-1 text-gray-700 text-sm">
                 {entry.callsTaken} Calls
               </div>
-              <div
-                className={`flex-1 text-gray-700 ${entry.id === "06" ? "text-xs font-semibold uppercase" : "text-sm"}`}
-              >
+              <div className="flex-1 text-gray-700 text-sm">
                 {entry.avgDuration}
               </div>
-              <div
-                className={`flex-1 text-gray-700 ${entry.id === "06" ? "text-xs font-semibold uppercase" : "text-sm"}`}
-              >
-                {entry.bookingsMade} Booking
-                {entry.bookingsMade !== 1 ? "s" : ""}
+              <div className="flex-1 text-gray-700 text-sm">
+                {entry.informationInquiries} Inquiries
               </div>
-              <div
-                className={`flex-1 text-gray-700 ${entry.id === "06" ? "text-xs font-semibold uppercase" : "text-sm"}`}
-              >
+              <div className="flex-1 text-gray-700 text-sm">
                 {entry.missed} Missed
               </div>
               <div className="flex-1">
@@ -388,6 +291,18 @@ const DailySummary: React.FC = () => {
               </div>
             </div>
           ))}
+
+          {/* Empty State */}
+          {!loading && dailySummaryEntries.length === 0 && (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No call data yet
+              </h3>
+              <p className="text-gray-500">
+                Daily summaries will appear here once calls are logged.
+              </p>
+            </div>
+          )}
         </div>
       </main>
 

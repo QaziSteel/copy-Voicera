@@ -6,12 +6,8 @@ import { useDateFilter } from "@/hooks/useDateFilter";
 import { useNotifications } from "@/hooks/useNotifications";
 import NotificationPopup from "@/components/NotificationPopup";
 import { Header } from "@/components/shared/Header";
-
-interface Call {
-  id: string;
-  time: string;
-  status: "booked" | "dropped" | "inquiry";
-}
+import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
+import { useCallLogs } from "@/hooks/useCallLogs";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -36,9 +32,9 @@ const Dashboard: React.FC = () => {
     notificationCount 
   } = useNotifications();
 
-  // Mock data - in a real app this would come from an API
-  // Initialize with empty array to show zero state
-  const [calls, setCalls] = useState<Call[]>([]);
+  // Get real dashboard metrics from database
+  const { metrics, loading: metricsLoading } = useDashboardMetrics();
+  const { callLogs, loading: callLogsLoading } = useCallLogs();
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -174,10 +170,10 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-2xl font-semibold text-black mb-2">
-                    {calls.length}
+                    {metricsLoading ? '...' : metrics.totalCalls}
                   </div>
                   <div className="text-gray-500">
-                    {calls.length} calls today
+                    {metricsLoading ? 'Loading...' : `${metrics.totalCalls} calls total`}
                   </div>
                 </div>
               </div>
@@ -214,7 +210,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-2xl font-semibold text-black mb-2">
-                    {calls.filter((call) => call.status === "booked").length}
+                    {metricsLoading ? '...' : metrics.totalBookings}
                   </div>
                   <div className="text-gray-500">Appointments Scheduled</div>
                 </div>
@@ -236,7 +232,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-2xl font-semibold text-black mb-2">
-                    0.0%
+                    {metricsLoading ? '...' : `${metrics.conversionRate.toFixed(1)}%`}
                   </div>
                   <div className="text-gray-500">Calls to bookings</div>
                 </div>
@@ -265,7 +261,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-2xl font-semibold text-black mb-2">
-                    0s
+                    {metricsLoading ? '...' : metrics.averageCallDuration}
                   </div>
                   <div className="text-gray-500">Avg Call Duration</div>
                 </div>
@@ -284,15 +280,9 @@ const Dashboard: React.FC = () => {
               </div>
 
               {(() => {
-                const successfulBookings = calls.filter(
-                  (call) => call.status === "booked",
-                ).length;
-                const informationInquiries = calls.filter(
-                  (call) => call.status === "inquiry",
-                ).length;
-                const droppedMissed = calls.filter(
-                  (call) => call.status === "dropped",
-                ).length;
+                const successfulBookings = metricsLoading ? 0 : metrics.successfulBookings;
+                const informationInquiries = metricsLoading ? 0 : metrics.informationInquiries;
+                const droppedMissed = metricsLoading ? 0 : metrics.droppedMissed;
                 const unsuccessful = 0; // Set to 0 to match zero state
 
                 return (

@@ -6,25 +6,11 @@ import NotificationPopup from "@/components/NotificationPopup";
 import { DateFilterPopup } from "@/components/DateFilterPopup";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { Header } from "@/components/shared/Header";
-
-interface CallLogEntry {
-  id: string;
-  type: "incoming" | "outgoing";
-  status: "booking" | "inquiry" | "dropped";
-  phoneNumber: string;
-  duration: string;
-  timestamp: string;
-  customerName?: string;
-  bookingDetails?: string;
-  bookingTime?: string;
-}
+import { useCallLogs } from "@/hooks/useCallLogs";
 
 const CallLogs: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [showTranscript, setShowTranscript] = useState(false);
-  const [showReplay, setShowReplay] = useState(false);
-  const [selectedCall, setSelectedCall] = useState<CallLogEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const {
     showDateFilter,
@@ -46,6 +32,9 @@ const CallLogs: React.FC = () => {
     notificationCount 
   } = useNotifications();
 
+  // Get real call logs from database
+  const { callLogs, loading } = useCallLogs(searchTerm);
+
   // Check if user is logged in
   useEffect(() => {
     if (!user) {
@@ -53,324 +42,27 @@ const CallLogs: React.FC = () => {
     }
   }, [user, navigate]);
 
-  // Remove unused handleLogout function since Header handles logout
-
-  // Mock call logs data
-  const callLogs: CallLogEntry[] = [
-    {
-      id: "Call-001",
-      type: "incoming",
-      status: "booking",
-      phoneNumber: "+1 (555) 123-4567",
-      duration: "3:00",
-      timestamp: "01/08/2025, 16:16:07",
-      customerName: "John Smith",
-      bookingDetails: "Booking: John Smith - Consultation",
-      bookingTime: "2024-01-15 at 14:00",
-    },
-    {
-      id: "Call-002",
-      type: "incoming",
-      status: "inquiry",
-      phoneNumber: "+1 (555) 987-6543",
-      duration: "1:35",
-      timestamp: "01/08/2025, 15:16:07",
-    },
-    {
-      id: "Call-002",
-      type: "incoming",
-      status: "dropped",
-      phoneNumber: "Unknown",
-      duration: "0:15",
-      timestamp: "01/08/2025, 14:16:07",
-    },
-  ];
-
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case "booking":
-        return "bg-green-100 text-green-800";
-      case "inquiry":
-        return "bg-blue-100 text-blue-600";
-      case "dropped":
-        return "bg-red-100 text-red-600";
-      default:
-        return "bg-gray-100 text-gray-600";
-    }
+  const getStatusStyle = (endedReason: string | null) => {
+    // Since we're treating all calls as information inquiries for now
+    return "bg-blue-100 text-blue-600";
   };
 
-  const openTranscript = (call: CallLogEntry) => {
-    setSelectedCall(call);
-    setShowTranscript(true);
+  const getStatusText = (endedReason: string | null) => {
+    // For now, treat all calls as information inquiries
+    return "Information Inquiry";
   };
 
-  const openReplay = (call: CallLogEntry) => {
-    setSelectedCall(call);
-    setShowReplay(true);
+  const formatDuration = (totalCallTime: number | null): string => {
+    if (!totalCallTime) return "0:00";
+    const minutes = Math.floor(totalCallTime / 60);
+    const seconds = totalCallTime % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const renderTranscriptPopup = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl w-[700px] max-h-[90vh] overflow-y-auto shadow-lg">
-        {/* Header */}
-        <div className="flex justify-between items-center p-5 border-b border-gray-200">
-          <h3 className="text-xl font-medium text-gray-800">
-            Call Transcript – 14 Aug 2025, 2:45 PM
-          </h3>
-          <button
-            onClick={() => setShowTranscript(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M13.3337 2.6665L2.66699 13.3332"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2.66699 2.6665L13.3337 13.3332"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Transcript Content */}
-        <div className="p-5 space-y-4">
-          {/* AI Agent Message */}
-          <div className="flex gap-4 pb-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">AI Agent</div>
-                <div className="text-gray-500 text-base">
-                  Bella – Voicera AI
-                </div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">
-                  Hello, thank you for calling Bella Salon. How can I help you
-                  today?
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Customer Message */}
-          <div className="flex gap-4 pb-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">John Doe</div>
-                <div className="text-gray-500 text-base">Customer</div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">
-                  Hi, I'd like to book a haircut for this afternoon if possible.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Agent Response */}
-          <div className="flex gap-4 pb-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">AI Agent</div>
-                <div className="text-gray-500 text-base">
-                  Bella – Voicera AI
-                </div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">
-                  Sure! We have availability today. What time works best for
-                  you?
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Customer Response */}
-          <div className="flex gap-4 pb-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">John Doe</div>
-                <div className="text-gray-500 text-base">Customer</div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">3:00 PM would be perfect.</div>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Agent Confirmation */}
-          <div className="flex gap-4 pb-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">AI Agent</div>
-                <div className="text-gray-500 text-base">
-                  Bella – Voicera AI
-                </div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">
-                  Great, I've booked you in for a haircut today at 3:00 PM with
-                  our senior stylist, James. Can I get your phone number to
-                  confirm your booking?
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Customer Phone */}
-          <div className="flex gap-4 pb-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">John Doe</div>
-                <div className="text-gray-500 text-base">Customer</div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">Yes, it's 07456 789 432.</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Final AI Confirmation */}
-          <div className="flex gap-4 pb-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">AI Agent</div>
-                <div className="text-gray-500 text-base">
-                  Bella – Voicera AI
-                </div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">
-                  Perfect. Your appointment is confirmed for today at 3:00 PM.
-                  We look forward to seeing you, Anna. Have a great day!
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Thank You */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="mb-3">
-                <div className="text-xl font-medium text-black">John Doe</div>
-                <div className="text-gray-500 text-base">Customer</div>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <div className="text-gray-600">Thank you!</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderReplayPopup = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl w-[800px] shadow-lg">
-        {/* Header */}
-        <div className="flex justify-between items-center p-5 border-b border-gray-200">
-          <h3 className="text-xl font-medium text-gray-800">
-            Call Record – 14 Aug 2025, 2:45 PM
-          </h3>
-          <button
-            onClick={() => setShowReplay(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M13.3337 2.6665L2.66699 13.3332"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M2.66699 2.6665L13.3337 13.3332"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Audio Player */}
-        <div className="p-5">
-          <div className="flex items-center gap-5 p-3 border border-gray-200 rounded-lg">
-            {/* Previous Button */}
-            <button className="p-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M8.06492 12.6258C8.31931 13.8374 9.67295 14.7077 12.3802 16.4481C15.3247 18.3411 16.797 19.2876 17.9895 18.9229C18.3934 18.7994 18.7654 18.5823 19.0777 18.2876C20 17.4178 20 15.6118 20 12C20 8.38816 20 6.58224 19.0777 5.71235C18.7654 5.41773 18.3934 5.20057 17.9895 5.07707C16.797 4.71243 15.3247 5.6589 12.3802 7.55186C9.67295 9.29233 8.31931 10.1626 8.06492 11.3742C7.97836 11.7865 7.97836 12.2135 8.06492 12.6258Z"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M4 4V20"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-
-            {/* Play Button */}
-            <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z"
-                  fill="white"
-                />
-              </svg>
-            </div>
-
-            {/* Next Button */}
-            <button className="p-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15.9351 12.6258C15.6807 13.8374 14.327 14.7077 11.6198 16.4481C8.67528 18.3411 7.20303 19.2876 6.01052 18.9229C5.60662 18.7994 5.23463 18.5823 4.92227 18.2876C4 17.4178 4 15.6118 4 12C4 8.38816 4 6.58224 4.92227 5.71235C5.23463 5.41773 5.60662 5.20057 6.01052 5.07707C7.20304 4.71243 8.67528 5.6589 11.6198 7.55186C14.327 9.29233 15.6807 10.1626 15.9351 11.3742C16.0216 11.7865 16.0216 12.2135 15.9351 12.6258Z"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M20 5V19"
-                  stroke="#141B34"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-
-            {/* Time Display */}
-            <span className="text-gray-500 text-base ml-4">00:28</span>
-
-            {/* Progress Bar */}
-            <div className="flex-1 mx-4 relative">
-              <div className="h-2 bg-gray-200 rounded-full">
-                <div className="w-6 h-2 bg-black rounded-l-full"></div>
-                <div className="w-1 h-4 bg-black rounded-full absolute left-5 -top-1"></div>
-              </div>
-            </div>
-
-            {/* Total Time */}
-            <span className="text-gray-500 text-base">03:00</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const formatTimestamp = (timestamp: string | null): string => {
+    if (!timestamp) return "Unknown";
+    return new Date(timestamp).toLocaleString();
+  };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -479,170 +171,99 @@ const CallLogs: React.FC = () => {
                   </clipPath>
                 </defs>
               </svg>
-              <span className="text-base font-medium">Today</span>
+              <span className="text-sm font-medium">Today</span>
             </button>
           </div>
         </div>
 
         {/* Call History */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-200">
-          <div className="mb-5">
-            <h3 className="text-xl font-semibold text-black mb-1">
-              Call History
-            </h3>
-            <p className="text-lg font-semibold text-gray-500">3 or 3 calls</p>
-          </div>
+        <div className="bg-white rounded-2xl p-6">
+          <h2 className="text-lg font-semibold text-black mb-4">Call History</h2>
 
-          <div className="space-y-3.5">
-            {callLogs.map((call, index) => (
-              <div
-                key={index}
-                className="p-4 border border-gray-200 rounded-xl"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                      >
-                        <path
-                          d="M12.3683 15.2398L12.7038 15.9948C12.9232 16.4884 13.0329 16.7353 13.197 16.9242C13.4026 17.1609 13.6706 17.335 13.9704 17.4268C14.2097 17.5 14.4798 17.5 15.02 17.5C15.8102 17.5 16.2054 17.5 16.5371 17.3481C16.9278 17.1691 17.2806 16.7806 17.4212 16.3745C17.5406 16.0298 17.5064 15.6755 17.438 14.9669C16.7102 7.42483 12.5753 3.28992 5.03329 2.56217C4.3247 2.49375 3.97037 2.45958 3.6257 2.57892C3.21954 2.7195 2.83104 3.07242 2.65204 3.46308C2.5002 3.79483 2.5002 4.18992 2.5002 4.98017C2.5002 5.52042 2.5002 5.7905 2.57337 6.02975C2.66512 6.32958 2.83929 6.59758 3.07604 6.80317C3.26487 6.96725 3.5117 7.07692 4.00537 7.29633L4.76037 7.63192C5.29495 7.8695 5.56229 7.98825 5.83387 8.01408C6.09387 8.03883 6.35595 8.00233 6.59929 7.90758C6.85354 7.80858 7.0782 7.62133 7.5277 7.24683C7.97504 6.874 8.1987 6.68758 8.47204 6.58775C8.71437 6.49925 9.0347 6.46642 9.28987 6.50408C9.57779 6.5465 9.7982 6.66425 10.2391 6.89992C11.6108 7.63292 12.3672 8.38933 13.1003 9.76108C13.3359 10.2019 13.4537 10.4224 13.4961 10.7102C13.5337 10.9655 13.5009 11.2858 13.4124 11.5281C13.3126 11.8014 13.1262 12.0251 12.7533 12.4725C12.3788 12.9219 12.1916 13.1467 12.0925 13.4009C11.9978 13.6442 11.9613 13.9063 11.986 14.1663C12.0119 14.4379 12.1307 14.7052 12.3683 15.2398Z"
-                          stroke="#22C55E"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-4 mb-3">
-                        <h4 className="text-lg font-semibold text-black">
-                          {call.id}
-                        </h4>
-                        <span className="px-3 py-1 border border-gray-200 rounded-lg text-base text-black">
-                          {call.type === "incoming" ? "Incoming" : "Outgoing"}
-                        </span>
-                        <span
-                          className={`px-3 py-1 rounded-lg text-base ${getStatusStyle(call.status)}`}
-                        >
-                          {call.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-7">
-                        <div className="flex items-center gap-1">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M17 8.5C17 5.73858 14.7614 3.5 12 3.5C9.23858 3.5 7 5.73858 7 8.5C7 11.2614 9.23858 13.5 12 13.5C14.7614 13.5 17 11.2614 17 8.5Z"
-                              stroke="#6B7280"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M19 20.5C19 16.634 15.866 13.5 12 13.5C8.13401 13.5 5 16.634 5 20.5"
-                              stroke="#6B7280"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          <span className="text-gray-500 text-base">
-                            {call.phoneNumber}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                              stroke="#6B7280"
-                              strokeWidth="1.5"
-                            />
-                            <path
-                              d="M12 8V12L14 14"
-                              stroke="#6B7280"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          <span className="text-gray-500 text-base">
-                            {call.duration}
-                          </span>
-                        </div>
-                        <span className="text-gray-500 text-base">
-                          {call.timestamp}
-                        </span>
-                      </div>
-                    </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-2 text-muted-foreground">Loading calls...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {callLogs.map((call) => (
+                <div
+                  key={call.id}
+                  className="flex items-start gap-4 p-4 border border-gray-200 rounded-xl"
+                >
+                  {/* Call Icon */}
+                  <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mt-1">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M9.1585 5.71223L8.75584 4.80625C8.49256 4.21388 8.36092 3.91768 8.16405 3.69101C7.91732 3.40694 7.59571 3.19794 7.23592 3.08785C6.94883 3 6.6247 3 5.97645 3C5.02815 3 4.554 3 4.15597 3.18229C3.68711 3.39702 3.26368 3.86328 3.09497 4.3506C2.95175 4.76429 2.99278 5.18943 3.07482 6.0397C3.94815 15.0902 8.91006 20.0521 17.9605 20.9254C18.8108 21.0075 19.236 21.0485 19.6496 20.9053C20.137 20.7366 20.6032 20.3131 20.818 19.8443C21.0002 19.4462 21.0002 18.9721 21.0002 18.0238C21.0002 17.3755 21.0002 17.0514 20.9124 16.7643C20.8023 16.4045 20.5933 16.0829 20.3092 15.8362C20.0826 15.6393 19.7864 15.5077 19.194 15.2444L18.288 14.8417C17.6465 14.5566 17.3257 14.4141 16.9998 14.3831C16.6878 14.3534 16.3733 14.3972 16.0813 14.5109C15.7762 14.6297 15.5066 14.8544 14.9672 15.3038C14.4304 15.7512 14.162 15.9749 13.834 16.0947C13.5432 16.2009 13.1588 16.2403 12.8526 16.1951C12.5071 16.1442 12.2426 16.0029 11.7135 15.7201C10.0675 14.8405 9.15977 13.9328 8.28011 12.2867C7.99738 11.7577 7.85602 11.4931 7.80511 11.1477C7.75998 10.8414 7.79932 10.457 7.90554 10.1663C8.02536 9.83828 8.24905 9.56986 8.69643 9.033C9.14586 8.49368 9.37058 8.22402 9.48939 7.91891C9.60309 7.62694 9.64686 7.3124 9.61719 7.00048C9.58618 6.67452 9.44362 6.35376 9.1585 5.71223Z"
+                        stroke="#6B7280"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => openTranscript(call)}
-                      className="flex items-center gap-2.5 px-4 py-2 border border-gray-200 rounded-xl"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                      >
-                        <path
-                          d="M5.0823 15.8335C3.99888 15.7269 3.18725 15.4015 2.64293 14.8572C1.66663 13.8809 1.66663 12.3095 1.66663 9.16683V8.75016C1.66663 5.60746 1.66663 4.03612 2.64293 3.0598C3.61925 2.0835 5.19059 2.0835 8.33329 2.0835H11.6666C14.8093 2.0835 16.3807 2.0835 17.357 3.0598C18.3333 4.03612 18.3333 5.60746 18.3333 8.75016V9.16683C18.3333 12.3095 18.3333 13.8809 17.357 14.8572C16.3807 15.8335 14.8093 15.8335 11.6666 15.8335C11.1995 15.8439 10.8275 15.8794 10.4621 15.9627C9.46346 16.1926 8.53871 16.7036 7.62485 17.1492C6.3227 17.7842 5.67163 18.1017 5.26303 17.8044C4.48137 17.2222 5.24541 15.4184 5.41663 14.5835"
-                          stroke="#141B34"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span className="text-black text-base">Transcript</span>
-                    </button>
-                    <button
-                      onClick={() => openReplay(call)}
-                      className="flex items-center gap-2.5 px-4 py-2 border border-gray-200 rounded-xl"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                      >
-                        <path
-                          d="M15.7421 10.705C15.4475 11.8242 14.0555 12.615 11.2714 14.1968C8.57996 15.7258 7.23429 16.4903 6.14982 16.183C5.70146 16.0559 5.29295 15.8147 4.96349 15.4822C4.16663 14.6782 4.16663 13.1188 4.16663 10C4.16663 6.88117 4.16663 5.32175 4.96349 4.51777C5.29295 4.18538 5.70146 3.94407 6.14982 3.81702C7.23429 3.50971 8.57996 4.27423 11.2714 5.80328C14.0555 7.38498 15.4475 8.17583 15.7421 9.295C15.8637 9.757 15.8637 10.243 15.7421 10.705Z"
-                          stroke="#141B34"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span className="text-black text-base">Replay</span>
-                    </button>
+
+                  {/* Call Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="font-medium text-black">{call.id}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm text-gray-500 capitalize">
+                            {call.type || 'Incoming'}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(call.ended_reason)}`}
+                          >
+                            {getStatusText(call.ended_reason)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right text-sm text-gray-500">
+                        <div>{formatTimestamp(call.started_at)}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-600">
+                        <div>📞 {call.phone_number}</div>
+                        {call.customer_number && (
+                          <div>📞 Customer: {call.customer_number}</div>
+                        )}
+                        <div>⏱️ Duration: {formatDuration(call.total_call_time)}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+              ))}
 
-                {/* Booking Details (only for booking status) */}
-                {call.status === "booking" && call.bookingDetails && (
-                  <div className="flex justify-between items-center p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <span className="text-green-800 text-base">
-                      {call.bookingDetails}
-                    </span>
-                    <span className="text-green-500 text-base">
-                      {call.bookingTime}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              {/* Empty State */}
+              {callLogs.length === 0 && (
+                <div className="text-center py-12">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No calls yet
+                  </h3>
+                  <p className="text-gray-500">
+                    When calls come in, they'll appear here.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
 
@@ -666,10 +287,6 @@ const CallLogs: React.FC = () => {
         onClose={closeNotifications}
         notificationCount={notificationCount}
       />
-
-      {/* Popups */}
-      {showTranscript && renderTranscriptPopup()}
-      {showReplay && renderReplayPopup()}
     </div>
   );
 };
