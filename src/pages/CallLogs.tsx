@@ -7,11 +7,19 @@ import { DateFilterPopup } from "@/components/DateFilterPopup";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { Header } from "@/components/shared/Header";
 import { useCallLogs } from "@/hooks/useCallLogs";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Play, FileText } from "lucide-react";
 
 const CallLogs: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const [showReplayModal, setShowReplayModal] = useState(false);
+  const [selectedCall, setSelectedCall] = useState<any>(null);
+
   const {
     showDateFilter,
     selectedFilter,
@@ -62,6 +70,16 @@ const CallLogs: React.FC = () => {
   const formatTimestamp = (timestamp: string | null): string => {
     if (!timestamp) return "Unknown";
     return new Date(timestamp).toLocaleString();
+  };
+
+  const handleViewTranscript = (call: any) => {
+    setSelectedCall(call);
+    setShowTranscriptModal(true);
+  };
+
+  const handleReplay = (call: any) => {
+    setSelectedCall(call);
+    setShowReplayModal(true);
   };
 
   return (
@@ -177,91 +195,95 @@ const CallLogs: React.FC = () => {
         </div>
 
         {/* Call History */}
-        <div className="bg-white rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-black mb-4">Call History</h2>
+        <div className="bg-card rounded-2xl p-6 shadow-sm border">
+          <h2 className="text-lg font-semibold text-foreground mb-6">Call History</h2>
 
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               <p className="mt-2 text-muted-foreground">Loading calls...</p>
             </div>
+          ) : callLogs.length === 0 ? (
+            <div className="text-center py-12">
+              <svg
+                className="mx-auto h-12 w-12 text-muted-foreground mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                />
+              </svg>
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                No calls yet
+              </h3>
+              <p className="text-muted-foreground">
+                When calls come in, they'll appear here.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-4">
-              {callLogs.map((call) => (
-                <div
-                  key={call.id}
-                  className="flex items-start gap-4 p-4 border border-gray-200 rounded-xl"
-                >
-                  {/* Call Icon */}
-                  <div className="flex-shrink-0 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mt-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M9.1585 5.71223L8.75584 4.80625C8.49256 4.21388 8.36092 3.91768 8.16405 3.69101C7.91732 3.40694 7.59571 3.19794 7.23592 3.08785C6.94883 3 6.6247 3 5.97645 3C5.02815 3 4.554 3 4.15597 3.18229C3.68711 3.39702 3.26368 3.86328 3.09497 4.3506C2.95175 4.76429 2.99278 5.18943 3.07482 6.0397C3.94815 15.0902 8.91006 20.0521 17.9605 20.9254C18.8108 21.0075 19.236 21.0485 19.6496 20.9053C20.137 20.7366 20.6032 20.3131 20.818 19.8443C21.0002 19.4462 21.0002 18.9721 21.0002 18.0238C21.0002 17.3755 21.0002 17.0514 20.9124 16.7643C20.8023 16.4045 20.5933 16.0829 20.3092 15.8362C20.0826 15.6393 19.7864 15.5077 19.194 15.2444L18.288 14.8417C17.6465 14.5566 17.3257 14.4141 16.9998 14.3831C16.6878 14.3534 16.3733 14.3972 16.0813 14.5109C15.7762 14.6297 15.5066 14.8544 14.9672 15.3038C14.4304 15.7512 14.162 15.9749 13.834 16.0947C13.5432 16.2009 13.1588 16.2403 12.8526 16.1951C12.5071 16.1442 12.2426 16.0029 11.7135 15.7201C10.0675 14.8405 9.15977 13.9328 8.28011 12.2867C7.99738 11.7577 7.85602 11.4931 7.80511 11.1477C7.75998 10.8414 7.79932 10.457 7.90554 10.1663C8.02536 9.83828 8.24905 9.56986 8.69643 9.033C9.14586 8.49368 9.37058 8.22402 9.48939 7.91891C9.60309 7.62694 9.64686 7.3124 9.61719 7.00048C9.58618 6.67452 9.44362 6.35376 9.1585 5.71223Z"
-                        stroke="#6B7280"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-
-                  {/* Call Details */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-medium text-black">{call.id}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm text-gray-500 capitalize">
-                            {call.type || 'Incoming'}
-                          </span>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(call.ended_reason)}`}
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Call ID</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Phone Number</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Timestamp</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {callLogs.map((call) => (
+                    <TableRow key={call.id}>
+                      <TableCell className="font-medium">
+                        {call.id.substring(0, 8)}...
+                      </TableCell>
+                      <TableCell className="capitalize">
+                        {call.type || 'Incoming'}
+                      </TableCell>
+                      <TableCell>{call.phone_number}</TableCell>
+                      <TableCell>{formatDuration(call.total_call_time)}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(call.ended_reason)}`}>
+                          {getStatusText(call.ended_reason)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatTimestamp(call.started_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewTranscript(call)}
+                            className="text-xs"
                           >
-                            {getStatusText(call.ended_reason)}
-                          </span>
+                            <FileText className="h-3 w-3 mr-1" />
+                            Transcript
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleReplay(call)}
+                            className="text-xs"
+                          >
+                            <Play className="h-3 w-3 mr-1" />
+                            Replay
+                          </Button>
                         </div>
-                      </div>
-                      <div className="text-right text-sm text-gray-500">
-                        <div>{formatTimestamp(call.started_at)}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600">
-                        <div>📞 {call.phone_number}</div>
-                        {call.customer_number && (
-                          <div>📞 Customer: {call.customer_number}</div>
-                        )}
-                        <div>⏱️ Duration: {formatDuration(call.total_call_time)}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Empty State */}
-              {callLogs.length === 0 && (
-                <div className="text-center py-12">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No calls yet
-                  </h3>
-                  <p className="text-gray-500">
-                    When calls come in, they'll appear here.
-                  </p>
-                </div>
-              )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>
@@ -287,6 +309,75 @@ const CallLogs: React.FC = () => {
         onClose={closeNotifications}
         notificationCount={notificationCount}
       />
+
+      {/* Transcript Modal */}
+      <Dialog open={showTranscriptModal} onOpenChange={setShowTranscriptModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Call Transcript</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedCall && (
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Call ID:</span> {selectedCall.id.substring(0, 8)}...
+                  </div>
+                  <div>
+                    <span className="font-medium">Phone:</span> {selectedCall.phone_number}
+                  </div>
+                  <div>
+                    <span className="font-medium">Duration:</span> {formatDuration(selectedCall.total_call_time)}
+                  </div>
+                  <div>
+                    <span className="font-medium">Date:</span> {formatTimestamp(selectedCall.started_at)}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="bg-muted/30 p-6 rounded-lg text-center">
+              <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+              <h3 className="font-medium text-foreground mb-2">Transcript Not Available</h3>
+              <p className="text-sm text-muted-foreground">
+                Call transcripts are currently being processed. This feature will be available soon.
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Replay Modal */}
+      <Dialog open={showReplayModal} onOpenChange={setShowReplayModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Call Replay</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedCall && (
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="text-sm space-y-2">
+                  <div>
+                    <span className="font-medium">Call ID:</span> {selectedCall.id.substring(0, 8)}...
+                  </div>
+                  <div>
+                    <span className="font-medium">Phone:</span> {selectedCall.phone_number}
+                  </div>
+                  <div>
+                    <span className="font-medium">Duration:</span> {formatDuration(selectedCall.total_call_time)}
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="bg-muted/30 p-6 rounded-lg text-center">
+              <Play className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+              <h3 className="font-medium text-foreground mb-2">Recording Not Available</h3>
+              <p className="text-sm text-muted-foreground">
+                Call recordings are currently being processed. This feature will be available soon.
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
