@@ -25,7 +25,6 @@ export type Database = {
           org_id: string | null
           phone_number: string
           phone_number_id: string | null
-          recording_url: string | null
           started_at: string | null
           total_call_time: number | null
           type: string | null
@@ -41,7 +40,6 @@ export type Database = {
           org_id?: string | null
           phone_number: string
           phone_number_id?: string | null
-          recording_url?: string | null
           started_at?: string | null
           total_call_time?: number | null
           type?: string | null
@@ -57,7 +55,6 @@ export type Database = {
           org_id?: string | null
           phone_number?: string
           phone_number_id?: string | null
-          recording_url?: string | null
           started_at?: string | null
           total_call_time?: number | null
           type?: string | null
