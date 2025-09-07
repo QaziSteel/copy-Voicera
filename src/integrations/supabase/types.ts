@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      call_logs: {
+        Row: {
+          cost: number | null
+          created_at: string
+          customer_number: string | null
+          ended_at: string | null
+          ended_reason: string | null
+          id: string
+          org_id: string | null
+          phone_number: string
+          phone_number_id: string | null
+          recording_url: string | null
+          started_at: string | null
+          total_call_time: number | null
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          customer_number?: string | null
+          ended_at?: string | null
+          ended_reason?: string | null
+          id?: string
+          org_id?: string | null
+          phone_number: string
+          phone_number_id?: string | null
+          recording_url?: string | null
+          started_at?: string | null
+          total_call_time?: number | null
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          customer_number?: string | null
+          ended_at?: string | null
+          ended_reason?: string | null
+          id?: string
+          org_id?: string | null
+          phone_number?: string
+          phone_number_id?: string | null
+          recording_url?: string | null
+          started_at?: string | null
+          total_call_time?: number | null
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       onboarding_responses: {
         Row: {
           ai_assistant_name: string | null
