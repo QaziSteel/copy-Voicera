@@ -309,6 +309,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      user_owns_phone_number: {
+        Args: { _phone_number: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       project_role: "owner" | "admin" | "member" | "viewer"
