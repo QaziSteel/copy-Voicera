@@ -62,7 +62,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       <Header currentPage="dashboard" />
@@ -380,16 +379,14 @@ const Dashboard: React.FC = () => {
                             strokeLinejoin="round"
                           />
                           <path
-                            d="M6.73679 9.92983C6.60721 9.67667 6.53525 9.50142 6.50406 9.28975C6.46645 9.0345 6.49923 8.71417 6.58775 8.47192C6.6876 8.19857 6.87401 7.97488 7.24683 7.5275C7.62135 7.07807 7.80862 6.85335 7.90763 6.59909C8.00238 6.35578 8.03884 6.09367 8.01412 5.83373C7.98828 5.5621 7.86948 5.2948 7.63188 4.76019L7.29633 4.00521C7.07693 3.51157 6.96723 3.26473 6.80317 3.07584C6.59756 2.83912 6.32956 2.66495 6.02973 2.57321C5.79048 2.5 5.52038 2.5 4.98018 2.5C4.18993 2.5 3.79479 2.5 3.46311 2.65191C3.07239 2.83085 2.71953 3.2194 2.57894 3.6255C2.45959 3.97024 2.49378 4.32453 2.56215 5.03308C2.82826 7.79079 3.54988 10.093 4.72702 11.9397M6.20917 13.7908C8.27663 15.8582 11.1959 17.074 14.9669 17.4378C15.6755 17.5062 16.0298 17.5404 16.3745 17.4211C16.7806 17.2805 17.1692 16.9276 17.3481 16.5369C17.5 16.2052 17.5 15.8101 17.5 15.0198C17.5 14.4796 17.5 14.2095 17.4268 13.9702C17.3351 13.6704 17.1609 13.4024 16.9242 13.1968C16.7352 13.0327 16.4884 12.9231 15.9948 12.7037L15.2398 12.3681C14.7052 12.1305 14.4379 12.0117 14.1663 11.9859C13.9063 11.9612 13.6443 11.9977 13.4009 12.0924C13.1467 12.1914 12.9219 12.3787 12.4725 12.7532C12.0251 13.126 11.8014 13.3124 11.5281 13.4122C11.2858 13.5007 10.9655 13.5336 10.7103 13.4959C10.4224 13.4535 10.2019 13.3358 9.76108 13.1001C9.07525 12.7336 8.54317 12.3612 8.09098 11.909"
+                            d="M2.5 2.5L17.5 17.5"
                             stroke="#EF4444"
                             strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
                         </svg>
-                        <span className="text-lg text-black">
-                          Dropped/Missed
-                        </span>
+                        <span className="text-lg text-black">Dropped/Missed</span>
                       </div>
                       <span className="text-lg font-semibold text-black">
                         {droppedMissed}
@@ -405,15 +402,15 @@ const Dashboard: React.FC = () => {
                           fill="none"
                         >
                           <path
-                            d="M18.3333 9.99984C18.3333 5.39746 14.6023 1.6665 10 1.6665C5.39762 1.6665 1.66666 5.39746 1.66666 9.99984C1.66666 14.6022 5.39762 18.3332 10 18.3332C14.6023 18.3332 18.3333 14.6022 18.3333 9.99984Z"
-                            stroke="#6B7280"
+                            d="M17.5 2.5L2.5 17.5"
+                            stroke="#EF4444"
                             strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
                           <path
-                            d="M12.4995 12.5L7.5 7.5M7.50053 12.5L12.5 7.5"
-                            stroke="#6B7280"
+                            d="M2.5 2.5L17.5 17.5"
+                            stroke="#EF4444"
                             strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -422,7 +419,7 @@ const Dashboard: React.FC = () => {
                         <span className="text-lg text-black">Unsuccessful</span>
                       </div>
                       <span className="text-lg font-semibold text-black">
-                        {calls.length > 0 ? unsuccessful : 0}
+                        {unsuccessful}
                       </span>
                     </div>
                   </div>
@@ -443,7 +440,12 @@ const Dashboard: React.FC = () => {
                 </p>
               </div>
 
-              {calls.length === 0 ? (
+              {callLogsLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+                </div>
+              ) : callLogs.length === 0 ? (
                 <div className="flex items-center justify-center py-40">
                   <div className="text-center opacity-15">
                     <img
@@ -455,24 +457,26 @@ const Dashboard: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {calls.map((call) => (
+                  {callLogs.slice(0, 5).map((call) => (
                     <div
                       key={call.id}
                       className="flex justify-between items-center p-2 bg-gray-50 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <div>
                           <div className="text-lg font-semibold text-black">
-                            Incoming Call #{call.id}
+                            Call {call.id}
                           </div>
-                          <div className="text-gray-500">{call.time}</div>
+                          <div className="text-gray-500">
+                            {call.started_at ? new Date(call.started_at).toLocaleString() : 'Unknown time'}
+                          </div>
                         </div>
                       </div>
-                      <div
-                        className={`px-4 py-1 rounded-xl text-sm font-medium ${getStatusStyle(call.status)}`}
-                      >
-                        {getStatusText(call.status)}
+                      <div className="text-right">
+                        <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+                          Information Inquiry
+                        </div>
                       </div>
                     </div>
                   ))}
