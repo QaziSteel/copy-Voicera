@@ -62,6 +62,45 @@ export type Database = {
         }
         Relationships: []
       }
+      google_integrations: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          is_active: boolean
+          project_id: string
+          refresh_token: string
+          scopes: string[]
+          token_expires_at: string
+          updated_at: string
+          user_email: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          project_id: string
+          refresh_token: string
+          scopes: string[]
+          token_expires_at: string
+          updated_at?: string
+          user_email: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          project_id?: string
+          refresh_token?: string
+          scopes?: string[]
+          token_expires_at?: string
+          updated_at?: string
+          user_email?: string
+        }
+        Relationships: []
+      }
       onboarding_responses: {
         Row: {
           ai_assistant_name: string | null

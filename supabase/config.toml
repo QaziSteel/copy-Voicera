@@ -2,3 +2,6 @@ project_id = "nhhdxwgrmcdsapbuvelx"
 
 [functions.onboarding-api]
 verify_jwt = false
+
+[functions.google-oauth-callback]
+verify_jwt = false

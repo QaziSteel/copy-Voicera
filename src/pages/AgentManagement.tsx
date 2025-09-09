@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
+import { useProject } from "@/contexts/ProjectContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Trash2, Plus } from "lucide-react";
 import { AgentToggle } from "@/components/ui/agent-toggle";
 import { useToast } from "@/hooks/use-toast";
+import { useGoogleIntegration } from "@/hooks/useGoogleIntegration";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingData } from "@/lib/onboarding";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -67,8 +69,12 @@ const AgentManagement = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { currentProject } = useProject();
   const { toast } = useToast();
   const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount } = useNotifications();
+  
+  // Google Integration
+  const { integration: googleIntegration, loading: googleLoading, initiateOAuth, disconnectIntegration } = useGoogleIntegration(currentProject?.id || null);
   
   // State for all tabs
   const [loading, setLoading] = useState(true);
@@ -114,7 +120,26 @@ const AgentManagement = () => {
   // Load data on component mount
   useEffect(() => {
     loadUserAgents();
-  }, []);
+    
+    // Handle OAuth callback
+    const urlParams = new URLSearchParams(location.search);
+    const oauthStatus = urlParams.get('oauth');
+    const userEmail = urlParams.get('email');
+    const error = urlParams.get('error');
+    
+    if (oauthStatus === 'success' && userEmail) {
+      toast({
+        title: "Success",
+        description: `Google Calendar connected successfully for ${userEmail}`,
+      });
+    } else if (oauthStatus === 'error') {
+      toast({
+        title: "Error",
+        description: `Failed to connect Google Calendar: ${error || 'Unknown error'}`,
+        variant: "destructive",
+      });
+    }
+  }, [location.search]);
 
   // Extract agentId from URL
   const urlParams = new URLSearchParams(location.search);
@@ -1340,7 +1365,11 @@ const AgentManagement = () => {
                       </div>
                       
                       {/* Sync Account Button */}
-                      <button className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl">
+                      <button 
+                        onClick={() => selectedAgentId && initiateOAuth(selectedAgentId)}
+                        disabled={googleLoading || !selectedAgentId}
+                        className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50"
+                      >
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                           <g clipPath="url(#clip0_183_684)">
                             <path
@@ -1371,8 +1400,33 @@ const AgentManagement = () => {
                             </clipPath>
                           </defs>
                         </svg>
-                        <span className="text-base font-medium">Sync Account</span>
+                        <span className="text-base font-medium">
+                          {googleIntegration ? 'Connected' : 'Sync Account'}
+                        </span>
                       </button>
+                      
+                      {/* Google Integration Status */}
+                      {googleIntegration && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-green-800">
+                                Google Calendar Connected
+                              </p>
+                              <p className="text-xs text-green-600">
+                                {googleIntegration.user_email}
+                              </p>
+                            </div>
+                            <button
+                              onClick={disconnectIntegration}
+                              disabled={googleLoading}
+                              className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
+                            >
+                              Disconnect
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
