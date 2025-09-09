@@ -156,11 +156,29 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
   return data;
 };
 
-export const saveOnboardingResponse = async (data: OnboardingData) => {
+export const saveOnboardingResponse = async (data: OnboardingData, projectId?: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Get the user's default project if no projectId provided
+  let finalProjectId = projectId;
+  if (!finalProjectId) {
+    const { data: userProjects } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', user.id)
+      .limit(1);
+    
+    finalProjectId = userProjects?.[0]?.project_id;
+  }
+
   const { data: response, error } = await supabase
     .from('onboarding_responses')
     .insert({
-      user_id: (await supabase.auth.getUser()).data.user?.id,
+      user_id: user.id,
+      project_id: finalProjectId,
       business_name: data.businessName,
       business_type: data.businessType,
       primary_location: data.primaryLocation,
@@ -187,25 +205,45 @@ export const saveOnboardingResponse = async (data: OnboardingData) => {
   return { data: response, error };
 };
 
-export const getLatestOnboardingResponse = async () => {
-  const { data, error } = await supabase
+export const getLatestOnboardingResponse = async (projectId?: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  let query = supabase
     .from('onboarding_responses')
     .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (projectId) {
+    query = query.eq('project_id', projectId);
+  }
+
+  const { data, error } = await query.limit(1).maybeSingle();
 
   return { data, error };
 };
 
-export const hasCompletedOnboarding = async (): Promise<boolean> => {
+export const hasCompletedOnboarding = async (projectId?: string): Promise<boolean> => {
   try {
-    const { data, error } = await supabase
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return false;
+    }
+
+    let query = supabase
       .from('onboarding_responses')
       .select('id')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (projectId) {
+      query = query.eq('project_id', projectId);
+    }
+
+    const { data, error } = await query.limit(1).maybeSingle();
 
     if (error) {
       console.error('Error checking onboarding status:', error);

@@ -25,6 +25,7 @@ export type Database = {
           org_id: string | null
           phone_number: string
           phone_number_id: string | null
+          project_id: string | null
           started_at: string | null
           total_call_time: number | null
           type: string | null
@@ -40,6 +41,7 @@ export type Database = {
           org_id?: string | null
           phone_number: string
           phone_number_id?: string | null
+          project_id?: string | null
           started_at?: string | null
           total_call_time?: number | null
           type?: string | null
@@ -55,12 +57,21 @@ export type Database = {
           org_id?: string | null
           phone_number?: string
           phone_number_id?: string | null
+          project_id?: string | null
           started_at?: string | null
           total_call_time?: number | null
           type?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       onboarding_responses: {
         Row: {
@@ -79,6 +90,7 @@ export type Database = {
           faq_data: Json | null
           id: string
           primary_location: string | null
+          project_id: string | null
           purchased_number_details: Json | null
           reminder_settings: Json | null
           schedule_full_action: string | null
@@ -104,6 +116,7 @@ export type Database = {
           faq_data?: Json | null
           id?: string
           primary_location?: string | null
+          project_id?: string | null
           purchased_number_details?: Json | null
           reminder_settings?: Json | null
           schedule_full_action?: string | null
@@ -129,6 +142,7 @@ export type Database = {
           faq_data?: Json | null
           id?: string
           primary_location?: string | null
+          project_id?: string | null
           purchased_number_details?: Json | null
           reminder_settings?: Json | null
           schedule_full_action?: string | null
@@ -138,7 +152,15 @@ export type Database = {
           wants_daily_summary?: boolean | null
           wants_email_confirmations?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_responses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -307,6 +329,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["project_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      project_owns_phone_number: {
+        Args: { _phone_number: string; _user_id: string }
         Returns: boolean
       }
       user_owns_phone_number: {

@@ -1,476 +1,134 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff } from "lucide-react";
-import { Header } from "@/components/shared/Header";
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProject } from '@/contexts/ProjectContext';
+import { useProjectInvite } from '@/hooks/useProjectInvite';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, X, UserPlus, Users, Mail, Crown, Shield, User, Trash2 } from 'lucide-react';
+import { Header } from '@/components/shared/Header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 
-const Profile: React.FC = () => {
+export default function Profile() {
+  const { user, updatePassword, signOut } = useAuth();
+  const { currentProject, projects, projectMembers, switchProject, refreshProjectMembers } = useProject();
+  const { inviteUserToProject, removeUserFromProject, loading: inviteLoading } = useProjectInvite();
   const navigate = useNavigate();
-  const { user, loading, signIn, updatePassword, signOut } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
+  const [profileData, setProfileData] = useState<any>(null);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  // Password form states
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'member' | 'admin'>('member');
+  const [countdown, setCountdown] = useState(0);
+  const [generatedCode, setGeneratedCode] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [countdown, setCountdown] = useState(30);
-  const [generatedCode, setGeneratedCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Profile data states
-  const [profileData, setProfileData] = useState<any>(null);
   const [showCurrentPasswordDisplay, setShowCurrentPasswordDisplay] = useState(false);
 
-  // Check if user is logged in using useAuth
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
+    if (!user) {
+      navigate('/auth');
+      return;
     }
-  }, [user, loading, navigate]);
 
-  // Fetch profile data
-  useEffect(() => {
     const fetchProfileData = async () => {
-      if (user?.id) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-          
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching profile:', error);
-            return;
-          }
-          
-          setProfileData(data);
-        } catch (error) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
           console.error('Error fetching profile:', error);
+        } else {
+          setProfileData(data);
         }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchProfileData();
-  }, [user]);
+  }, [user, navigate]);
 
-  // Countdown for verification
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (showVerificationModal && countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+  const handleInviteUser = async () => {
+    if (!inviteEmail || !currentProject) return;
+    
+    const result = await inviteUserToProject(inviteEmail, currentProject.id, inviteRole);
+    if (result.success) {
+      setShowInviteModal(false);
+      setInviteEmail('');
+      setInviteRole('member');
+      refreshProjectMembers();
     }
-    return () => clearTimeout(timer);
-  }, [showVerificationModal, countdown]);
-
-  const handleChangePasswordClick = () => {
-    setShowChangePasswordModal(true);
   };
 
-  const handleSavePassword = async () => {
-    // Validation logic
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
+  const handleRemoveUser = async (userId: string) => {
+    if (!currentProject) return;
+    
+    const result = await removeUserFromProject(userId, currentProject.id);
+    if (result.success) {
+      refreshProjectMembers();
     }
+  };
 
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'owner': return 'bg-primary text-primary-foreground';
+      case 'admin': return 'bg-orange-100 text-orange-800';
+      case 'member': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'owner': return <Crown className="w-4 h-4" />;
+      case 'admin': return <Shield className="w-4 h-4" />;
+      default: return <User className="w-4 h-4" />;
+    }
+  };
+
+  // Password Management Functions
+  const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "New passwords do not match",
-        variant: "destructive",
-      });
+      toast.error('New passwords do not match.');
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive",
-      });
-      return;
-    }
+    const { error } = await updatePassword(newPassword);
 
-    if (!user?.email) {
-      toast({
-        title: "Error",
-        description: "User email not found",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Verify current password by attempting to sign in
-      const { error: signInError } = await signIn(user.email, currentPassword);
-      
-      if (signInError) {
-        toast({
-          title: "Error",
-          description: "Current password is incorrect",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Generate 6-digit verification code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedCode(code);
-      console.log(`Verification code: ${code}`);
-
-      toast({
-        title: "Verification Code Sent",
-        description: "Check the console for your 6-digit verification code",
-      });
-
+    if (error) {
+      toast.error(`Failed to update password: ${error.message}`);
+    } else {
+      toast.success('Password updated successfully!');
       setShowChangePasswordModal(false);
-      setShowVerificationModal(true);
-      setCountdown(30);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to verify password. Please try again.",
-        variant: "destructive",
-      });
-    }
-    
-    setIsLoading(false);
-  };
-
-  const handleVerifyAndContinue = async () => {
-    if (!verificationCode) {
-      toast({
-        title: "Error",
-        description: "Please enter the verification code",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (verificationCode !== generatedCode) {
-      toast({
-        title: "Error",
-        description: "Invalid verification code",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Actually update the password in Supabase
-      const { error } = await updatePassword(newPassword);
-      
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update password. Please try again.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      toast({
-        title: "Success",
-        description: "Password updated successfully",
-      });
-
-      setShowVerificationModal(false);
-      setShowSuccessModal(true);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update password. Please try again.",
-        variant: "destructive",
-      });
-    }
-    
-    setIsLoading(false);
-  };
-
-  const handleCloseSuccess = () => {
-    setShowSuccessModal(false);
-    // Reset form states
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setVerificationCode("");
-    setGeneratedCode("");
-  };
-
-  const togglePasswordVisibility = (field: "current" | "new" | "confirm") => {
-    switch (field) {
-      case "current":
-        setShowCurrentPassword(!showCurrentPassword);
-        break;
-      case "new":
-        setShowNewPassword(!showNewPassword);
-        break;
-      case "confirm":
-        setShowConfirmPassword(!showConfirmPassword);
-        break;
+      setNewPassword('');
+      setConfirmPassword('');
     }
   };
 
-  const renderChangePasswordModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl w-[600px] shadow-lg">
-        {/* Header */}
-        <div className="flex justify-between items-center p-5 border-b border-gray-200">
-          <h2 className="text-xl font-medium text-black">Change Password</h2>
-          <button
-            onClick={() => setShowChangePasswordModal(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M13.3337 2.66699L2.66699 13.3337M2.66699 2.66699L13.3337 13.3337"
-                stroke="#6B7280"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-5 space-y-8">
-          {/* Current Password */}
-          <div className="space-y-3">
-            <label className="text-lg font-semibold text-black">
-              Current Password
-            </label>
-            <div className="relative">
-              <input
-                type={showCurrentPassword ? "text" : "password"}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full h-[52px] px-4 border-2 border-gray-200 rounded-xl text-lg placeholder-gray-400"
-                placeholder={
-                  showCurrentPassword
-                    ? currentPassword || "Enter current password"
-                    : "············"
-                }
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility("current")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2"
-              >
-                {showCurrentPassword ? (
-                  <Eye size={24} className="text-gray-500" />
-                ) : (
-                  <EyeOff size={24} className="text-gray-500" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* New Password */}
-          <div className="space-y-3">
-            <label className="text-lg font-semibold text-black">
-              New Password
-            </label>
-            <div className="relative">
-              <input
-                type={showNewPassword ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full h-[52px] px-4 border-2 border-gray-200 rounded-xl text-lg placeholder-gray-400"
-                placeholder="Enter your new password"
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility("new")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2"
-              >
-                {showNewPassword ? (
-                  <Eye size={24} className="text-gray-500" />
-                ) : (
-                  <EyeOff size={24} className="text-gray-500" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm New Password */}
-          <div className="space-y-3">
-            <label className="text-lg font-semibold text-black">
-              Confirm New Password
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full h-[52px] px-4 border-2 border-gray-200 rounded-xl text-lg placeholder-gray-400"
-                placeholder="Confirm your new password"
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility("confirm")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2"
-              >
-                {showConfirmPassword ? (
-                  <Eye size={24} className="text-gray-500" />
-                ) : (
-                  <EyeOff size={24} className="text-gray-500" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowChangePasswordModal(false)}
-              className="flex-1 py-4 px-5 bg-gray-100 text-gray-500 rounded-xl text-lg font-semibold hover:bg-gray-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSavePassword}
-              disabled={isLoading}
-              className="flex-1 py-4 px-5 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Verifying..." : "Save Password"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderVerificationModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl w-[600px] shadow-lg">
-        <div className="p-5 text-center space-y-8">
-          {/* Close button */}
-          <div className="flex justify-end">
-            <button
-              onClick={() => setShowVerificationModal(false)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M13.3337 2.66699L2.66699 13.3337M2.66699 2.66699L13.3337 13.3337"
-                  stroke="#6B7280"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Title and description */}
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold text-black">
-              Confirm your identity
-            </h2>
-            <p className="text-gray-500 text-base">
-              We've sent a 6-digit verification code to{" "}
-              <span className="font-semibold">{user?.email}</span>. Enter it
-              below to confirm your identity.
-            </p>
-          </div>
-
-          {/* Code input */}
-          <div className="space-y-4">
-            <div className="text-left">
-              <label className="text-lg font-semibold text-black">
-                Enter Code
-              </label>
-            </div>
-            <input
-              type="text"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              className="w-full h-[52px] px-4 border-2 border-gray-200 rounded-xl text-lg placeholder-gray-400"
-              placeholder="Enter the 6 digits code"
-            />
-            <p className="text-center text-base">
-              <span className="text-gray-500">
-                Didn't receive the code? Resend in{" "}
-              </span>
-              <span className="font-semibold text-black">{countdown}s</span>
-            </p>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowVerificationModal(false)}
-              className="flex-1 py-4 px-5 bg-gray-100 text-gray-500 rounded-xl text-lg font-semibold hover:bg-gray-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleVerifyAndContinue}
-              disabled={isLoading}
-              className="flex-1 py-4 px-5 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Updating Password..." : "Verify & Continue"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSuccessModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
-      <div className="bg-white rounded-3xl w-[600px] shadow-lg p-5 text-center space-y-10">
-        {/* Success icon */}
-        <div className="flex justify-center">
-          <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-            <path
-              d="M40 0.000976562C42.65 0.000976562 44.7821 2.13343 49.0469 6.39844C51.6057 8.95723 54.1424 10.1455 57.792 10.1455C60.9576 10.1455 65.4722 9.53092 67.9629 12.001C70.4728 14.4908 69.8545 19.0233 69.8545 22.209C69.8545 26.2349 70.7358 28.086 73.6025 30.9531C77.8677 35.2181 80 37.351 80 40.001C79.9998 42.6504 77.8675 44.7833 73.6025 49.0479C70.7354 51.915 69.8545 53.7661 69.8545 57.792C69.8545 60.978 70.4727 65.5114 67.9619 68.001C65.4711 70.4706 60.9575 69.8555 57.792 69.8555C53.9064 69.8555 52.0349 70.6155 49.2617 73.3887C46.9005 75.7503 43.7348 80.001 40 80.001C36.2652 80.0009 33.0996 75.7503 30.7383 73.3887C27.9651 70.6155 26.0937 69.8555 22.208 69.8555C19.0426 69.8555 14.5288 70.4706 12.0381 68.001C9.52736 65.5114 10.1455 60.978 10.1455 57.792C10.1455 53.7661 9.26454 51.915 6.39746 49.0479C2.13271 44.7833 0.000301032 42.6504 0 40.001C4.00001e-05 37.351 2.13253 35.2181 6.39746 30.9531C8.95676 28.3938 10.1455 25.8577 10.1455 22.209C10.1455 19.0433 9.52995 14.5289 12 12.0381C14.4896 9.52763 19.0221 10.1455 22.208 10.1455C25.8568 10.1455 28.3938 8.95776 30.9531 6.39844C35.2181 2.13347 37.35 0.0010175 40 0.000976562ZM54.6611 28.6152C53.8958 27.1458 52.0837 26.5746 50.6143 27.3398C45.1305 30.1961 40.5848 35.7181 37.5254 40.1797C36.3864 41.8408 35.4142 43.4129 34.6387 44.7412C33.8952 44.0491 33.1596 43.45 32.5049 42.957C31.6715 42.3295 30.9211 41.8348 30.375 41.4941C30.1014 41.3235 29.8764 41.1903 29.7148 41.0967C29.6341 41.0499 29.5691 41.0121 29.5215 40.9854C29.4977 40.972 29.4778 40.9613 29.4629 40.9531C29.4555 40.949 29.4485 40.9462 29.4434 40.9434C29.4409 40.942 29.4384 40.9405 29.4365 40.9395L29.4346 40.9375L29.4326 40.9365C29.4297 40.9409 29.3881 41.0176 28.7031 42.2783L29.4316 40.9365C27.9758 40.146 26.1551 40.685 25.3643 42.1406C24.5745 43.5949 25.1113 45.4139 26.5635 46.2061L26.5674 46.208H26.5664L26.5684 46.209L26.5693 46.208C26.5735 46.2103 26.5794 46.2149 26.5879 46.2197C26.6117 46.233 26.652 46.2562 26.707 46.2881C26.8172 46.3519 26.9858 46.4519 27.1992 46.585C27.6281 46.8525 28.229 47.2482 28.8955 47.75C30.2712 48.7859 31.7406 50.1342 32.6592 51.5967C33.2403 52.5219 34.2793 53.0578 35.3701 52.9961C36.4607 52.9342 37.4305 52.2836 37.9033 51.2988C37.9045 51.2994 37.9043 51.3008 37.9043 51.3008C37.9045 51.3004 37.9053 51.2989 37.9062 51.2969C37.9084 51.2925 37.9115 51.2837 37.917 51.2725C37.9281 51.2497 37.9463 51.2133 37.9707 51.1641C38.0198 51.065 38.0963 50.9135 38.1973 50.7168C38.3995 50.323 38.703 49.7463 39.0977 49.0361C39.889 47.6124 41.0402 45.6642 42.4746 43.5723C45.415 39.2842 49.2699 34.806 53.3857 32.6621C54.8552 31.8968 55.4263 30.0847 54.6611 28.6152Z"
-              fill="#22C55E"
-            />
-          </svg>
-        </div>
-
-        {/* Title and description */}
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold text-black">
-            Password Changed Successfully
-          </h2>
-          <p className="text-gray-500 text-xl">
-            Your account password has been updated. Make sure to use your new
-            password when logging in next time.
-          </p>
-        </div>
-
-        {/* Close button */}
-        <button
-          onClick={handleCloseSuccess}
-          className="w-full py-4 px-5 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition-colors"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  );
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   if (loading) {
     return (
@@ -487,9 +145,7 @@ const Profile: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Header currentPage="profile" />
 
-      {/* Main Content */}
       <main className="px-3 md:px-6 lg:px-12 py-6">
-        {/* Profile Header */}
         <div className="mb-4">
           <h1 className="text-2xl font-semibold text-black mb-1">Profile</h1>
           <p className="text-lg font-semibold text-gray-500">
@@ -497,18 +153,39 @@ const Profile: React.FC = () => {
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Project Selection */}
+          {projects.length > 1 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Current Project</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select 
+                  value={currentProject?.id || ''} 
+                  onValueChange={switchProject}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Account Information */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-black">
-              Account Information
-            </h2>
+            <h2 className="text-lg font-semibold text-black">Account Information</h2>
             <div className="bg-white rounded-3xl border border-gray-200 p-4 space-y-4">
-              {/* Full Name */}
               <div className="space-y-2">
-                <label className="text-base font-semibold text-black">
-                  Full Name
-                </label>
+                <label className="text-base font-semibold text-black">Full Name</label>
                 <div className="bg-gray-100 rounded-xl px-4 py-3">
                   <span className="text-gray-500">
                     {profileData?.full_name || user?.user_metadata?.full_name || "Not provided"}
@@ -516,225 +193,207 @@ const Profile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Email and Password Row */}
               <div className="flex gap-4">
-                {/* Email Address */}
                 <div className="flex-1 space-y-2">
-                  <label className="text-base font-semibold text-black">
-                    Email Address
-                  </label>
+                  <label className="text-base font-semibold text-black">Email Address</label>
                   <div className="bg-gray-100 rounded-xl px-4 py-3">
                     <span className="text-gray-500">{user?.email || "Not provided"}</span>
                   </div>
-                  <button className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
-                    Change Email
-                  </button>
                 </div>
 
-                {/* Current Password */}
                 <div className="flex-1 space-y-2">
-                  <label className="text-base font-semibold text-black">
-                    Current Password
-                  </label>
+                  <label className="text-base font-semibold text-black">Current Password</label>
                   <div className="bg-gray-100 rounded-xl px-4 py-3 flex justify-between items-center">
-                    <span className="text-gray-500 text-xl">
-                      {showCurrentPasswordDisplay ? "••••••••••••" : "············"}
-                    </span>
+                    <span className="text-gray-500 text-xl">••••••••••••</span>
                     <button
-                      type="button"
-                      onClick={() => setShowCurrentPasswordDisplay(!showCurrentPasswordDisplay)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      onClick={() => setShowChangePasswordModal(true)}
+                      className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
                     >
-                      {showCurrentPasswordDisplay ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
+                      Change Password
                     </button>
                   </div>
-                  <button
-                    onClick={handleChangePasswordClick}
-                    className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
-                  >
-                    Change Password
-                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Team & User Management */}
+          {/* Project Team Management */}
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold text-black">
-              Team & User Management
-            </h2>
-            <div className="bg-white rounded-3xl border border-gray-200 p-4 space-y-4">
-              {/* Add team member form */}
-              <div className="flex gap-5">
-                <div className="flex-1 space-y-3">
-                  <label className="text-lg font-semibold text-black">
-                    Name
-                  </label>
-                  <div className="bg-gray-100 rounded-xl px-4 py-3">
-                    <span className="text-gray-500">email@example.com</span>
-                  </div>
-                </div>
-                <div className="flex-1 space-y-3">
-                  <label className="text-lg font-semibold text-black">
-                    Email
-                  </label>
-                  <div className="bg-gray-100 rounded-xl px-4 py-3">
-                    <span className="text-gray-500">email@example.com</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-5">
-                <div className="flex-1 space-y-3">
-                  <label className="text-lg font-semibold text-black">
-                    Role
-                  </label>
-                  <div className="bg-gray-100 rounded-xl px-4 py-3 flex justify-between items-center">
-                    <span className="text-gray-500">Select Role</span>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                        stroke="#141B34"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-black flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Team Management
+              </h2>
+              <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+                <DialogTrigger asChild>
+                  <Button className="bg-black text-white hover:bg-gray-800">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Send Invite
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Invite Team Member</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Email Address</label>
+                      <Input
+                        type="email"
+                        placeholder="Enter email address"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
                       />
-                    </svg>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Role</label>
+                      <Select value={inviteRole} onValueChange={(value: 'member' | 'admin') => setInviteRole(value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleInviteUser} 
+                        disabled={!inviteEmail || inviteLoading}
+                        className="flex-1"
+                      >
+                        {inviteLoading ? 'Sending...' : 'Send Invite'}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowInviteModal(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              <button className="bg-black text-white px-4 py-3 rounded-xl text-base font-medium hover:bg-gray-800 transition-colors">
-                Send Invite
-              </button>
+                </DialogContent>
+              </Dialog>
             </div>
-          </div>
 
-          {/* Team member table */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black">Team member</h2>
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              {/* Table Header */}
-              <div className="bg-gray-100 px-3 py-3 flex items-center gap-4 border-b border-gray-200">
-                <div className="w-4 h-4 border border-gray-300"></div>
-                <div className="w-8 text-xs font-bold text-gray-600 uppercase">
-                  NO.
-                </div>
-                <div className="flex-1 text-xs font-bold text-gray-600 uppercase">
-                  Name
-                </div>
-                <div className="flex-1 text-xs font-bold text-gray-600 uppercase">
-                  Email
-                </div>
-                <div className="w-40 text-xs font-bold text-gray-600 uppercase">
-                  Role
-                </div>
-                <div className="flex-1 text-xs font-bold text-gray-600 uppercase">
-                  Status
-                </div>
-                <div className="flex-1 text-xs font-bold text-gray-600 uppercase">
-                  Actions
-                </div>
+              <div className="bg-gray-100 px-4 py-3 flex items-center gap-4 border-b border-gray-200">
+                <div className="w-8 text-xs font-bold text-gray-600 uppercase">NO.</div>
+                <div className="flex-1 text-xs font-bold text-gray-600 uppercase">Name</div>
+                <div className="flex-1 text-xs font-bold text-gray-600 uppercase">Email</div>
+                <div className="w-40 text-xs font-bold text-gray-600 uppercase">Role</div>
+                <div className="w-32 text-xs font-bold text-gray-600 uppercase">Actions</div>
               </div>
 
-              {/* Table Rows */}
-              {[
-                {
-                  no: "01",
-                  name: "John Doe",
-                  email: "john@gmail.com",
-                  role: "Admin",
-                  status: "Active",
-                },
-                {
-                  no: "02",
-                  name: "Jane Smith",
-                  email: "jane@gmail.com",
-                  role: "Admin",
-                  status: "Active",
-                },
-                {
-                  no: "03",
-                  name: "Mike Johnson",
-                  email: "mike@yahoo.com",
-                  role: "Staff",
-                  status: "Active",
-                },
-                {
-                  no: "04",
-                  name: "Emily Davis",
-                  email: "emily@outlook.com",
-                  role: "Staff",
-                  status: "Pending",
-                },
-                {
-                  no: "05",
-                  name: "David Brown",
-                  email: "david@gmail.com",
-                  role: "Staff",
-                  status: "Pending",
-                },
-              ].map((member) => (
-                <div
-                  key={member.no}
-                  className="px-3 py-4 flex items-center gap-4 border-b border-gray-200 bg-white"
-                >
-                  <div className="w-4 h-4 border border-gray-300"></div>
-                  <div className="w-8 text-sm font-semibold text-gray-600">
-                    {member.no}
-                  </div>
-                  <div className="flex-1 text-sm text-gray-600">
-                    {member.name}
-                  </div>
-                  <div className="flex-1 text-sm text-gray-600">
-                    {member.email}
-                  </div>
-                  <div className="w-40 text-sm text-gray-600">
-                    {member.role}
-                  </div>
-                  <div className="flex-1">
-                    <span
-                      className={`px-4 py-1 rounded-lg text-xs font-bold uppercase ${
-                        member.status === "Active"
-                          ? "bg-green-100 text-green-600 border border-green-600"
-                          : "bg-orange-100 text-orange-600 border border-orange-600"
-                      }`}
-                    >
-                      {member.status}
-                    </span>
-                  </div>
-                  <div className="flex-1 flex gap-3">
-                    <button className="px-4 py-1 bg-black text-white rounded-lg text-xs font-bold uppercase hover:bg-gray-800 transition-colors">
-                      Edit
-                    </button>
-                    {member.status === "Active" ? (
-                      <button className="px-4 py-1 border border-red-500 text-red-500 rounded-lg text-xs font-bold uppercase hover:bg-red-50 transition-colors">
-                        Remove
-                      </button>
-                    ) : (
-                      <button className="px-4 py-1 border border-gray-300 text-gray-500 rounded-lg text-xs font-bold uppercase hover:bg-gray-50 transition-colors">
-                        Resend Invite
-                      </button>
-                    )}
-                  </div>
+              {projectMembers.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-lg font-medium mb-2">No team members yet</p>
+                  <p className="text-sm">Invite team members to collaborate on this project.</p>
                 </div>
-              ))}
+              ) : (
+                projectMembers.map((member, index) => (
+                  <div key={member.id} className="px-4 py-3 flex items-center gap-4 border-b border-gray-100 last:border-b-0">
+                    <div className="w-8 text-sm font-medium text-gray-700">
+                      {String(index + 1).padStart(2, '0')}
+                    </div>
+                    <div className="flex-1 text-sm font-medium text-gray-900">
+                      {member.profiles?.full_name || 'Unknown User'}
+                    </div>
+                    <div className="flex-1 text-sm text-gray-600">
+                      {member.profiles?.email || 'No email'}
+                    </div>
+                    <div className="w-40">
+                      <Badge className={`${getRoleBadgeColor(member.role)} flex items-center gap-1`}>
+                        {getRoleIcon(member.role)}
+                        {member.role}
+                      </Badge>
+                    </div>
+                    <div className="w-32">
+                      {member.role !== 'owner' && member.user_id !== user?.id && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRemoveUser(member.user_id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
       </main>
 
-      {/* Modals */}
-      {showChangePasswordModal && renderChangePasswordModal()}
-      {showVerificationModal && renderVerificationModal()}
-      {showSuccessModal && renderSuccessModal()}
+      {/* Change Password Modal (simplified version) */}
+      {showChangePasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Change Password</h3>
+              <button onClick={() => setShowChangePasswordModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <Input
+                type="password"
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              <Input
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <Input
+                type="password"
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <Button 
+                  onClick={async () => {
+                    if (newPassword !== confirmPassword) {
+                      toast.error('Passwords do not match');
+                      return;
+                    }
+                    const { error } = await updatePassword(newPassword);
+                    if (error) {
+                      toast.error(error.message);
+                    } else {
+                      toast.success('Password updated successfully');
+                      setShowChangePasswordModal(false);
+                      setCurrentPassword('');
+                      setNewPassword('');
+                      setConfirmPassword('');
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  Update Password
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowChangePasswordModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Profile;
+}

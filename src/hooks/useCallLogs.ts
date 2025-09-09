@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProject } from '@/contexts/ProjectContext';
 
 export interface CallLogRecord {
   id: string;
@@ -27,9 +28,10 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const { currentProject } = useProject();
 
   const fetchCallLogs = async () => {
-    if (!user) {
+    if (!user || !currentProject) {
       setCallLogs([]);
       setLoading(false);
       return;
@@ -39,27 +41,11 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
       setLoading(true);
       setError(null);
 
-      // First, get the user's phone number from onboarding_responses
-      const { data: onboardingData, error: onboardingError } = await supabase
-        .from('onboarding_responses')
-        .select('contact_number')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (onboardingError || !onboardingData?.contact_number) {
-        console.log('No phone number found for user:', onboardingError);
-        setCallLogs([]);
-        setLoading(false);
-        return;
-      }
-
-      // Build query for call logs
+      // Build query for call logs using project_id
       let query = supabase
         .from('call_logs')
         .select('*')
-        .eq('phone_number', onboardingData.contact_number);
+        .eq('project_id', currentProject.id);
 
       // Add search filter
       if (searchTerm) {
@@ -96,11 +82,11 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
 
   useEffect(() => {
     fetchCallLogs();
-  }, [user, searchTerm, dateFilter]);
+  }, [user, currentProject, searchTerm, dateFilter]);
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!user) return;
+    if (!user || !currentProject) return;
 
     const channel = supabase
       .channel('call-logs-changes')
@@ -109,7 +95,8 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
         {
           event: '*',
           schema: 'public',
-          table: 'call_logs'
+          table: 'call_logs',
+          filter: `project_id=eq.${currentProject.id}`
         },
         (payload) => {
           console.log('Call logs changed:', payload);
@@ -121,7 +108,7 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, currentProject]);
 
   return {
     callLogs,
