@@ -41,24 +41,39 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
       setLoading(true);
       setError(null);
 
-      // Build query for call logs by joining with phone_numbers table
+      // First, get all phone numbers for the current project
+      const { data: phoneNumbers, error: phoneNumbersError } = await supabase
+        .from('phone_numbers')
+        .select('id, phone_number')
+        .eq('project_id', currentProject.id);
+
+      if (phoneNumbersError) {
+        throw phoneNumbersError;
+      }
+
+      if (!phoneNumbers || phoneNumbers.length === 0) {
+        setCallLogs([]);
+        setLoading(false);
+        return;
+      }
+
+      // Extract phone number IDs and phone number strings
+      const phoneNumberIds = phoneNumbers.map(pn => pn.id);
+      const phoneNumberStrings = phoneNumbers.map(pn => pn.phone_number);
+
+      // Build base query for call logs
       let query = supabase
         .from('call_logs')
-        .select(`
-          *,
-          phone_numbers!inner (
-            id,
-            phone_number,
-            project_id
-          )
-        `)
-        .eq('phone_numbers.project_id', currentProject.id);
+        .select('*');
 
-      // Add search filter
+      // Create project filter - call logs must belong to project phone numbers
+      const projectFilter = `phone_number_id.in.(${phoneNumberIds.join(',')}),phone_number.in.(${phoneNumberStrings.map(pn => `"${pn}"`).join(',')})`;
+      
+      // Add search filter if provided, combined with project filter
       if (searchTerm) {
-        query = query.or(
-          `phone_number.ilike.%${searchTerm}%,customer_number.ilike.%${searchTerm}%`
-        );
+        query = query.or(`and(${projectFilter},or(phone_number.ilike.%${searchTerm}%,customer_number.ilike.%${searchTerm}%))`);
+      } else {
+        query = query.or(projectFilter);
       }
 
       // Add date filter
