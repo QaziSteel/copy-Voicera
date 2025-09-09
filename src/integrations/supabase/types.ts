@@ -25,7 +25,6 @@ export type Database = {
           org_id: string | null
           phone_number: string
           phone_number_id: string | null
-          project_id: string | null
           started_at: string | null
           total_call_time: number | null
           type: string | null
@@ -41,7 +40,6 @@ export type Database = {
           org_id?: string | null
           phone_number: string
           phone_number_id?: string | null
-          project_id?: string | null
           started_at?: string | null
           total_call_time?: number | null
           type?: string | null
@@ -57,21 +55,12 @@ export type Database = {
           org_id?: string | null
           phone_number?: string
           phone_number_id?: string | null
-          project_id?: string | null
           started_at?: string | null
           total_call_time?: number | null
           type?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "call_logs_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       onboarding_responses: {
         Row: {
@@ -155,6 +144,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "onboarding_responses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_numbers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          phone_number: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          phone_number: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          phone_number?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_numbers_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"

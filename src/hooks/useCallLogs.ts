@@ -41,11 +41,18 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
       setLoading(true);
       setError(null);
 
-      // Build query for call logs using project_id
+      // Build query for call logs by joining with phone_numbers table
       let query = supabase
         .from('call_logs')
-        .select('*')
-        .eq('project_id', currentProject.id);
+        .select(`
+          *,
+          phone_numbers!inner (
+            id,
+            phone_number,
+            project_id
+          )
+        `)
+        .eq('phone_numbers.project_id', currentProject.id);
 
       // Add search filter
       if (searchTerm) {
@@ -95,8 +102,7 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
         {
           event: '*',
           schema: 'public',
-          table: 'call_logs',
-          filter: `project_id=eq.${currentProject.id}`
+          table: 'call_logs'
         },
         (payload) => {
           console.log('Call logs changed:', payload);

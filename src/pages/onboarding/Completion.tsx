@@ -3,11 +3,15 @@ import { useState } from "react";
 import { getLatestOnboardingResponse } from "@/lib/onboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
+import { usePhoneNumbers } from "@/hooks/usePhoneNumbers";
 import { Loader2 } from "lucide-react";
 
 export default function Completion() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentProject } = useProject();
+  const { createPhoneNumber } = usePhoneNumbers();
   const [isGoingLive, setIsGoingLive] = useState(false);
 
   // You can configure this webhook URL as needed
@@ -34,6 +38,17 @@ export default function Completion() {
       const { data: onboardingData, error: onboardingError } = await getLatestOnboardingResponse();
       if (onboardingError) {
         throw new Error("Failed to fetch onboarding data");
+      }
+
+      // Create phone number record if contact number exists and project is available
+      if (onboardingData?.contact_number && currentProject) {
+        try {
+          await createPhoneNumber(onboardingData.contact_number);
+          console.log('Phone number record created successfully');
+        } catch (phoneError) {
+          console.error('Error creating phone number record:', phoneError);
+          // Don't throw error here - continue with webhook even if phone number creation fails
+        }
       }
 
       // Construct webhook payload with complete data
