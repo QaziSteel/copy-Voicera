@@ -93,7 +93,7 @@ export const useGoogleIntegration = (projectId: string | null) => {
   };
 
   const initiateOAuth = (agentId: string) => {
-    const googleClientId = '1009779018893-7tsg9pcs3f4j3ue7s9qm8qo1sda3ugo3.apps.googleusercontent.com'; // Your actual Google Client ID
+    const googleClientId = '526952712398-7277grt2mlsumid92h9d4fiu52kecqvf.apps.googleusercontent.com'; // Your actual Google Client ID
     const redirectUri = 'https://nhhdxwgrmcdsapbuvelx.supabase.co/functions/v1/google-oauth-callback';
     const scopes = [
       'https://www.googleapis.com/auth/calendar.events',
