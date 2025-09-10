@@ -110,8 +110,36 @@ export const useGoogleIntegration = (projectId: string | null) => {
     oauthUrl.searchParams.set('prompt', 'consent');
     oauthUrl.searchParams.set('state', agentId);
 
-    // Open OAuth URL in the current window
-    window.location.href = oauthUrl.toString();
+    // Open OAuth URL in a popup window
+    const popup = window.open(
+      oauthUrl.toString(),
+      'google-oauth',
+      'width=500,height=600,scrollbars=yes,resizable=yes'
+    );
+
+    if (!popup) {
+      toast({
+        title: "Popup Blocked",
+        description: "Please allow popups for this site and try again",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Monitor popup for completion
+    const pollTimer = window.setInterval(() => {
+      try {
+        if (popup.closed) {
+          clearInterval(pollTimer);
+          // Refresh integration status when popup closes
+          setTimeout(() => {
+            fetchIntegration();
+          }, 1000);
+        }
+      } catch (error) {
+        // Ignore cross-origin errors when popup is still open
+      }
+    }, 1000);
   };
 
   useEffect(() => {
