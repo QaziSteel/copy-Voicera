@@ -24,13 +24,13 @@ serve(async (req) => {
     // Handle OAuth errors
     if (error) {
       console.error('OAuth error:', error);
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=error&error=${encodeURIComponent(error)}`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=${encodeURIComponent(error)}`;
       return Response.redirect(redirectUrl, 302);
     }
 
     if (!code || !state) {
       console.error('Missing required parameters:', { code: !!code, state: !!state });
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state || 'unknown'}&oauth=error&error=missing_parameters`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state || 'unknown'}&oauth=error&error=missing_parameters`;
       return Response.redirect(redirectUrl, 302);
     }
 
@@ -42,7 +42,7 @@ serve(async (req) => {
 
     if (!googleClientId || !googleClientSecret || !supabaseUrl || !supabaseServiceKey) {
       console.error('Missing environment variables');
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=error&error=server_configuration`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=server_configuration`;
       return Response.redirect(redirectUrl, 302);
     }
 
@@ -64,7 +64,7 @@ serve(async (req) => {
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error('Token exchange failed:', errorText);
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=error&error=token_exchange_failed`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=token_exchange_failed`;
       return Response.redirect(redirectUrl, 302);
     }
 
@@ -80,7 +80,7 @@ serve(async (req) => {
 
     if (!userInfoResponse.ok) {
       console.error('Failed to get user info from Google');
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=error&error=user_info_failed`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=user_info_failed`;
       return Response.redirect(redirectUrl, 302);
     }
 
@@ -102,13 +102,13 @@ serve(async (req) => {
 
     if (agentError) {
       console.error('Error fetching agent data:', agentError);
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=error&error=agent_not_found`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=agent_not_found`;
       return Response.redirect(redirectUrl, 302);
     }
 
     if (!agentData?.project_id) {
       console.error('No project_id found for agent:', state);
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=error&error=project_not_found`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=project_not_found`;
       return Response.redirect(redirectUrl, 302);
     }
 
@@ -129,21 +129,57 @@ serve(async (req) => {
 
     if (integrationError) {
       console.error('Error storing Google integration:', integrationError);
-      const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=error&error=storage_failed`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=storage_failed`;
       return Response.redirect(redirectUrl, 302);
     }
 
     console.log('Google integration stored successfully for project:', agentData.project_id);
 
+    // Check if we're in a popup window and handle accordingly
+    const userAgent = req.headers.get('user-agent') || '';
+    const isPopup = req.headers.get('sec-fetch-dest') === 'document' && req.headers.get('sec-fetch-mode') === 'navigate';
+    
+    // If this might be a popup, show a success page that closes itself
+    if (isPopup) {
+      const successHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>OAuth Success</title>
+          <style>
+            body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f9fafb; }
+            .container { text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .success { color: #10b981; font-size: 1.5rem; margin-bottom: 1rem; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="success">✅ Google Calendar Connected Successfully!</div>
+            <p>This window will close automatically...</p>
+          </div>
+          <script>
+            // Close the popup after a short delay
+            setTimeout(() => {
+              window.close();
+            }, 2000);
+          </script>
+        </body>
+        </html>
+      `;
+      return new Response(successHtml, {
+        headers: { 'Content-Type': 'text/html' }
+      });
+    }
+
     // Redirect back to the agent management page with success
-    const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state}&oauth=success&email=${encodeURIComponent(userInfo.email)}`;
+    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=success&email=${encodeURIComponent(userInfo.email)}`;
     return Response.redirect(redirectUrl, 302);
 
   } catch (error) {
     console.error('Unexpected error in OAuth callback:', error);
     const url = new URL(req.url);
     const state = url.searchParams.get('state');
-    const redirectUrl = `${req.headers.get('origin') || 'https://your-app.com'}/agent-management?agentId=${state || 'unknown'}&oauth=error&error=unexpected_error`;
+    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state || 'unknown'}&oauth=error&error=unexpected_error`;
     return Response.redirect(redirectUrl, 302);
   }
 });
