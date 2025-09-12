@@ -42,6 +42,11 @@ const CallLogs: React.FC = () => {
   const [showAudioPlayer, setShowAudioPlayer] = useState<boolean>(false);
   const [selectedCallForPlayer, setSelectedCallForPlayer] = useState<any>(null);
   const [currentCallIndex, setCurrentCallIndex] = useState<number>(0);
+  
+  // Transcript popup state
+  const [showTranscript, setShowTranscript] = useState<boolean>(false);
+  const [selectedTranscript, setSelectedTranscript] = useState<any>(null);
+  const [transcriptContent, setTranscriptContent] = useState<Array<{speaker: string, role: string, message: string}>>([]);
 
   // Reset currently playing when audio stops
   useEffect(() => {
@@ -212,6 +217,66 @@ const CallLogs: React.FC = () => {
     } catch (error) {
       console.error('Error viewing transcript:', error);
     }
+  };
+
+  const parseTranscript = (content: string) => {
+    const lines = content.split('\n').filter(line => line.trim());
+    const messages = [];
+    
+    for (const line of lines) {
+      if (line.startsWith('AI:')) {
+        const message = line.replace('AI:', '').trim();
+        const speakerName = message.includes('from') ? 
+          message.split('from')[1].split('.')[0].trim() + ' AI' : 
+          'AI Agent';
+        messages.push({
+          speaker: speakerName,
+          role: 'AI Agent',
+          message: message
+        });
+      } else if (line.startsWith('User:')) {
+        const message = line.replace('User:', '').trim();
+        messages.push({
+          speaker: 'Customer',
+          role: 'Customer',
+          message: message
+        });
+      }
+    }
+    
+    return messages;
+  };
+
+  const fetchAndParseTranscript = async (transcriptPath: string) => {
+    try {
+      const signedUrl = await getSignedUrl('call-transcripts', transcriptPath);
+      if (!signedUrl) {
+        throw new Error('Failed to get transcript URL');
+      }
+      
+      const response = await fetch(signedUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch transcript');
+      }
+      
+      const content = await response.text();
+      const parsed = parseTranscript(content);
+      
+      return parsed;
+    } catch (error) {
+      console.error('Error fetching and parsing transcript:', error);
+      return [];
+    }
+  };
+
+  const handleOpenTranscript = async (call: any) => {
+    if (!call.transcript_file_path) return;
+    
+    setSelectedTranscript(call);
+    setShowTranscript(true);
+    
+    const parsed = await fetchAndParseTranscript(call.transcript_file_path);
+    setTranscriptContent(parsed);
   };
 
   return (
@@ -410,7 +475,7 @@ const CallLogs: React.FC = () => {
                         
                         {call.transcript_file_path && (
                           <button
-                            onClick={() => handleViewTranscript(call.transcript_file_path!)}
+                            onClick={() => handleOpenTranscript(call)}
                             className="flex items-center gap-2.5 px-4 py-2 border border-gray-200 rounded-xl"
                           >
                             <svg
@@ -613,6 +678,64 @@ const CallLogs: React.FC = () => {
                   {formatTime(audioPlayer.duration)}
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transcript Popup */}
+      {showTranscript && selectedTranscript && (
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
+          <div className="bg-white rounded-2xl w-[700px] max-h-[90vh] overflow-y-auto shadow-lg">
+            {/* Header */}
+            <div className="flex justify-between items-center p-5 border-b border-gray-200">
+              <h3 className="text-xl font-medium text-gray-800">
+                Call Transcript – {formatTimestamp(selectedTranscript.started_at)}
+              </h3>
+              <button
+                onClick={() => setShowTranscript(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M13.3337 2.6665L2.66699 13.3332"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M2.66699 2.6665L13.3337 13.3332"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Transcript Content */}
+            <div className="p-5 space-y-4">
+              {transcriptContent.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Loading transcript...
+                </div>
+              ) : (
+                transcriptContent.map((message, index) => (
+                  <div key={index} className="flex gap-4 pb-4">
+                    <div className="flex-1">
+                      <div className="mb-3">
+                        <div className="text-xl font-medium text-black">{message.speaker}</div>
+                        <div className="text-gray-500 text-base">{message.role}</div>
+                      </div>
+                      <div className="p-3 border border-gray-200 rounded-xl">
+                        <div className="text-gray-600">{message.message}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
