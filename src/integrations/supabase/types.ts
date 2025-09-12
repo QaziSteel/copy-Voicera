@@ -22,7 +22,6 @@ export type Database = {
           ended_at: string | null
           ended_reason: string | null
           id: string
-          org_id: string | null
           phone_number: string
           phone_number_id: string | null
           recording_file_path: string | null
@@ -39,7 +38,6 @@ export type Database = {
           ended_at?: string | null
           ended_reason?: string | null
           id?: string
-          org_id?: string | null
           phone_number: string
           phone_number_id?: string | null
           recording_file_path?: string | null
@@ -56,7 +54,6 @@ export type Database = {
           ended_at?: string | null
           ended_reason?: string | null
           id?: string
-          org_id?: string | null
           phone_number?: string
           phone_number_id?: string | null
           recording_file_path?: string | null
@@ -88,6 +85,7 @@ export type Database = {
           token_expires_at: string
           updated_at: string
           user_email: string
+          user_id: string
         }
         Insert: {
           access_token: string
@@ -100,6 +98,7 @@ export type Database = {
           token_expires_at: string
           updated_at?: string
           user_email: string
+          user_id: string
         }
         Update: {
           access_token?: string
@@ -112,6 +111,7 @@ export type Database = {
           token_expires_at?: string
           updated_at?: string
           user_email?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -378,7 +378,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      google_integrations_safe: {
+        Row: {
+          access_token: string | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          project_id: string | null
+          refresh_token: string | null
+          scopes: string[] | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token?: never
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          project_id?: string | null
+          refresh_token?: never
+          scopes?: string[] | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token?: never
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          project_id?: string | null
+          refresh_token?: never
+          scopes?: string[] | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_access_project: {
