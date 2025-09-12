@@ -426,6 +426,10 @@ export type Database = {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
+      can_view_integration_tokens: {
+        Args: { _integration_id: string; _user_id: string }
+        Returns: boolean
+      }
       get_user_projects: {
         Args: { _user_id: string }
         Returns: {
