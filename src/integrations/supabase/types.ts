@@ -378,14 +378,14 @@ export type Database = {
       }
     }
     Views: {
-      google_integrations_safe: {
+      google_integrations_overview: {
         Row: {
-          access_token: string | null
+          access_token_note: string | null
           created_at: string | null
           id: string | null
           is_active: boolean | null
           project_id: string | null
-          refresh_token: string | null
+          refresh_token_note: string | null
           scopes: string[] | null
           token_expires_at: string | null
           updated_at: string | null
@@ -393,12 +393,12 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          access_token?: never
+          access_token_note?: never
           created_at?: string | null
           id?: string | null
           is_active?: boolean | null
           project_id?: string | null
-          refresh_token?: never
+          refresh_token_note?: never
           scopes?: string[] | null
           token_expires_at?: string | null
           updated_at?: string | null
@@ -406,12 +406,12 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          access_token?: never
+          access_token_note?: never
           created_at?: string | null
           id?: string | null
           is_active?: boolean | null
           project_id?: string | null
-          refresh_token?: never
+          refresh_token_note?: never
           scopes?: string[] | null
           token_expires_at?: string | null
           updated_at?: string | null
@@ -424,10 +424,6 @@ export type Database = {
     Functions: {
       can_access_project: {
         Args: { _project_id: string; _user_id: string }
-        Returns: boolean
-      }
-      can_view_integration_tokens: {
-        Args: { _integration_id: string; _user_id: string }
         Returns: boolean
       }
       get_user_projects: {
