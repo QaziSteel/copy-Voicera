@@ -378,48 +378,7 @@ export type Database = {
       }
     }
     Views: {
-      google_integrations_overview: {
-        Row: {
-          access_token_note: string | null
-          created_at: string | null
-          id: string | null
-          is_active: boolean | null
-          project_id: string | null
-          refresh_token_note: string | null
-          scopes: string[] | null
-          token_expires_at: string | null
-          updated_at: string | null
-          user_email: string | null
-          user_id: string | null
-        }
-        Insert: {
-          access_token_note?: never
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          project_id?: string | null
-          refresh_token_note?: never
-          scopes?: string[] | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          access_token_note?: never
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          project_id?: string | null
-          refresh_token_note?: never
-          scopes?: string[] | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       can_access_project: {

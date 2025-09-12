@@ -5,8 +5,6 @@ import { useToast } from '@/hooks/use-toast';
 export interface GoogleIntegration {
   id: string;
   project_id: string;
-  access_token: string;
-  refresh_token: string;
   token_expires_at: string;
   scopes: string[];
   user_email: string;
@@ -27,7 +25,7 @@ export const useGoogleIntegration = (projectId: string | null) => {
     try {
       const { data, error } = await supabase
         .from('google_integrations')
-        .select('*')
+        .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
         .eq('project_id', projectId)
         .eq('is_active', true)
         .maybeSingle();
