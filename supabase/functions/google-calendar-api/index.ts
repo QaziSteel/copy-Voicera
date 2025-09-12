@@ -50,41 +50,16 @@ serve(async (req) => {
       });
     }
 
-    // Decrypt tokens if they are encrypted
-    const decryptToken = async (encryptedToken: string): Promise<string> => {
-      try {
-        const encryptionKey = 'oauth_tokens_encryption_key';
-        const encoder = new TextEncoder();
-        const decoder = new TextDecoder();
-        const keyData = encoder.encode(encryptionKey);
-        const key = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['decrypt']);
-        
-        const encryptedData = atob(encryptedToken);
-        const iv = new Uint8Array(encryptedData.slice(0, 12).split('').map(c => c.charCodeAt(0)));
-        const encrypted = new Uint8Array(encryptedData.slice(12).split('').map(c => c.charCodeAt(0)));
-        
-        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
-        return decoder.decode(decrypted);
-      } catch (error) {
-        console.error('Token decryption failed:', error);
-        throw new Error('Failed to decrypt token');
-      }
-    };
-
     // Check if token needs refresh
     const tokenExpiry = new Date(integration.token_expires_at);
     const now = new Date();
-    let accessToken = integration.tokens_encrypted 
-      ? await decryptToken(integration.access_token)
-      : integration.access_token;
+    let accessToken = integration.access_token;
 
     if (tokenExpiry <= now) {
       // Refresh the token
       console.log('Refreshing Google access token...');
       
-      const refreshToken = integration.tokens_encrypted 
-        ? await decryptToken(integration.refresh_token)
-        : integration.refresh_token;
+      const refreshToken = integration.refresh_token;
 
       const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -110,26 +85,14 @@ serve(async (req) => {
       const refreshData = await refreshResponse.json();
       accessToken = refreshData.access_token;
 
-      // Encrypt new access token before storing
-      const encryptionKey = 'oauth_tokens_encryption_key';
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(encryptionKey);
-      const key = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['encrypt']);
-      
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const tokenData = encoder.encode(accessToken);
-      const encryptedToken = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, tokenData);
-      const encryptedTokenStr = btoa(String.fromCharCode(...new Uint8Array(iv), ...new Uint8Array(encryptedToken)));
-
       // Update the token in the database
       const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000);
       await supabase
         .from('google_integrations')
         .update({
-          access_token: encryptedTokenStr,
+          access_token: accessToken,
           token_expires_at: newExpiry.toISOString(),
           updated_at: new Date().toISOString(),
-          tokens_encrypted: true,
         })
         .eq('id', integration.id);
     }

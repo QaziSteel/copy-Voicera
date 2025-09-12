@@ -85,50 +85,11 @@ serve(async (req) => {
     // Use the first active integration
     const integration = integrations[0];
 
-    // Decrypt tokens if they are encrypted
-    const decryptToken = async (encryptedToken: string): Promise<string> => {
-      try {
-        const encryptionKey = 'oauth_tokens_encryption_key';
-        const encoder = new TextEncoder();
-        const decoder = new TextDecoder();
-        const keyData = encoder.encode(encryptionKey);
-        const key = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['decrypt']);
-        
-        const encryptedData = atob(encryptedToken);
-        const iv = new Uint8Array(encryptedData.slice(0, 12).split('').map(c => c.charCodeAt(0)));
-        const encrypted = new Uint8Array(encryptedData.slice(12).split('').map(c => c.charCodeAt(0)));
-        
-        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted);
-        return decoder.decode(decrypted);
-      } catch (error) {
-        console.error('Token decryption failed:', error);
-        throw new Error('Failed to decrypt token');
-      }
-    };
-
-    // Encrypt token for updates
-    const encryptToken = async (token: string): Promise<string> => {
-      const encryptionKey = 'oauth_tokens_encryption_key';
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(encryptionKey);
-      const key = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['encrypt']);
-      
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const tokenData = encoder.encode(token);
-      const encryptedToken = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, tokenData);
-      return btoa(String.fromCharCode(...new Uint8Array(iv), ...new Uint8Array(encryptedToken)));
-    };
-
     // Check if token needs refresh
     const tokenExpiry = new Date(integration.token_expires_at);
     const now = new Date();
-    let accessToken = integration.tokens_encrypted 
-      ? await decryptToken(integration.access_token)
-      : integration.access_token;
-    
-    let refreshToken = integration.tokens_encrypted 
-      ? await decryptToken(integration.refresh_token)
-      : integration.refresh_token;
+    let accessToken = integration.access_token;
+    let refreshToken = integration.refresh_token;
 
     let tokenExpiresAt = integration.token_expires_at;
     let isTokenRefreshed = false;
@@ -163,9 +124,6 @@ serve(async (req) => {
       accessToken = refreshData.access_token;
       isTokenRefreshed = true;
 
-      // Encrypt new access token before storing
-      const encryptedAccessToken = await encryptToken(accessToken);
-
       // Update the token in the database
       const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000);
       tokenExpiresAt = newExpiry.toISOString();
@@ -173,10 +131,9 @@ serve(async (req) => {
       const { error: updateError } = await supabase
         .from('google_integrations')
         .update({
-          access_token: encryptedAccessToken,
+          access_token: accessToken,
           token_expires_at: tokenExpiresAt,
           updated_at: new Date().toISOString(),
-          tokens_encrypted: true,
         })
         .eq('id', integration.id);
 
@@ -195,7 +152,6 @@ serve(async (req) => {
       user_email: integration.user_email,
       scopes: integration.scopes,
       is_active: integration.is_active,
-      tokens_encrypted: integration.tokens_encrypted,
       user_id: integration.user_id,
       project_id: integration.project_id,
       created_at: integration.created_at,

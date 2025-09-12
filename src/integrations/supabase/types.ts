@@ -83,7 +83,6 @@ export type Database = {
           refresh_token: string
           scopes: string[]
           token_expires_at: string
-          tokens_encrypted: boolean | null
           updated_at: string
           user_email: string
           user_id: string
@@ -97,7 +96,6 @@ export type Database = {
           refresh_token: string
           scopes: string[]
           token_expires_at: string
-          tokens_encrypted?: boolean | null
           updated_at?: string
           user_email: string
           user_id: string
@@ -111,7 +109,6 @@ export type Database = {
           refresh_token?: string
           scopes?: string[]
           token_expires_at?: string
-          tokens_encrypted?: boolean | null
           updated_at?: string
           user_email?: string
           user_id?: string

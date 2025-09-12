@@ -112,25 +112,6 @@ serve(async (req) => {
       return Response.redirect(redirectUrl, 302);
     }
 
-    // Encrypt tokens before storing
-    const encryptionKey = 'oauth_tokens_encryption_key';
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(encryptionKey);
-    const key = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['encrypt']);
-    
-    // Generate IV for encryption
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    
-    // Encrypt access token
-    const accessTokenData = encoder.encode(tokenData.access_token);
-    const encryptedAccessToken = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, accessTokenData);
-    const encryptedAccessTokenStr = btoa(String.fromCharCode(...new Uint8Array(iv), ...new Uint8Array(encryptedAccessToken)));
-    
-    // Encrypt refresh token
-    const refreshTokenData = encoder.encode(tokenData.refresh_token);
-    const refreshIv = crypto.getRandomValues(new Uint8Array(12));
-    const encryptedRefreshToken = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: refreshIv }, key, refreshTokenData);
-    const encryptedRefreshTokenStr = btoa(String.fromCharCode(...new Uint8Array(refreshIv), ...new Uint8Array(encryptedRefreshToken)));
 
     // Get user_id from the agent data
     const { data: agentUserData, error: agentUserError } = await supabase
@@ -151,13 +132,12 @@ serve(async (req) => {
       .upsert({
         user_id: agentUserData.user_id,
         project_id: agentData.project_id,
-        access_token: encryptedAccessTokenStr,
-        refresh_token: encryptedRefreshTokenStr,
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
         token_expires_at: expiresAt.toISOString(),
         scopes: tokenData.scope?.split(' ') || [],
         user_email: userInfo.email,
         is_active: true,
-        tokens_encrypted: true,
       }, {
         onConflict: 'project_id'
       });
