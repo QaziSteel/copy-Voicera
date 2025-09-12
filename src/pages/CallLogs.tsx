@@ -226,12 +226,19 @@ const CallLogs: React.FC = () => {
     for (const line of lines) {
       if (line.startsWith('AI:')) {
         const message = line.replace('AI:', '').trim();
-        const speakerName = message.includes('from') ? 
-          message.split('from')[1].split('.')[0].trim() + ' AI' : 
-          'AI Agent';
+        // Extract AI name from message like "Hello. This is Morgan from VoiceAera AI."
+        let aiName = 'Voicera AI';
+        if (message.includes('from ') && message.includes('AI')) {
+          const fromIndex = message.indexOf('from ');
+          const nameSection = message.substring(fromIndex + 5);
+          const periodIndex = nameSection.indexOf('.');
+          if (periodIndex > 0) {
+            aiName = nameSection.substring(0, periodIndex).trim();
+          }
+        }
         messages.push({
-          speaker: speakerName,
-          role: 'AI Agent',
+          speaker: 'AI Agent',
+          role: aiName,
           message: message
         });
       } else if (line.startsWith('User:')) {
