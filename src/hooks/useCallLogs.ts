@@ -12,6 +12,8 @@ export interface CallLogRecord {
   ended_at: string | null;
   total_call_time: number | null;
   ended_reason: string | null;
+  recording_file_path: string | null;
+  transcript_file_path: string | null;
   created_at: string;
   updated_at: string;
 }

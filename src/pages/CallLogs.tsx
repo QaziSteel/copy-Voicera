@@ -7,6 +7,10 @@ import { DateFilterPopup } from "@/components/DateFilterPopup";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { Header } from "@/components/shared/Header";
 import { useCallLogs } from "@/hooks/useCallLogs";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Play, Pause, FileText, Download } from "lucide-react";
 
 const CallLogs: React.FC = () => {
   const navigate = useNavigate();
@@ -34,13 +38,15 @@ const CallLogs: React.FC = () => {
 
   // Get real call logs from database
   const { callLogs, loading } = useCallLogs(searchTerm);
+  const { play, pause, stop, isPlaying } = useAudioPlayer();
+  const [currentlyPlayingPath, setCurrentlyPlayingPath] = useState<string | null>(null);
 
-  // Check if user is logged in
+  // Reset currently playing when audio stops
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
+    if (!isPlaying) {
+      setCurrentlyPlayingPath(null);
     }
-  }, [user, navigate]);
+  }, [isPlaying]);
 
   const getStatusStyle = (endedReason: string | null) => {
     // Since we're treating all calls as information inquiries for now
@@ -62,6 +68,67 @@ const CallLogs: React.FC = () => {
   const formatTimestamp = (timestamp: string | null): string => {
     if (!timestamp) return "Unknown";
     return new Date(timestamp).toLocaleString();
+  };
+
+  const getSignedUrl = async (bucket: string, path: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path, 3600); // 1 hour expiry
+      
+      if (error) throw error;
+      return data.signedUrl;
+    } catch (error) {
+      console.error('Error getting signed URL:', error);
+      return null;
+    }
+  };
+
+  const handlePlayRecording = async (recordingPath: string) => {
+    try {
+      const signedUrl = await getSignedUrl('call-recordings', recordingPath);
+      if (signedUrl) {
+        if (isPlaying && currentlyPlayingPath === recordingPath) {
+          pause();
+          setCurrentlyPlayingPath(null);
+        } else {
+          stop(); // Stop any current playback
+          setCurrentlyPlayingPath(recordingPath);
+          play(signedUrl);
+        }
+      }
+    } catch (error) {
+      console.error('Error playing recording:', error);
+    }
+  };
+
+  const handleDownloadTranscript = async (transcriptPath: string) => {
+    try {
+      const signedUrl = await getSignedUrl('call-transcripts', transcriptPath);
+      if (signedUrl) {
+        // Create a temporary link to download the file
+        const link = document.createElement('a');
+        link.href = signedUrl;
+        link.download = transcriptPath.split('/').pop() || 'transcript.txt';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('Error downloading transcript:', error);
+    }
+  };
+
+  const handleViewTranscript = async (transcriptPath: string) => {
+    try {
+      const signedUrl = await getSignedUrl('call-transcripts', transcriptPath);
+      if (signedUrl) {
+        // Open transcript in new tab
+        window.open(signedUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error viewing transcript:', error);
+    }
   };
 
   return (
@@ -232,6 +299,47 @@ const CallLogs: React.FC = () => {
                           <div>📞 Customer: {call.customer_number}</div>
                         )}
                         <div>⏱️ Duration: {formatDuration(call.total_call_time)}</div>
+                      </div>
+                      
+                      {/* Recording and Transcript Controls */}
+                      <div className="flex items-center gap-2">
+                        {call.recording_file_path && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePlayRecording(call.recording_file_path!)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {isPlaying && currentlyPlayingPath === call.recording_file_path ? (
+                              <Pause className="h-4 w-4" />
+                            ) : (
+                              <Play className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                        
+                        {call.transcript_file_path && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewTranscript(call.transcript_file_path!)}
+                              className="h-8 w-8 p-0"
+                              title="View Transcript"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDownloadTranscript(call.transcript_file_path!)}
+                              className="h-8 w-8 p-0"
+                              title="Download Transcript"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
