@@ -10,7 +10,6 @@ import { useCallLogs } from "@/hooks/useCallLogs";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, FileText, Download } from "lucide-react";
 
 const CallLogs: React.FC = () => {
   const navigate = useNavigate();
@@ -304,41 +303,49 @@ const CallLogs: React.FC = () => {
                       {/* Recording and Transcript Controls */}
                       <div className="flex items-center gap-2">
                         {call.recording_file_path && (
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <button
                             onClick={() => handlePlayRecording(call.recording_file_path!)}
-                            className="h-8 w-8 p-0"
+                            className="flex items-center gap-2.5 px-4 py-2 border border-gray-200 rounded-xl"
                           >
-                            {isPlaying && currentlyPlayingPath === call.recording_file_path ? (
-                              <Pause className="h-4 w-4" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
-                          </Button>
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                            >
+                              <path
+                                d="M15.7421 10.705C15.4475 11.8242 14.0555 12.615 11.2714 14.1968C8.57996 15.7258 7.23429 16.4903 6.14982 16.183C5.70146 16.0559 5.29295 15.8147 4.96349 15.4822C4.16663 14.6782 4.16663 13.1188 4.16663 10C4.16663 6.88117 4.16663 5.32175 4.96349 4.51777C5.29295 4.18538 5.70146 3.94407 6.14982 3.81702C7.23429 3.50971 8.57996 4.27423 11.2714 5.80328C14.0555 7.38498 15.4475 8.17583 15.7421 9.295C15.8637 9.757 15.8637 10.243 15.7421 10.705Z"
+                                stroke="#141B34"
+                                strokeWidth="1.5"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <span className="text-black text-base">
+                              {isPlaying && currentlyPlayingPath === call.recording_file_path ? "Pause" : "Replay"}
+                            </span>
+                          </button>
                         )}
                         
                         {call.transcript_file_path && (
-                          <div className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewTranscript(call.transcript_file_path!)}
-                              className="h-8 w-8 p-0"
-                              title="View Transcript"
+                          <button
+                            onClick={() => handleViewTranscript(call.transcript_file_path!)}
+                            className="flex items-center gap-2.5 px-4 py-2 border border-gray-200 rounded-xl"
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
                             >
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDownloadTranscript(call.transcript_file_path!)}
-                              className="h-8 w-8 p-0"
-                              title="Download Transcript"
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
+                              <path
+                                d="M5.0823 15.8335C3.99888 15.7269 3.18725 15.4015 2.64293 14.8572C1.66663 13.8809 1.66663 12.3095 1.66663 9.16683V8.75016C1.66663 5.60746 1.66663 4.03612 2.64293 3.0598C3.61925 2.0835 5.19059 2.0835 8.33329 2.0835H11.6666C14.8093 2.0835 16.3807 2.0835 17.357 3.0598C18.3333 4.03612 18.3333 5.60746 18.3333 8.75016V9.16683C18.3333 12.3095 18.3333 13.8809 17.357 14.8572C16.3807 15.8335 14.8093 15.8335 11.6666 15.8335C11.1995 15.8439 10.8275 15.8794 10.4621 15.9627C9.46346 16.1926 8.53871 16.7036 7.62485 17.1492C6.3227 17.7842 5.67163 18.1017 5.26303 17.8044C4.48137 17.2222 5.24541 15.4184 5.41663 14.5835"
+                                stroke="#141B34"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <span className="text-black text-base">Transcript</span>
+                          </button>
                         )}
                       </div>
                     </div>
