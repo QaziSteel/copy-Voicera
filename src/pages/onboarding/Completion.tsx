@@ -43,11 +43,25 @@ export default function Completion() {
       // Create phone number record if contact number exists and project is available
       if (onboardingData?.contact_number && currentProject) {
         try {
-          await createPhoneNumber(onboardingData.contact_number);
-          console.log('Phone number record created successfully');
+          // Extract external ID from purchased number details
+          const purchasedDetails = onboardingData.purchased_number_details as any;
+          const externalId = purchasedDetails?.id;
+          const phoneNumber = purchasedDetails?.number || onboardingData.contact_number;
+          
+          if (!externalId) {
+            console.warn('No external phone ID found in onboarding data');
+            throw new Error('External phone ID is required for phone number creation');
+          }
+          
+          const createdPhoneNumber = await createPhoneNumber(phoneNumber, externalId);
+          if (!createdPhoneNumber) {
+            throw new Error('Failed to create phone number record');
+          }
+          
+          console.log('Phone number record created successfully with external ID:', externalId);
         } catch (phoneError) {
           console.error('Error creating phone number record:', phoneError);
-          // Don't throw error here - continue with webhook even if phone number creation fails
+          throw phoneError; // Throw error to prevent webhook from proceeding
         }
       }
 

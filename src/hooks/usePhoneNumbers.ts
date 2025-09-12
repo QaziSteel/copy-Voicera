@@ -17,7 +17,7 @@ export interface UsePhoneNumbersResult {
   loading: boolean;
   error: string | null;
   refetch: () => void;
-  createPhoneNumber: (phoneNumber: string) => Promise<PhoneNumberRecord | null>;
+  createPhoneNumber: (phoneNumber: string, externalId?: string) => Promise<PhoneNumberRecord | null>;
   updatePhoneNumber: (id: string, updates: Partial<PhoneNumberRecord>) => Promise<void>;
   deletePhoneNumber: (id: string) => Promise<void>;
 }
@@ -59,18 +59,24 @@ export const usePhoneNumbers = (): UsePhoneNumbersResult => {
     }
   };
 
-  const createPhoneNumber = async (phoneNumber: string): Promise<PhoneNumberRecord | null> => {
+  const createPhoneNumber = async (phoneNumber: string, externalId?: string): Promise<PhoneNumberRecord | null> => {
     if (!user || !currentProject) {
       throw new Error('User not authenticated or no current project');
     }
 
     try {
+      const phoneNumberData = {
+        phone_number: phoneNumber,
+        project_id: currentProject.id,
+        is_active: true,
+        ...(externalId && { id: externalId }) // Use external ID if provided
+      };
+
       const { data, error: createError } = await supabase
         .from('phone_numbers')
-        .insert({
-          phone_number: phoneNumber,
-          project_id: currentProject.id,
-          is_active: true
+        .upsert(phoneNumberData, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
         })
         .select()
         .single();
