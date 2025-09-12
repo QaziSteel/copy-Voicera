@@ -37,15 +37,18 @@ const CallLogs: React.FC = () => {
 
   // Get real call logs from database
   const { callLogs, loading } = useCallLogs(searchTerm);
-  const { play, pause, stop, isPlaying } = useAudioPlayer();
+  const audioPlayer = useAudioPlayer();
   const [currentlyPlayingPath, setCurrentlyPlayingPath] = useState<string | null>(null);
+  const [showAudioPlayer, setShowAudioPlayer] = useState<boolean>(false);
+  const [selectedCallForPlayer, setSelectedCallForPlayer] = useState<any>(null);
+  const [currentCallIndex, setCurrentCallIndex] = useState<number>(0);
 
   // Reset currently playing when audio stops
   useEffect(() => {
-    if (!isPlaying) {
+    if (!audioPlayer.isPlaying) {
       setCurrentlyPlayingPath(null);
     }
-  }, [isPlaying]);
+  }, [audioPlayer.isPlaying]);
 
   const getStatusStyle = (endedReason: string | null) => {
     // Since we're treating all calls as information inquiries for now
@@ -83,22 +86,103 @@ const CallLogs: React.FC = () => {
     }
   };
 
-  const handlePlayRecording = async (recordingPath: string) => {
+  const handlePlayRecording = async (call: any) => {
+    // Find calls with recordings for navigation
+    const callsWithRecordings = callLogs.filter(c => c.recording_file_path);
+    const callIndex = callsWithRecordings.findIndex(c => c.id === call.id);
+    
+    setSelectedCallForPlayer(call);
+    setCurrentCallIndex(callIndex);
+    setShowAudioPlayer(true);
+    
     try {
-      const signedUrl = await getSignedUrl('call-recordings', recordingPath);
+      const signedUrl = await getSignedUrl('call-recordings', call.recording_file_path);
       if (signedUrl) {
-        if (isPlaying && currentlyPlayingPath === recordingPath) {
-          pause();
-          setCurrentlyPlayingPath(null);
-        } else {
-          stop(); // Stop any current playback
-          setCurrentlyPlayingPath(recordingPath);
-          play(signedUrl);
-        }
+        await audioPlayer.play(signedUrl);
       }
     } catch (error) {
       console.error('Error playing recording:', error);
     }
+  };
+
+  const handleCloseAudioPlayer = () => {
+    setShowAudioPlayer(false);
+    setSelectedCallForPlayer(null);
+    audioPlayer.stop();
+  };
+
+  const handlePreviousCall = async () => {
+    const callsWithRecordings = callLogs.filter(c => c.recording_file_path);
+    if (callsWithRecordings.length === 0) return;
+    
+    const newIndex = currentCallIndex > 0 ? currentCallIndex - 1 : callsWithRecordings.length - 1;
+    const previousCall = callsWithRecordings[newIndex];
+    
+    setSelectedCallForPlayer(previousCall);
+    setCurrentCallIndex(newIndex);
+    
+    try {
+      const signedUrl = await getSignedUrl('call-recordings', previousCall.recording_file_path);
+      if (signedUrl) {
+        await audioPlayer.play(signedUrl);
+      }
+    } catch (error) {
+      console.error('Error playing previous recording:', error);
+    }
+  };
+
+  const handleNextCall = async () => {
+    const callsWithRecordings = callLogs.filter(c => c.recording_file_path);
+    if (callsWithRecordings.length === 0) return;
+    
+    const newIndex = currentCallIndex < callsWithRecordings.length - 1 ? currentCallIndex + 1 : 0;
+    const nextCall = callsWithRecordings[newIndex];
+    
+    setSelectedCallForPlayer(nextCall);
+    setCurrentCallIndex(newIndex);
+    
+    try {
+      const signedUrl = await getSignedUrl('call-recordings', nextCall.recording_file_path);
+      if (signedUrl) {
+        await audioPlayer.play(signedUrl);
+      }
+    } catch (error) {
+      console.error('Error playing next recording:', error);
+    }
+  };
+
+  const handleTogglePlayback = async () => {
+    if (!selectedCallForPlayer) return;
+
+    if (audioPlayer.isPlaying) {
+      audioPlayer.pause();
+    } else {
+      const signedUrl = await getSignedUrl('call-recordings', selectedCallForPlayer.recording_file_path);
+      if (signedUrl) {
+        try {
+          await audioPlayer.play(signedUrl);
+        } catch (error) {
+          console.error('Error playing recording:', error);
+        }
+      }
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleSeek = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioPlayer.duration) return;
+    
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const percentage = x / rect.width;
+    const newTime = percentage * audioPlayer.duration;
+    
+    audioPlayer.seek(newTime);
   };
 
   const handleDownloadTranscript = async (transcriptPath: string) => {
@@ -304,7 +388,7 @@ const CallLogs: React.FC = () => {
                       <div className="flex items-center gap-2">
                         {call.recording_file_path && (
                           <button
-                            onClick={() => handlePlayRecording(call.recording_file_path!)}
+                            onClick={() => handlePlayRecording(call)}
                             className="flex items-center gap-2.5 px-4 py-2 border border-gray-200 rounded-xl"
                           >
                             <svg
@@ -320,9 +404,7 @@ const CallLogs: React.FC = () => {
                                 strokeLinejoin="round"
                               />
                             </svg>
-                            <span className="text-black text-base">
-                              {isPlaying && currentlyPlayingPath === call.recording_file_path ? "Pause" : "Replay"}
-                            </span>
+                            <span className="text-black text-base">Replay</span>
                           </button>
                         )}
                         
@@ -402,6 +484,139 @@ const CallLogs: React.FC = () => {
         onClose={closeNotifications}
         notificationCount={notificationCount}
       />
+
+      {/* Audio Player Popup */}
+      {showAudioPlayer && selectedCallForPlayer && (
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
+          <div className="bg-white rounded-2xl w-[800px] shadow-lg">
+            {/* Header */}
+            <div className="flex justify-between items-center p-5 border-b border-gray-200">
+              <h3 className="text-xl font-medium text-gray-800">
+                Call Recording Playback – {selectedCallForPlayer.id}
+              </h3>
+              <button
+                onClick={handleCloseAudioPlayer}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M13.3337 2.6665L2.66699 13.3332"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M2.66699 2.6665L13.3337 13.3332"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Audio Player */}
+            <div className="p-5">
+              <div className="flex items-center gap-5 p-3 border border-gray-200 rounded-lg">
+                {/* Previous Button */}
+                <button onClick={handlePreviousCall} className="p-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M8.06492 12.6258C8.31931 13.8374 9.67295 14.7077 12.3802 16.4481C15.3247 18.3411 16.797 19.2876 17.9895 18.9229C18.3934 18.7994 18.7654 18.5823 19.0777 18.2876C20 17.4178 20 15.6118 20 12C20 8.38816 20 6.58224 19.0777 5.71235C18.7654 5.41773 18.3934 5.20057 17.9895 5.07707C16.797 4.71243 15.3247 5.6589 12.3802 7.55186C9.67295 9.29233 8.31931 10.1626 8.06492 11.3742C7.97836 11.7865 7.97836 12.2135 8.06492 12.6258Z"
+                      stroke="#141B34"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M4 4V20"
+                      stroke="#141B34"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+
+                {/* Play/Pause Button */}
+                <button 
+                  onClick={handleTogglePlayback}
+                  className="w-12 h-12 bg-black rounded-full flex items-center justify-center"
+                >
+                  {audioPlayer.isPlaying ? (
+                    // Pause icon
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <rect x="9" y="6" width="2" height="12" fill="white" rx="1"/>
+                      <rect x="13" y="6" width="2" height="12" fill="white" rx="1"/>
+                    </svg>
+                  ) : (
+                    // Play icon
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z"
+                        fill="white"
+                      />
+                    </svg>
+                  )}
+                </button>
+
+                {/* Next Button */}
+                <button onClick={handleNextCall} className="p-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M15.9351 12.6258C15.6807 13.8374 14.327 14.7077 11.6198 16.4481C8.67528 18.3411 7.20303 19.2876 6.01052 18.9229C5.60662 18.7994 5.23463 18.5823 4.92227 18.2876C4 17.4178 4 15.6118 4 12C4 8.38816 4 6.58224 4.92227 5.71235C5.23463 5.41773 5.60662 5.20057 6.01052 5.07707C7.20304 4.71243 8.67528 5.6589 11.6198 7.55186C14.327 9.29233 15.6807 10.1626 15.9351 11.3742C16.0216 11.7865 16.0216 12.2135 15.9351 12.6258Z"
+                      stroke="#141B34"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M20 5V19"
+                      stroke="#141B34"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+
+                {/* Current Time */}
+                <span className="text-gray-500 text-base ml-4">
+                  {formatTime(audioPlayer.currentTime)}
+                </span>
+
+                {/* Progress Bar */}
+                <div 
+                  className="flex-1 mx-4 relative cursor-pointer" 
+                  onClick={handleSeek}
+                >
+                  <div className="h-2 bg-gray-200 rounded-full">
+                    <div 
+                      className="h-2 bg-black rounded-l-full transition-all duration-100"
+                      style={{ 
+                        width: audioPlayer.duration > 0 
+                          ? `${(audioPlayer.currentTime / audioPlayer.duration) * 100}%` 
+                          : '0%' 
+                      }}
+                    ></div>
+                    <div 
+                      className="w-1 h-4 bg-black rounded-full absolute -top-1 transition-all duration-100"
+                      style={{ 
+                        left: audioPlayer.duration > 0 
+                          ? `${(audioPlayer.currentTime / audioPlayer.duration) * 100}%` 
+                          : '0%' 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Total Time */}
+                <span className="text-gray-500 text-base">
+                  {formatTime(audioPlayer.duration)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
