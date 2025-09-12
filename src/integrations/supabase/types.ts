@@ -83,6 +83,7 @@ export type Database = {
           refresh_token: string
           scopes: string[]
           token_expires_at: string
+          tokens_encrypted: boolean | null
           updated_at: string
           user_email: string
           user_id: string
@@ -96,6 +97,7 @@ export type Database = {
           refresh_token: string
           scopes: string[]
           token_expires_at: string
+          tokens_encrypted?: boolean | null
           updated_at?: string
           user_email: string
           user_id: string
@@ -109,6 +111,7 @@ export type Database = {
           refresh_token?: string
           scopes?: string[]
           token_expires_at?: string
+          tokens_encrypted?: boolean | null
           updated_at?: string
           user_email?: string
           user_id?: string
@@ -384,6 +387,14 @@ export type Database = {
       can_access_project: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
+      }
+      decrypt_token: {
+        Args: { encrypted_token: string }
+        Returns: string
+      }
+      encrypt_token: {
+        Args: { token_text: string }
+        Returns: string
       }
       get_user_projects: {
         Args: { _user_id: string }
