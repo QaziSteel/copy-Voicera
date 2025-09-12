@@ -112,17 +112,52 @@ serve(async (req) => {
       return Response.redirect(redirectUrl, 302);
     }
 
-    // Store or update the Google integration
+    // Encrypt tokens before storing
+    const encryptionKey = 'oauth_tokens_encryption_key';
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(encryptionKey);
+    const key = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, ['encrypt']);
+    
+    // Generate IV for encryption
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    
+    // Encrypt access token
+    const accessTokenData = encoder.encode(tokenData.access_token);
+    const encryptedAccessToken = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, accessTokenData);
+    const encryptedAccessTokenStr = btoa(String.fromCharCode(...new Uint8Array(iv), ...new Uint8Array(encryptedAccessToken)));
+    
+    // Encrypt refresh token
+    const refreshTokenData = encoder.encode(tokenData.refresh_token);
+    const refreshIv = crypto.getRandomValues(new Uint8Array(12));
+    const encryptedRefreshToken = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: refreshIv }, key, refreshTokenData);
+    const encryptedRefreshTokenStr = btoa(String.fromCharCode(...new Uint8Array(refreshIv), ...new Uint8Array(encryptedRefreshToken)));
+
+    // Get user_id from the agent data
+    const { data: agentUserData, error: agentUserError } = await supabase
+      .from('onboarding_responses')
+      .select('user_id')
+      .eq('id', state)
+      .single();
+
+    if (agentUserError || !agentUserData?.user_id) {
+      console.error('Error fetching agent user data:', agentUserError);
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=user_not_found`;
+      return Response.redirect(redirectUrl, 302);
+    }
+
+    // Store or update the Google integration with encrypted tokens
     const { error: integrationError } = await supabase
       .from('google_integrations')
       .upsert({
+        user_id: agentUserData.user_id,
         project_id: agentData.project_id,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
+        access_token: encryptedAccessTokenStr,
+        refresh_token: encryptedRefreshTokenStr,
         token_expires_at: expiresAt.toISOString(),
         scopes: tokenData.scope?.split(' ') || [],
         user_email: userInfo.email,
         is_active: true,
+        tokens_encrypted: true,
       }, {
         onConflict: 'project_id'
       });

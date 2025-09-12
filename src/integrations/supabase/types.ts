@@ -388,14 +388,6 @@ export type Database = {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
-      decrypt_token: {
-        Args: { encrypted_token: string }
-        Returns: string
-      }
-      encrypt_token: {
-        Args: { token_text: string }
-        Returns: string
-      }
       get_user_projects: {
         Args: { _user_id: string }
         Returns: {
