@@ -367,29 +367,29 @@ const AgentManagement = () => {
 
 
   const renderBasicInfo = () => (
-    <div className="space-y-5">
+    <div className="space-y-3 md:space-y-5">
       {/* Section Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 lg:gap-0">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none">
               <path d="M16.3083 4.38394C15.7173 4.38394 15.4217 4.38394 15.1525 4.28405C15.1151 4.27017 15.0783 4.25491 15.042 4.23828C14.781 4.11855 14.5721 3.90959 14.1541 3.49167C13.1922 2.52977 12.7113 2.04882 12.1195 2.00447C12.04 1.99851 11.96 1.99851 11.8805 2.00447C11.2887 2.04882 10.8077 2.52977 9.84585 3.49166C9.42793 3.90959 9.21897 4.11855 8.95797 4.23828C8.92172 4.25491 8.88486 4.27017 8.84747 4.28405C8.57825 4.38394 8.28273 4.38394 7.69171 4.38394H7.58269C6.07478 4.38394 5.32083 4.38394 4.85239 4.85239C4.38394 5.32083 4.38394 6.07478 4.38394 7.58269V7.69171C4.38394 8.28273 4.38394 8.57825 4.28405 8.84747C4.27017 8.88486 4.25491 8.92172 4.23828 8.95797C4.11855 9.21897 3.90959 9.42793 3.49166 9.84585C2.52977 10.8077 2.04882 11.2887 2.00447 11.8805C1.99851 11.96 1.99851 12.04 2.00447 12.1195C2.04882 12.7113 2.52977 13.1922 3.49166 14.1541C3.90959 14.5721 4.11855 14.781 4.23828 15.042C4.25491 15.0783 4.27017 15.1151 4.28405 15.1525C4.38394 15.4217 4.38394 15.7173 4.38394 16.3083V16.4173C4.38394 17.9252 4.38394 18.6792 4.85239 19.1476C5.32083 19.6161 6.07478 19.6161 7.58269 19.6161H7.69171C8.28273 19.6161 8.57825 19.6161 8.84747 19.716C8.88486 19.7298 8.92172 19.7451 8.95797 19.7617C9.21897 19.8815 9.42793 20.0904 9.84585 20.5083C10.8077 21.4702 11.2887 21.9512 11.8805 21.9955C11.96 22.0015 12.0399 22.0015 12.1195 21.9955C12.7113 21.9512 13.1922 21.4702 14.1541 20.5083C14.5721 20.0904 14.781 19.8815 15.042 19.7617C15.0783 19.7451 15.1151 19.7298 15.1525 19.716C15.4217 19.6161 15.7173 19.6161 16.3083 19.6161H16.4173C17.9252 19.6161 18.6792 19.6161 19.1476 19.1476C19.6161 18.6792 19.6161 17.9252 19.6161 16.4173V16.3083C19.6161 15.7173 19.6161 15.4217 19.716 15.1525C19.7298 15.1151 19.7451 15.0783 19.7617 15.042C19.8815 14.781 20.0904 14.5721 20.5083 14.1541C21.4702 13.1922 21.9512 12.7113 21.9955 12.1195C22.0015 12.0399 22.0015 11.96 21.9955 11.8805C21.9512 11.2887 21.4702 10.8077 20.5083 9.84585C20.0904 9.42793 19.8815 9.21897 19.7617 8.95797C19.7451 8.92172 19.7298 8.88486 19.716 8.84747C19.6161 8.57825 19.6161 8.28273 19.6161 7.69171V7.58269C19.6161 6.07478 19.6161 5.32083 19.1476 4.85239C18.6792 4.38394 17.9252 4.38394 16.4173 4.38394H16.3083Z" stroke="black" strokeWidth="1.5"/>
               <path d="M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z" stroke="black" strokeWidth="1.5"/>
             </svg>
-            <h2 className="text-xl font-semibold text-black">Business Information</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-black">Business Information</h2>
           </div>
-          <p className="text-lg font-semibold text-gray-500">Basic information about your business that the AI agent will use.</p>
+          <p className="text-sm md:text-base lg:text-lg font-semibold text-gray-500">Basic information about your business that the AI agent will use.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <div className="flex items-center gap-2 md:gap-3">
+          <button className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-xl bg-white">
+            <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 20 20" fill="none">
               <path d="M16.6743 1.66699V4.27715C16.6743 4.52203 16.3681 4.63289 16.2114 4.44477C14.6855 2.73991 12.468 1.66699 9.99996 1.66699C5.39758 1.66699 1.66663 5.39795 1.66663 10.0003C1.66663 14.6027 5.39758 18.3337 9.99996 18.3337C14.6023 18.3337 18.3333 14.6027 18.3333 10.0003" stroke="#141B34" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span className="text-base font-medium text-black">Refresh</span>
+            <span className="text-sm md:text-base font-medium text-black">Refresh</span>
           </button>
           <button 
             onClick={saveChanges}
-            className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl"
+            className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 bg-black text-white rounded-xl"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <g clipPath="url(#clip0_60_7)">
@@ -409,26 +409,26 @@ const AgentManagement = () => {
       </div>
 
       {/* Form */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <div className="space-y-5">
+      <div className="bg-white rounded-xl md:rounded-2xl border border-gray-200 p-3 md:p-5">
+        <div className="space-y-3 md:space-y-5">
           {/* First Row */}
-          <div className="flex gap-5">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-5">
             <div className="flex-1">
-              <label className="block text-lg font-semibold text-black mb-3">Business Name</label>
+              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Name</label>
               <input 
                 type="text" 
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500"
+                className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-lg font-semibold text-black mb-3">Business Type</label>
+              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Type</label>
               <div className="relative">
                 <select 
                   value={businessType}
                   onChange={(e) => setBusinessType(e.target.value)}
-                  className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500 appearance-none bg-white"
                 >
                   <option value="">Select business type</option>
                   <option value="Hairdressers">Hairdressers</option>
@@ -442,7 +442,7 @@ const AgentManagement = () => {
                     <option value={businessType}>{businessType} (Custom)</option>
                   )}
                 </select>
-                <svg className="absolute right-4 top-1/2 transform -translate-y-1/2" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none">
                   <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
@@ -450,23 +450,23 @@ const AgentManagement = () => {
           </div>
 
           {/* Second Row */}
-          <div className="flex gap-5">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-5">
             <div className="flex-1">
-              <label className="block text-lg font-semibold text-black mb-3">Primary Location</label>
+              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Primary Location</label>
               <input 
                 type="text" 
                 value={businessLocation}
                 onChange={(e) => setBusinessLocation(e.target.value)}
-                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500"
+                className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-lg font-semibold text-black mb-3">Contact Number</label>
+              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Contact Number</label>
               <input 
                 type="text" 
                 value={contactNumber}
                 readOnly
-                className="w-full px-4 py-4 border-2 border-gray-100 rounded-xl text-lg text-gray-600 bg-gray-50 cursor-not-allowed"
+                className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-100 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-600 bg-gray-50 cursor-not-allowed"
               />
             </div>
           </div>
@@ -552,30 +552,30 @@ const AgentManagement = () => {
       <Header currentPage="agent-management" />
 
       {/* Main Content */}
-      <main className="px-3 md:px-6 lg:px-12 py-6">
+      <main className="px-2 md:px-4 lg:px-8 xl:px-12 py-4 md:py-6">
         {/* Page Header */}
-        <div className="mb-4">
-          <h1 className="text-2xl font-semibold text-black mb-1">Agent Management</h1>
-          <p className="text-lg font-semibold text-gray-500">Configure your AI agent settings and behavior</p>
+        <div className="mb-3 md:mb-4">
+          <h1 className="text-xl md:text-2xl font-semibold text-black mb-1">Agent Management</h1>
+          <p className="text-sm md:text-base lg:text-lg font-semibold text-gray-500">Configure your AI agent settings and behavior</p>
         </div>
 
         {/* Agent Status Section */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl font-semibold text-gray-500">Agent status:</span>
+        <div className="mb-3 md:mb-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-0">
+            <div className="flex items-center gap-2 mb-2 lg:mb-0">
+              <span className="text-lg md:text-xl font-semibold text-gray-500">Agent status:</span>
               <div className="flex items-center gap-1">
                 <div className={`w-2 h-2 ${isAgentLive ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></div>
-                <span className={`text-xl font-semibold ${isAgentLive ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`text-lg md:text-xl font-semibold ${isAgentLive ? 'text-green-600' : 'text-red-600'}`}>
                   {isAgentLive ? 'Live' : 'Offline'}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => setIsAgentLive(!isAgentLive)}
-                className={`px-4 py-3 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-lg font-semibold transition-colors`}
+                className={`px-3 md:px-4 py-2 md:py-3 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors`}
               >
                 {isAgentLive ? 'Go Offline' : 'Go Live'}
               </button>
@@ -587,7 +587,7 @@ const AgentManagement = () => {
                   onValueChange={handleAgentSelection}
                   disabled={agentsLoading}
                 >
-                  <SelectTrigger className="w-64 bg-white border-gray-200">
+                  <SelectTrigger className="w-full sm:w-48 md:w-64 bg-white border-gray-200">
                     <SelectValue placeholder="Select an agent" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
@@ -611,13 +611,13 @@ const AgentManagement = () => {
         </div>
 
         {/* Tabs Section */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-6">
-            <TabsList className="grid w-full grid-cols-5 mb-6 bg-gray-100 rounded-full p-1">
-              <TabsTrigger value="basic-info" className="rounded-full">Basic Info</TabsTrigger>
-              <TabsTrigger value="personality" className="rounded-full">AI Personality</TabsTrigger>
-              <TabsTrigger value="booking" className="rounded-full">Booking</TabsTrigger>
-              <TabsTrigger value="faqs" className="rounded-full">FAQs</TabsTrigger>
-              <TabsTrigger value="advanced" className="rounded-full">Advanced</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4 md:mt-6">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-4 md:mb-6 bg-gray-100 rounded-full p-1">
+              <TabsTrigger value="basic-info" className="rounded-full text-xs md:text-sm">Basic Info</TabsTrigger>
+              <TabsTrigger value="personality" className="rounded-full text-xs md:text-sm">AI Personality</TabsTrigger>
+              <TabsTrigger value="booking" className="rounded-full text-xs md:text-sm">Booking</TabsTrigger>
+              <TabsTrigger value="faqs" className="rounded-full text-xs md:text-sm">FAQs</TabsTrigger>
+              <TabsTrigger value="advanced" className="rounded-full text-xs md:text-sm">Advanced</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic-info" className="space-y-4">
@@ -1101,10 +1101,10 @@ const AgentManagement = () => {
                     </div>
 
                     {/* Add New FAQ Section */}
-                    <div className="flex gap-5 pt-5">
+                    <div className="flex flex-col md:flex-row gap-3 md:gap-5 pt-3 md:pt-5">
                       {/* Question Input */}
                       <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-3">
+                        <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">
                           Question
                         </label>
                         <input
@@ -1112,13 +1112,13 @@ const AgentManagement = () => {
                           placeholder="Enter your question"
                           value={newQuestion}
                           onChange={(e) => setNewQuestion(e.target.value)}
-                          className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                          className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500 placeholder-gray-500"
                         />
                       </div>
                       
                       {/* Answer Input */}
                       <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-3">
+                        <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">
                           Answer
                         </label>
                         <input
@@ -1126,7 +1126,7 @@ const AgentManagement = () => {
                           placeholder="Enter an answer to your question"
                           value={newAnswer}
                           onChange={(e) => setNewAnswer(e.target.value)}
-                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500 placeholder-gray-500"
                         />
                       </div>
                     </div>
@@ -1134,9 +1134,9 @@ const AgentManagement = () => {
                     {/* Add FAQ Button */}
                     <button 
                       onClick={addFaq}
-                      className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl"
+                      className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 bg-black text-white rounded-xl"
                     >
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 20 20" fill="none">
                         <g clipPath="url(#clip0_70_202)">
                           <path
                             d="M3.125 10H16.875"
@@ -1159,7 +1159,7 @@ const AgentManagement = () => {
                           </clipPath>
                         </defs>
                       </svg>
-                      <span className="text-base font-medium">Add FAQ</span>
+                      <span className="text-sm md:text-base font-medium">Add FAQ</span>
                     </button>
                   </div>
                 </div>
@@ -1169,27 +1169,27 @@ const AgentManagement = () => {
             <TabsContent value="advanced" className="space-y-6">
               <div className="space-y-5">
                 {/* Section Header */}
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 lg:gap-0">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none">
                         <path d="M16.3083 4.38394C15.7173 4.38394 15.4217 4.38394 15.1525 4.28405C15.1151 4.27017 15.0783 4.25491 15.042 4.23828C14.781 4.11855 14.5721 3.90959 14.1541 3.49167C13.1922 2.52977 12.7113 2.04882 12.1195 2.00447C12.04 1.99851 11.96 1.99851 11.8805 2.00447C11.2887 2.04882 10.8077 2.52977 9.84585 3.49166C9.42793 3.90959 9.21897 4.11855 8.95797 4.23828C8.92172 4.25491 8.88486 4.27017 8.84747 4.28405C8.57825 4.38394 8.28273 4.38394 7.69171 4.38394H7.58269C6.07478 4.38394 5.32083 4.38394 4.85239 4.85239C4.38394 5.32083 4.38394 6.07478 4.38394 7.58269V7.69171C4.38394 8.28273 4.38394 8.57825 4.28405 8.84747C4.27017 8.88486 4.25491 8.92172 4.23828 8.95797C4.11855 9.21897 3.90959 9.42793 3.49166 9.84585C2.52977 10.8077 2.04882 11.2887 2.00447 11.8805C1.99851 11.96 1.99851 12.04 2.00447 12.1195C2.04882 12.7113 2.52977 13.1922 3.49166 14.1541C3.90959 14.5721 4.11855 14.781 4.23828 15.042C4.25491 15.0783 4.27017 15.1151 4.28405 15.1525C4.38394 15.4217 4.38394 15.7173 4.38394 16.3083V16.4173C4.38394 17.9252 4.38394 18.6792 4.85239 19.1476C5.32083 19.6161 6.07478 19.6161 7.58269 19.6161H7.69171C8.28273 19.6161 8.57825 19.6161 8.84747 19.716C8.88486 19.7298 8.92172 19.7451 8.95797 19.7617C9.21897 19.8815 9.42793 20.0904 9.84585 20.5083C10.8077 21.4702 11.2887 21.9512 11.8805 21.9955C11.96 22.0015 12.0399 22.0015 12.1195 21.9955C12.7113 21.9512 13.1922 21.4702 14.1541 20.5083C14.5721 20.0904 14.781 19.8815 15.042 19.7617C15.0783 19.7451 15.1151 19.7298 15.1525 19.716C15.4217 19.6161 15.7173 19.6161 16.3083 19.6161H16.4173C17.9252 19.6161 18.6792 19.6161 19.1476 19.1476C19.6161 18.6792 19.6161 17.9252 19.6161 16.4173V16.3083C19.6161 15.7173 19.6161 15.4217 19.716 15.1525C19.7298 15.1151 19.7451 15.0783 19.7617 15.042C19.8815 14.781 20.0904 14.5721 20.5083 14.1541C21.4702 13.1922 21.9512 12.7113 21.9955 12.1195C22.0015 12.0399 22.0015 11.96 21.9955 11.8805C21.9512 11.2887 21.4702 10.8077 20.5083 9.84585C20.0904 9.42793 19.8815 9.21897 19.7617 8.95797C19.7451 8.92172 19.7298 8.88486 19.716 8.84747C19.6161 8.57825 19.6161 8.28273 19.6161 7.69171V7.58269C19.6161 6.07478 19.6161 5.32083 19.1476 4.85239C18.6792 4.38394 17.9252 4.38394 16.4173 4.38394H16.3083Z" stroke="black" strokeWidth="1.5"/>
                         <path d="M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z" stroke="black" strokeWidth="1.5"/>
                       </svg>
-                      <h2 className="text-xl font-semibold text-black">Advanced</h2>
+                      <h2 className="text-lg md:text-xl font-semibold text-black">Advanced</h2>
                     </div>
-                    <p className="text-lg font-semibold text-gray-500">Fine-tune your AI agent's behavior, integrations, and system controls.</p>
+                    <p className="text-sm md:text-base lg:text-lg font-semibold text-gray-500">Fine-tune your AI agent's behavior, integrations, and system controls.</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <button className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-xl bg-white">
+                      <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 20 20" fill="none">
                         <path d="M16.6743 1.66699V4.27715C16.6743 4.52203 16.3681 4.63289 16.2114 4.44477C14.6855 2.73991 12.468 1.66699 9.99996 1.66699C5.39758 1.66699 1.66663 5.39795 1.66663 10.0003C1.66663 14.6027 5.39758 18.3337 9.99996 18.3337C14.6023 18.3337 18.3333 14.6027 18.3333 10.0003" stroke="#141B34" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <span className="text-base font-medium text-black">Refresh</span>
+                      <span className="text-sm md:text-base font-medium text-black">Refresh</span>
                     </button>
                     <button 
                       onClick={saveChanges}
-                      className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl"
+                      className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 bg-black text-white rounded-xl"
                     >
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <g clipPath="url(#clip0_60_7)">
