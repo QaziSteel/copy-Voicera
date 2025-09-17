@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          appointment_date: string
+          appointment_day: string
+          appointment_time: string
+          call_log_id: string | null
+          created_at: string
+          customer_name: string | null
+          customer_number: string
+          id: string
+          notes: string | null
+          service_type: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_day: string
+          appointment_time: string
+          call_log_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          customer_number: string
+          id?: string
+          notes?: string | null
+          service_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_day?: string
+          appointment_time?: string
+          call_log_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          customer_number?: string
+          id?: string
+          notes?: string | null
+          service_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_call_log_id_fkey"
+            columns: ["call_log_id"]
+            isOneToOne: false
+            referencedRelation: "call_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_logs: {
         Row: {
           cost: number | null
