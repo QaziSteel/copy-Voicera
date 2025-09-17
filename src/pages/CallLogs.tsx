@@ -10,6 +10,8 @@ import { useCallLogs } from "@/hooks/useCallLogs";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Phone, Clock, Calendar } from "lucide-react";
 
 const CallLogs: React.FC = () => {
   const navigate = useNavigate();
@@ -409,64 +411,74 @@ const CallLogs: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {callLogs.map((call) => (
+              {callLogs.map((call, index) => (
                 <div
                   key={call.id}
-                  className="bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
+                  className="bg-card border border-border rounded-2xl p-4 hover:shadow-lg transition-shadow"
                 >
-                  {/* Header Row */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path
-                            d="M10 1.66663C5.39746 1.66663 1.66663 5.39746 1.66663 9.99996C1.66663 14.6025 5.39746 18.3333 10 18.3333C14.6025 18.3333 18.3333 14.6025 18.3333 9.99996C18.3333 5.39746 14.6025 1.66663 10 1.66663ZM10 13.3333C9.558 13.3333 9.16663 12.942 9.16663 12.5C9.16663 12.058 9.558 11.6666 10 11.6666C10.442 11.6666 10.8333 12.058 10.8333 12.5C10.8333 12.942 10.442 13.3333 10 13.3333ZM10.8333 10.8333H9.16663V5.83329H10.8333V10.8333Z"
-                            fill="#10B981"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground capitalize">{call.type || 'Incoming'} Call</h3>
-                        <p className="text-sm text-muted-foreground">{call.customer_number || call.phone_number}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-foreground">{new Date(call.started_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
-                      <p className="text-xs text-muted-foreground">{formatTimestamp(call.started_at).split(' ')[0]}</p>
-                    </div>
-                  </div>
-
-                  {/* Call Details */}
-                  <div className="space-y-3 mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Duration:</span>
-                      <span className="text-sm font-medium text-foreground">{formatDuration(call.total_call_time)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Status:</span>
-                      <span className={`text-sm font-medium ${getStatusText(call.ended_reason) === 'Completed' ? 'text-emerald-600' : 'text-muted-foreground'}`}>
-                        {getStatusText(call.ended_reason)}
+                  {/* Horizontal Call Log Layout */}
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Call ID */}
+                    <div className="flex-shrink-0">
+                      <span className="text-sm font-semibold text-foreground">
+                        Call-{String(index + 1).padStart(3, '0')}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">AI Agent:</span>
-                      <span className="text-sm font-medium text-foreground">Bella – Voicera AI</span>
-                    </div>
-                  </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    {call.transcript_file_path && (
-                      <button
+                    {/* Status Badges */}
+                    <div className="flex gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {call.type === 'outbound' ? 'Outgoing' : 'Incoming'}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
+                        Inquiry
+                      </Badge>
+                    </div>
+
+                    {/* Phone Number */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-sm text-foreground truncate">
+                        {call.customer_number || call.phone_number}
+                      </span>
+                    </div>
+
+                    {/* Duration */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-foreground">
+                        {formatDuration(call.total_call_time)}
+                      </span>
+                    </div>
+
+                    {/* Date & Time */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <div className="text-right">
+                        <div className="text-sm text-foreground">
+                          {new Date(call.started_at).toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(call.started_at).toLocaleDateString('en-US', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 flex-shrink-0">
+                      <button 
                         onClick={() => handleOpenTranscript(call)}
-                        className="flex items-center gap-2.5 px-4 py-2 border border-border rounded-xl hover:bg-accent transition-colors"
+                        disabled={!call.transcript_file_path}
+                        className="flex items-center gap-2.5 px-4 py-2 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                        >
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                           <path
                             d="M5.0823 15.8335C3.99888 15.7269 3.18725 15.4015 2.64293 14.8572C1.66663 13.8809 1.66663 12.3095 1.66663 9.16683V8.75016C1.66663 5.60746 1.66663 4.03612 2.64293 3.0598C3.61925 2.0835 5.19059 2.0835 8.33329 2.0835H11.6666C14.8093 2.0835 16.3807 2.0835 17.357 3.0598C18.3333 4.03612 18.3333 5.60746 18.3333 8.75016V9.16683C18.3333 12.3095 18.3333 13.8809 17.357 14.8572C16.3807 15.8335 14.8093 15.8335 11.6666 15.8335C11.1995 15.8439 10.8275 15.8794 10.4621 15.9627C9.46346 16.1926 8.53871 16.7036 7.62485 17.1492C6.32270 17.7842 5.67163 18.1017 5.26303 17.8044C4.48137 17.2222 5.24541 15.4184 5.41663 14.5835"
                             stroke="currentColor"
@@ -476,19 +488,13 @@ const CallLogs: React.FC = () => {
                         </svg>
                         <span className="text-foreground text-base">Transcript</span>
                       </button>
-                    )}
-                    
-                    {call.recording_file_path && (
-                      <button
+                      
+                      <button 
                         onClick={() => handlePlayRecording(call)}
-                        className="flex items-center gap-2.5 px-4 py-2 border border-border rounded-xl hover:bg-accent transition-colors"
+                        disabled={!call.recording_file_path}
+                        className="flex items-center gap-2.5 px-4 py-2 border border-border rounded-xl hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                        >
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                           <path
                             d="M15.7421 10.705C15.4475 11.8242 14.0555 12.615 11.2714 14.1968C8.57996 15.7258 7.23429 16.4903 6.14982 16.183C5.70146 16.0559 5.29295 15.8147 4.96349 15.4822C4.16663 14.6782 4.16663 13.1188 4.16663 10C4.16663 6.88117 4.16663 5.32175 4.96349 4.51777C5.29295 4.18538 5.70146 3.94407 6.14982 3.81702C7.23429 3.50971 8.57996 4.27423 11.2714 5.80328C14.0555 7.38498 15.4475 8.17583 15.7421 9.295C15.8637 9.757 15.8637 10.243 15.7421 10.705Z"
                             stroke="currentColor"
@@ -498,7 +504,7 @@ const CallLogs: React.FC = () => {
                         </svg>
                         <span className="text-foreground text-base">Replay</span>
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))}
