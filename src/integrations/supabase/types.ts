@@ -25,6 +25,7 @@ export type Database = {
           customer_number: string
           id: string
           notes: string | null
+          project_id: string
           service_type: string | null
           status: string
           updated_at: string
@@ -39,6 +40,7 @@ export type Database = {
           customer_number: string
           id?: string
           notes?: string | null
+          project_id: string
           service_type?: string | null
           status?: string
           updated_at?: string
@@ -53,6 +55,7 @@ export type Database = {
           customer_number?: string
           id?: string
           notes?: string | null
+          project_id?: string
           service_type?: string | null
           status?: string
           updated_at?: string
@@ -437,6 +440,16 @@ export type Database = {
       can_access_project: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
+      }
+      get_booking_customer_info: {
+        Args: {
+          booking_row: Database["public"]["Tables"]["bookings"]["Row"]
+          requesting_user_id?: string
+        }
+        Returns: {
+          customer_name: string
+          customer_number: string
+        }[]
       }
       get_user_projects: {
         Args: { _user_id: string }
