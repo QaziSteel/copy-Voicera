@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, ArrowLeft } from "lucide-react";
 import { AgentToggle } from "@/components/ui/agent-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { useGoogleIntegration } from "@/hooks/useGoogleIntegration";
@@ -555,7 +555,21 @@ const AgentManagement = () => {
       <main className="px-2 md:px-4 lg:px-8 xl:px-12 py-4 md:py-6">
         {/* Page Header */}
         <div className="mb-3 md:mb-4">
-          <h1 className="text-xl md:text-2xl font-semibold text-black mb-1">Agent Management</h1>
+          <div className="flex items-center gap-3 mb-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/agents')}
+              className="bg-white border-gray-300 hover:bg-gray-50"
+            >
+              <ArrowLeft className="h-4 w-4 text-black" />
+            </Button>
+            <h1 className="text-xl md:text-2xl font-semibold text-black">
+              {userAgents.find(agent => agent.id === selectedAgentId)?.ai_assistant_name || 
+               userAgents.find(agent => agent.id === selectedAgentId)?.business_name || 
+               'Agent Management'}
+            </h1>
+          </div>
           <p className="text-sm md:text-base lg:text-lg font-semibold text-gray-500">Configure your AI agent settings and behavior</p>
         </div>
 
