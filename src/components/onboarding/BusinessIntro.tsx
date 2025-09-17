@@ -16,7 +16,7 @@ export const BusinessIntro: React.FC = () => {
       showPrevious={false}
     >
       {/* Pencil Icon */}
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="md:w-8 md:h-8 sm:w-7 sm:h-7">
         <g clipPath="url(#clip0_207_112)">
           <path d="M29.8609 17.639C33.6109 13.889 33.8453 9.42805 33.7281 7.43899C33.7086 7.13583 33.5794 6.85015 33.3646 6.63534C33.1498 6.42054 32.8641 6.2913 32.5609 6.2718C30.5719 6.15462 26.1141 6.38587 22.3609 10.139L12.5 19.9999L20 27.4999L29.8609 17.639Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M21.25 11.25H11.6172C11.2861 11.2502 10.9686 11.3816 10.7343 11.6156L5.36716 16.9828C5.20329 17.147 5.08836 17.3536 5.03523 17.5795C4.9821 17.8053 4.99287 18.0415 5.06634 18.2615C5.1398 18.4816 5.27305 18.6769 5.45119 18.8255C5.62933 18.9741 5.84531 19.0703 6.07497 19.1031L12.5 20" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -31,19 +31,19 @@ export const BusinessIntro: React.FC = () => {
       </svg>
 
       {/* Main Content */}
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-2 md:gap-1.5 sm:gap-1">
         {/* Step Indicator */}
-        <h1 className="text-lg font-bold text-gray-500 text-center">
+        <h1 className="text-lg md:text-base sm:text-sm font-bold text-gray-500 text-center">
           Step 1 of 5
         </h1>
         
         {/* Main Heading */}
-        <h2 className="text-xl font-bold text-black text-center">
+        <h2 className="text-xl md:text-lg sm:text-base font-bold text-black text-center">
           Let's Get Your AI Assistant Ready!
         </h2>
 
         {/* Subtitle/Description */}
-        <p className="text-lg font-semibold text-[#6B7280] max-w-md leading-6 text-center">
+        <p className="text-lg md:text-base sm:text-sm font-semibold text-[#6B7280] max-w-md leading-6 md:leading-5 sm:leading-4 text-center">
           We'll ask a few quick questions to set up your voice AI agent. It only takes 7 minutes.
         </p>
       </div>
