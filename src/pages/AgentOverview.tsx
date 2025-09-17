@@ -128,7 +128,7 @@ const AgentOverview = () => {
         {/* Header Section */}
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-black mb-2">Agent Overview</h1>
+            <h1 className="text-3xl font-bold text-black mb-2">Agent Management</h1>
             <p className="text-lg text-gray-600">Manage and monitor all your AI agents in one place</p>
           </div>
           {agents.length > 0 && (
