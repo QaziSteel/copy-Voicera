@@ -594,30 +594,7 @@ const AgentManagement = () => {
                 {isAgentLive ? 'Go Offline' : 'Go Live'}
               </button>
               
-              {/* Agent Selector */}
-              {userAgents.length > 0 && (
-                <Select
-                  value={selectedAgentId || undefined}
-                  onValueChange={handleAgentSelection}
-                  disabled={agentsLoading}
-                >
-                  <SelectTrigger className="w-full sm:w-48 md:w-64 bg-white border-gray-200">
-                    <SelectValue placeholder="Select an agent" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                    {userAgents.map((agent) => {
-                      const displayName = agent.business_name || 'Unnamed Agent';
-                      const assistantName = agent.ai_assistant_name || 'No Name';
-                      
-                      return (
-                        <SelectItem key={agent.id} value={agent.id} className="hover:bg-gray-50">
-                          <span className="font-medium">{displayName} - {assistantName}</span>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              )}
+              {/* Agent selector removed - using back button for navigation */}
               
               <AgentToggle />
             </div>
