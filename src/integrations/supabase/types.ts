@@ -25,7 +25,7 @@ export type Database = {
           customer_number: string
           id: string
           notes: string | null
-          project_id: string
+          project_id: string | null
           service_type: string | null
           status: string
           updated_at: string
@@ -40,7 +40,7 @@ export type Database = {
           customer_number: string
           id?: string
           notes?: string | null
-          project_id: string
+          project_id?: string | null
           service_type?: string | null
           status?: string
           updated_at?: string
@@ -55,7 +55,7 @@ export type Database = {
           customer_number?: string
           id?: string
           notes?: string | null
-          project_id?: string
+          project_id?: string | null
           service_type?: string | null
           status?: string
           updated_at?: string
@@ -437,6 +437,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_booking: {
+        Args: { booking_id: string; user_id: string }
+        Returns: boolean
+      }
       can_access_project: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
@@ -450,6 +454,10 @@ export type Database = {
           customer_name: string
           customer_number: string
         }[]
+      }
+      get_booking_project_id: {
+        Args: { booking_id: string }
+        Returns: string
       }
       get_user_projects: {
         Args: { _user_id: string }
