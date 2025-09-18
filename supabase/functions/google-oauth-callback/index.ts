@@ -425,7 +425,13 @@ serve(async (req) => {
           </body>
         </html>
       `, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/html' }
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'text/html; charset=utf-8',
+          'X-Frame-Options': 'ALLOWALL',
+          'X-Content-Type-Options': 'nosniff',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
       });
     } else {
       // For agent management flow, redirect as before
