@@ -43,14 +43,18 @@ export default function CalendarIntegration() {
       onNext={handleNext}
       onPrevious={handlePrevious}
       showPrevious={true}
+      leftAligned={true}
     >
-      <div className="flex flex-col gap-8 w-full items-center">
+      <div className="flex flex-col gap-8 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-3 w-full text-center">
-          <h2 className="text-2xl font-bold text-black">
+        <div className="flex flex-col gap-3 w-full">
+          <p className="text-xl font-bold text-black">
+            Step 3 of 5
+          </p>
+          <h2 className="text-xl font-bold text-black">
             Connect Your Calendar
           </h2>
-          <p className="text-xl font-semibold text-[#6B7280] max-w-2xl leading-7">
+          <p className="text-base italic text-[#737373] leading-6 max-w-2xl">
             Sync your calendar so Voicera can manage bookings, calls, and availability automatically.
           </p>
         </div>
@@ -132,7 +136,7 @@ export default function CalendarIntegration() {
 
         {/* Skip Option */}
         {!isConnected && (
-          <p className="text-sm text-[#6B7280] text-center">
+          <p className="text-sm text-[#6B7280]">
             You can skip this step and connect your calendar later from the dashboard
           </p>
         )}
