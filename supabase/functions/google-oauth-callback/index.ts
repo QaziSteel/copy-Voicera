@@ -32,14 +32,42 @@ serve(async (req) => {
       console.error('OAuth error:', error);
       if (isOnboardingFlow) {
         return new Response(`
+          <!DOCTYPE html>
           <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>OAuth Error</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
+                .error { color: #ef4444; margin-bottom: 20px; }
+                .status { color: #6b7280; font-size: 14px; }
+              </style>
+            </head>
             <body>
+              <div class="error">OAuth Error: ${encodeURIComponent(error)}</div>
+              <div class="status" id="status">Closing window...</div>
               <script>
-                window.opener?.postMessage({
-                  type: 'OAUTH_ERROR',
-                  error: '${encodeURIComponent(error)}'
-                }, '*');
-                window.close();
+                console.log('OAuth callback - sending error message');
+                try {
+                  window.opener?.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: '${encodeURIComponent(error)}'
+                  }, '*');
+                  console.log('Error message sent successfully');
+                } catch (e) {
+                  console.error('Failed to send error message:', e);
+                }
+                
+                // Try to close window with fallback
+                setTimeout(() => {
+                  try {
+                    window.close();
+                  } catch (e) {
+                    console.log('Auto-close failed, showing manual close option');
+                    document.getElementById('status').innerHTML = 'Please close this window manually';
+                  }
+                }, 1000);
               </script>
             </body>
           </html>
@@ -55,14 +83,40 @@ serve(async (req) => {
       console.error('Missing required parameters:', { code: !!code, agentId: !!agentId });
       if (isOnboardingFlow) {
         return new Response(`
+          <!DOCTYPE html>
           <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>OAuth Error</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
+                .error { color: #ef4444; margin-bottom: 20px; }
+                .status { color: #6b7280; font-size: 14px; }
+              </style>
+            </head>
             <body>
+              <div class="error">Missing required parameters</div>
+              <div class="status" id="status">Closing window...</div>
               <script>
-                window.opener?.postMessage({
-                  type: 'OAUTH_ERROR',
-                  error: 'Missing required parameters'
-                }, '*');
-                window.close();
+                console.log('OAuth callback - missing parameters error');
+                try {
+                  window.opener?.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: 'Missing required parameters'
+                  }, '*');
+                  console.log('Error message sent successfully');
+                } catch (e) {
+                  console.error('Failed to send error message:', e);
+                }
+                
+                setTimeout(() => {
+                  try {
+                    window.close();
+                  } catch (e) {
+                    document.getElementById('status').innerHTML = 'Please close this window manually';
+                  }
+                }, 1000);
               </script>
             </body>
           </html>
@@ -144,14 +198,40 @@ serve(async (req) => {
       console.error('Error fetching agent data:', agentError);
       if (isOnboardingFlow) {
         return new Response(`
+          <!DOCTYPE html>
           <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>OAuth Error</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
+                .error { color: #ef4444; margin-bottom: 20px; }
+                .status { color: #6b7280; font-size: 14px; }
+              </style>
+            </head>
             <body>
+              <div class="error">Agent not found</div>
+              <div class="status" id="status">Closing window...</div>
               <script>
-                window.opener?.postMessage({
-                  type: 'OAUTH_ERROR',
-                  error: 'Agent not found'
-                }, '*');
-                window.close();
+                console.log('OAuth callback - agent not found error');
+                try {
+                  window.opener?.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: 'Agent not found'
+                  }, '*');
+                  console.log('Error message sent successfully');
+                } catch (e) {
+                  console.error('Failed to send error message:', e);
+                }
+                
+                setTimeout(() => {
+                  try {
+                    window.close();
+                  } catch (e) {
+                    document.getElementById('status').innerHTML = 'Please close this window manually';
+                  }
+                }, 1000);
               </script>
             </body>
           </html>
@@ -167,14 +247,40 @@ serve(async (req) => {
       console.error('Missing project_id or user_id for agent:', agentId);
       if (isOnboardingFlow) {
         return new Response(`
+          <!DOCTYPE html>
           <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>OAuth Error</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
+                .error { color: #ef4444; margin-bottom: 20px; }
+                .status { color: #6b7280; font-size: 14px; }
+              </style>
+            </head>
             <body>
+              <div class="error">Project or user not found</div>
+              <div class="status" id="status">Closing window...</div>
               <script>
-                window.opener?.postMessage({
-                  type: 'OAUTH_ERROR',
-                  error: 'Project or user not found'
-                }, '*');
-                window.close();
+                console.log('OAuth callback - project/user not found error');
+                try {
+                  window.opener?.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: 'Project or user not found'
+                  }, '*');
+                  console.log('Error message sent successfully');
+                } catch (e) {
+                  console.error('Failed to send error message:', e);
+                }
+                
+                setTimeout(() => {
+                  try {
+                    window.close();
+                  } catch (e) {
+                    document.getElementById('status').innerHTML = 'Please close this window manually';
+                  }
+                }, 1000);
               </script>
             </body>
           </html>
@@ -227,14 +333,40 @@ serve(async (req) => {
       console.error('Error storing Google integration:', integrationError);
       if (isOnboardingFlow) {
         return new Response(`
+          <!DOCTYPE html>
           <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>OAuth Error</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
+                .error { color: #ef4444; margin-bottom: 20px; }
+                .status { color: #6b7280; font-size: 14px; }
+              </style>
+            </head>
             <body>
+              <div class="error">Failed to store integration</div>
+              <div class="status" id="status">Closing window...</div>
               <script>
-                window.opener?.postMessage({
-                  type: 'OAUTH_ERROR',
-                  error: 'Failed to store integration'
-                }, '*');
-                window.close();
+                console.log('OAuth callback - storage failed error');
+                try {
+                  window.opener?.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: 'Failed to store integration'
+                  }, '*');
+                  console.log('Error message sent successfully');
+                } catch (e) {
+                  console.error('Failed to send error message:', e);
+                }
+                
+                setTimeout(() => {
+                  try {
+                    window.close();
+                  } catch (e) {
+                    document.getElementById('status').innerHTML = 'Please close this window manually';
+                  }
+                }, 1000);
               </script>
             </body>
           </html>
@@ -282,14 +414,40 @@ serve(async (req) => {
     
     if (isOnboardingFlow) {
       return new Response(`
+        <!DOCTYPE html>
         <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>OAuth Error</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
+              .error { color: #ef4444; margin-bottom: 20px; }
+              .status { color: #6b7280; font-size: 14px; }
+            </style>
+          </head>
           <body>
+            <div class="error">Unexpected error occurred</div>
+            <div class="status" id="status">Closing window...</div>
             <script>
-              window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'Unexpected error occurred'
-              }, '*');
-              window.close();
+              console.error('OAuth callback - unexpected error');
+              try {
+                window.opener?.postMessage({
+                  type: 'OAUTH_ERROR',
+                  error: 'Unexpected error occurred'
+                }, '*');
+                console.log('Error message sent successfully');
+              } catch (e) {
+                console.error('Failed to send error message:', e);
+              }
+              
+              setTimeout(() => {
+                try {
+                  window.close();
+                } catch (e) {
+                  document.getElementById('status').innerHTML = 'Please close this window manually';
+                }
+              }, 1000);
             </script>
           </body>
         </html>
