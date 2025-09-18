@@ -99,16 +99,6 @@ export default function CalendarIntegration() {
                     Connect Google Calendar
                   </Button>
                 )}
-                
-                {isAcknowledged && (
-                  <Button
-                    variant="outline"
-                    className="w-full border-green-200 text-green-600 hover:bg-green-50 rounded-lg"
-                    disabled
-                  >
-                    ✓ Ready for Integration
-                  </Button>
-                )}
               </div>
             </CardContent>
           </Card>
