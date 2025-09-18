@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 import { collectOnboardingDataFromSession, saveOnboardingResponse } from "@/lib/onboarding";
+import { useGoogleIntegration } from "@/hooks/useGoogleIntegration";
 import { toast } from "sonner";
 
 export default function Reminders() {
@@ -9,7 +10,11 @@ export default function Reminders() {
   const [reminderTiming, setReminderTiming] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
+  const [agentId, setAgentId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const { initiateOAuth, integration } = useGoogleIntegration(agentId, true);
 
   const timingOptions = ["1 hour before", "24 hours before", "Both"];
 
@@ -30,20 +35,75 @@ export default function Reminders() {
       
       // Collect all onboarding data and save to database
       const onboardingData = collectOnboardingDataFromSession();
-      const { error } = await saveOnboardingResponse(onboardingData);
+      const { data, error } = await saveOnboardingResponse(onboardingData);
       
       if (error) {
         toast.error("Failed to save onboarding data: " + error.message);
         setIsSubmitting(false);
         return;
       }
-      
-      toast.success("Onboarding completed successfully!");
-      navigate("/onboarding/completion");
+
+      // Get the agent ID from the saved response
+      const savedAgentId = data?.id;
+      if (!savedAgentId) {
+        toast.error("Failed to get agent ID");
+        setIsSubmitting(false);
+        return;
+      }
+
+      setAgentId(savedAgentId);
+
+      // Check if calendar integration was selected during onboarding
+      const calendarIntegration = sessionStorage.getItem("calendarIntegration");
+      const shouldConnectCalendar = calendarIntegration === "true";
+
+      if (shouldConnectCalendar) {
+        setIsConnectingCalendar(true);
+        toast.success("Onboarding saved! Connecting Google Calendar...");
+        
+        // Trigger OAuth popup
+        initiateOAuth(savedAgentId);
+        
+        // Listen for OAuth completion
+        const handleMessage = (event: MessageEvent) => {
+          if (event.origin !== window.location.origin) return;
+          
+          if (event.data.type === 'OAUTH_SUCCESS') {
+            window.removeEventListener('message', handleMessage);
+            setIsConnectingCalendar(false);
+            setIsSubmitting(false);
+            toast.success("Google Calendar connected successfully!");
+            navigate("/onboarding/completion");
+          } else if (event.data.type === 'OAUTH_ERROR') {
+            window.removeEventListener('message', handleMessage);
+            setIsConnectingCalendar(false);
+            setIsSubmitting(false);
+            toast.error("Failed to connect Google Calendar. Please try again.");
+          }
+        };
+
+        window.addEventListener('message', handleMessage);
+        
+        // Fallback timeout
+        setTimeout(() => {
+          window.removeEventListener('message', handleMessage);
+          if (isConnectingCalendar) {
+            setIsConnectingCalendar(false);
+            setIsSubmitting(false);
+            // Still navigate to completion even if OAuth wasn't confirmed
+            navigate("/onboarding/completion");
+          }
+        }, 30000); // 30 second timeout
+      } else {
+        // No calendar integration needed, proceed directly
+        toast.success("Onboarding completed successfully!");
+        navigate("/onboarding/completion");
+      }
     } catch (error) {
       toast.error("Failed to save onboarding data");
       console.error("Error saving onboarding data:", error);
       setIsSubmitting(false);
+      setIsConnectingCalendar(false);
     }
   };
 
@@ -59,8 +119,12 @@ export default function Reminders() {
     setShowDropdown(false);
   };
 
-  const isNextDisabled = (wantsReminders && !reminderTiming) || isSubmitting;
-  const buttonText = isSubmitting ? "Saving..." : (wantsReminders ? "Submit" : "Next");
+  const isNextDisabled = (wantsReminders && !reminderTiming) || isSubmitting || isConnectingCalendar;
+  const getButtonText = () => {
+    if (isConnectingCalendar) return "Connecting Calendar...";
+    if (isSubmitting) return "Saving...";
+    return wantsReminders ? "Submit" : "Next";
+  };
 
   return (
     <OnboardingLayout
@@ -68,7 +132,7 @@ export default function Reminders() {
       onNext={handleSubmit}
       showPrevious={true}
       nextDisabled={isNextDisabled}
-      nextButtonText={buttonText}
+      nextButtonText={getButtonText()}
       leftAligned={true}
     >
       <div className="flex flex-col gap-12">
