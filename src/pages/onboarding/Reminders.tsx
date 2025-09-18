@@ -72,13 +72,20 @@ export default function Reminders() {
             window.removeEventListener('message', handleMessage);
             setIsConnectingCalendar(false);
             setIsSubmitting(false);
-            toast.success("Google Calendar connected successfully!");
+            
+            // Save calendar integration flag to session storage
+            sessionStorage.setItem("calendar_integration_required", "true");
+            
+            toast.success(`Google Calendar connected for ${event.data.email}`);
             navigate("/onboarding/completion");
           } else if (event.data.type === 'OAUTH_ERROR') {
             window.removeEventListener('message', handleMessage);
             setIsConnectingCalendar(false);
             setIsSubmitting(false);
-            toast.error("Failed to connect Google Calendar. Please try again.");
+            toast.error(`Calendar connection failed: ${event.data.error || 'Unknown error'}`);
+            
+            // Still proceed to completion
+            navigate("/onboarding/completion");
           }
         };
 
@@ -90,6 +97,7 @@ export default function Reminders() {
           if (isConnectingCalendar) {
             setIsConnectingCalendar(false);
             setIsSubmitting(false);
+            toast.info("Calendar connection is taking longer than expected. Proceeding with setup...");
             // Still navigate to completion even if OAuth wasn't confirmed
             navigate("/onboarding/completion");
           }

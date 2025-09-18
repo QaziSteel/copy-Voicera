@@ -162,7 +162,10 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
   }
 
   const calendarIntegration = sessionStorage.getItem('calendarIntegration');
-  if (calendarIntegration) data.calendarIntegrationRequired = calendarIntegration === 'true';
+  const calendarRequired = sessionStorage.getItem('calendar_integration_required');
+  if (calendarIntegration || calendarRequired) {
+    data.calendarIntegrationRequired = calendarIntegration === 'true' || calendarRequired === 'true';
+  }
 
   return data;
 };

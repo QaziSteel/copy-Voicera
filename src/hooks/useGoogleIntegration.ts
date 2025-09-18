@@ -100,6 +100,9 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       'https://www.googleapis.com/auth/calendar'
     ].join(' ');
 
+    // Determine flow type based on onboardingMode
+    const flow = onboardingMode ? 'onboarding' : 'agent-management';
+
     const oauthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     oauthUrl.searchParams.set('client_id', googleClientId);
     oauthUrl.searchParams.set('redirect_uri', redirectUri);
@@ -107,7 +110,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
     oauthUrl.searchParams.set('scope', scopes);
     oauthUrl.searchParams.set('access_type', 'offline');
     oauthUrl.searchParams.set('prompt', 'consent');
-    oauthUrl.searchParams.set('state', agentId);
+    oauthUrl.searchParams.set('state', `${agentId}|${flow}`);
 
     // Open OAuth URL in a new window (not popup to avoid popup blockers)
     const oauthWindow = window.open(

@@ -16,21 +16,61 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state'); // This contains the agentId
+    const state = url.searchParams.get('state'); // This contains agentId|flow
     const error = url.searchParams.get('error');
 
     console.log('OAuth callback received:', { code: !!code, state, error });
 
+    // Parse state to get agentId and flow
+    const [agentId, flow] = state?.split('|') || [state, 'agent-management'];
+    const isOnboardingFlow = flow === 'onboarding';
+
+    console.log('Parsed state:', { agentId, flow, isOnboardingFlow });
+
     // Handle OAuth errors
     if (error) {
       console.error('OAuth error:', error);
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=${encodeURIComponent(error)}`;
+      if (isOnboardingFlow) {
+        return new Response(`
+          <html>
+            <body>
+              <script>
+                window.opener?.postMessage({
+                  type: 'OAUTH_ERROR',
+                  error: '${encodeURIComponent(error)}'
+                }, '*');
+                window.close();
+              </script>
+            </body>
+          </html>
+        `, {
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=${encodeURIComponent(error)}`;
       return Response.redirect(redirectUrl, 302);
     }
 
-    if (!code || !state) {
-      console.error('Missing required parameters:', { code: !!code, state: !!state });
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state || 'unknown'}&oauth=error&error=missing_parameters`;
+    if (!code || !agentId) {
+      console.error('Missing required parameters:', { code: !!code, agentId: !!agentId });
+      if (isOnboardingFlow) {
+        return new Response(`
+          <html>
+            <body>
+              <script>
+                window.opener?.postMessage({
+                  type: 'OAUTH_ERROR',
+                  error: 'Missing required parameters'
+                }, '*');
+                window.close();
+              </script>
+            </body>
+          </html>
+        `, {
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId || 'unknown'}&oauth=error&error=missing_parameters`;
       return Response.redirect(redirectUrl, 302);
     }
 
@@ -93,74 +133,172 @@ serve(async (req) => {
     // Calculate token expiry time
     const expiresAt = new Date(Date.now() + (tokenData.expires_in * 1000));
 
-    // Find the project_id for this agent
+    // Find the project_id and user_id for this agent
     const { data: agentData, error: agentError } = await supabase
       .from('onboarding_responses')
-      .select('project_id')
-      .eq('id', state)
-      .maybeSingle();
-
-    if (agentError) {
-      console.error('Error fetching agent data:', agentError);
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=agent_not_found`;
-      return Response.redirect(redirectUrl, 302);
-    }
-
-    if (!agentData?.project_id) {
-      console.error('No project_id found for agent:', state);
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=project_not_found`;
-      return Response.redirect(redirectUrl, 302);
-    }
-
-
-    // Get user_id from the agent data
-    const { data: agentUserData, error: agentUserError } = await supabase
-      .from('onboarding_responses')
-      .select('user_id')
-      .eq('id', state)
+      .select('project_id, user_id')
+      .eq('id', agentId)
       .single();
 
-    if (agentUserError || !agentUserData?.user_id) {
-      console.error('Error fetching agent user data:', agentUserError);
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=user_not_found`;
+    if (agentError || !agentData) {
+      console.error('Error fetching agent data:', agentError);
+      if (isOnboardingFlow) {
+        return new Response(`
+          <html>
+            <body>
+              <script>
+                window.opener?.postMessage({
+                  type: 'OAUTH_ERROR',
+                  error: 'Agent not found'
+                }, '*');
+                window.close();
+              </script>
+            </body>
+          </html>
+        `, {
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=agent_not_found`;
       return Response.redirect(redirectUrl, 302);
     }
 
-    // Store or update the Google integration with encrypted tokens
+    if (!agentData.project_id || !agentData.user_id) {
+      console.error('Missing project_id or user_id for agent:', agentId);
+      if (isOnboardingFlow) {
+        return new Response(`
+          <html>
+            <body>
+              <script>
+                window.opener?.postMessage({
+                  type: 'OAUTH_ERROR',
+                  error: 'Project or user not found'
+                }, '*');
+                window.close();
+              </script>
+            </body>
+          </html>
+        `, {
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=project_not_found`;
+      return Response.redirect(redirectUrl, 302);
+    }
+
+    // Check for existing integration with same user_id and user_email to reuse refresh token
+    const { data: existingIntegration } = await supabase
+      .from('google_integrations')
+      .select('refresh_token')
+      .eq('user_id', agentData.user_id)
+      .eq('user_email', userInfo.email)
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
+
+    // Use existing refresh token if available, otherwise use new one
+    const refreshTokenToUse = existingIntegration?.refresh_token || tokenData.refresh_token;
+    const isTokenReused = !!existingIntegration?.refresh_token;
+
+    console.log('Token reuse status:', { 
+      isTokenReused, 
+      email: userInfo.email, 
+      hasExisting: !!existingIntegration 
+    });
+
+    // Store or update the Google integration
     const { error: integrationError } = await supabase
       .from('google_integrations')
       .upsert({
-        user_id: agentUserData.user_id,
+        user_id: agentData.user_id,
         project_id: agentData.project_id,
-        agent_id: state, // Add agent_id to make integration agent-specific
+        agent_id: agentId,
         access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
+        refresh_token: refreshTokenToUse,
         token_expires_at: expiresAt.toISOString(),
         scopes: tokenData.scope?.split(' ') || [],
         user_email: userInfo.email,
         is_active: true,
       }, {
-        onConflict: 'agent_id' // Change to agent_id since integrations are now per-agent
+        onConflict: 'agent_id'
       });
 
     if (integrationError) {
       console.error('Error storing Google integration:', integrationError);
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=storage_failed`;
+      if (isOnboardingFlow) {
+        return new Response(`
+          <html>
+            <body>
+              <script>
+                window.opener?.postMessage({
+                  type: 'OAUTH_ERROR',
+                  error: 'Failed to store integration'
+                }, '*');
+                window.close();
+              </script>
+            </body>
+          </html>
+        `, {
+          headers: { 'Content-Type': 'text/html' }
+        });
+      }
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=storage_failed`;
       return Response.redirect(redirectUrl, 302);
     }
 
     console.log('Google integration stored successfully for project:', agentData.project_id);
 
-    // Always redirect back to the agent management page with success
-    // Add a flag to indicate this came from OAuth popup for proper handling
-    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=success&email=${encodeURIComponent(userInfo.email)}&popup=true`;
-    return Response.redirect(redirectUrl, 302);
+    // Handle response based on flow type
+    if (isOnboardingFlow) {
+      // For onboarding flow, return HTML with postMessage
+      return new Response(`
+        <html>
+          <body>
+            <script>
+              window.opener?.postMessage({
+                type: 'OAUTH_SUCCESS',
+                email: '${userInfo.email}',
+                agentId: '${agentId}'
+              }, '*');
+              window.close();
+            </script>
+          </body>
+        </html>
+      `, {
+        headers: { 'Content-Type': 'text/html' }
+      });
+    } else {
+      // For agent management flow, redirect as before
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=success&email=${encodeURIComponent(userInfo.email)}&popup=true`;
+      return Response.redirect(redirectUrl, 302);
+    }
 
   } catch (error) {
     console.error('Unexpected error in OAuth callback:', error);
     const url = new URL(req.url);
     const state = url.searchParams.get('state');
-    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state || 'unknown'}&oauth=error&error=unexpected_error`;
+    const [agentId, flow] = state?.split('|') || [state, 'agent-management'];
+    const isOnboardingFlow = flow === 'onboarding';
+    
+    if (isOnboardingFlow) {
+      return new Response(`
+        <html>
+          <body>
+            <script>
+              window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Unexpected error occurred'
+              }, '*');
+              window.close();
+            </script>
+          </body>
+        </html>
+      `, {
+        headers: { 'Content-Type': 'text/html' }
+      });
+    }
+    
+    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId || 'unknown'}&oauth=error&error=unexpected_error`;
     return Response.redirect(redirectUrl, 302);
   }
 });
