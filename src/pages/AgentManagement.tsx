@@ -1392,28 +1392,6 @@ const AgentManagement = () => {
                         </span>
                       </button>
                       
-                      {/* Google Integration Status */}
-                      {googleIntegration && (
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-green-800">
-                                Google Calendar Connected
-                              </p>
-                              <p className="text-xs text-green-600">
-                                {googleIntegration.user_email}
-                              </p>
-                            </div>
-                            <button
-                              onClick={disconnectIntegration}
-                              disabled={googleLoading}
-                              className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
-                            >
-                              Disconnect
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
