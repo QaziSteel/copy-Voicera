@@ -13,7 +13,7 @@ export interface GoogleIntegration {
   updated_at: string;
 }
 
-export const useGoogleIntegration = (agentId: string | null) => {
+export const useGoogleIntegration = (agentId: string | null, onboardingMode: boolean = false) => {
   const [integration, setIntegration] = useState<GoogleIntegration | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -163,8 +163,10 @@ export const useGoogleIntegration = (agentId: string | null) => {
   };
 
   useEffect(() => {
-    fetchIntegration();
-  }, [agentId]);
+    if (!onboardingMode) {
+      fetchIntegration();
+    }
+  }, [agentId, onboardingMode]);
 
   return {
     integration,

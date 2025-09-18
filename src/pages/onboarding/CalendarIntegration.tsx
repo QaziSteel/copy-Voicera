@@ -11,18 +11,16 @@ export default function CalendarIntegration() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // Get onboarding ID for Google integration
-  const getOnboardingId = () => {
-    let onboardingId = sessionStorage.getItem("onboardingId");
-    if (!onboardingId) {
-      onboardingId = `onboarding_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      sessionStorage.setItem("onboardingId", onboardingId);
+  // In onboarding mode, we don't fetch actual integration data
+  const { loading, initiateOAuth } = useGoogleIntegration(null, true);
+  
+  // Check if user wants to connect calendar (stored in sessionStorage)
+  const [wantsCalendarIntegration, setWantsCalendarIntegration] = React.useState<boolean | null>(
+    () => {
+      const stored = sessionStorage.getItem("wantsCalendarIntegration");
+      return stored ? JSON.parse(stored) : null;
     }
-    return onboardingId;
-  };
-
-  const onboardingId = getOnboardingId();
-  const { integration, loading, initiateOAuth } = useGoogleIntegration(onboardingId);
+  );
 
   const handlePrevious = () => {
     navigate("/onboarding/contact-number");
@@ -33,10 +31,15 @@ export default function CalendarIntegration() {
   };
 
   const handleConnectGoogle = () => {
-    initiateOAuth(onboardingId);
+    setWantsCalendarIntegration(true);
+    sessionStorage.setItem("wantsCalendarIntegration", "true");
+    // For now, just mark as wanting integration - actual connection happens after onboarding
   };
 
-  const isConnected = integration && integration.is_active;
+  const handleSkip = () => {
+    setWantsCalendarIntegration(false);
+    sessionStorage.setItem("wantsCalendarIntegration", "false");
+  };
 
   return (
     <OnboardingLayout
@@ -83,13 +86,22 @@ export default function CalendarIntegration() {
                     Google Calendar
                   </h3>
                   
-                  {isConnected ? (
+                  {wantsCalendarIntegration === true ? (
                     <div className="space-y-2">
                       <p className="text-sm text-green-600 font-medium">
-                        ✓ Connected successfully
+                        ✓ Calendar integration selected
                       </p>
                       <p className="text-xs text-[#6B7280]">
-                        {integration.user_email}
+                        Will be connected after onboarding is complete
+                      </p>
+                    </div>
+                  ) : wantsCalendarIntegration === false ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-[#6B7280] font-medium">
+                        Skipped - can connect later
+                      </p>
+                      <p className="text-xs text-[#6B7280]">
+                        You can connect your calendar from the dashboard
                       </p>
                     </div>
                   ) : (
@@ -99,32 +111,62 @@ export default function CalendarIntegration() {
                   )}
                 </div>
 
-                {/* Connect Button */}
-                {!isConnected && (
-                  <Button
-                    onClick={handleConnectGoogle}
-                    disabled={loading}
-                    className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Connecting...
-                      </>
-                    ) : (
-                      'Connect Google Calendar'
-                    )}
-                  </Button>
+                {/* Action Buttons */}
+                {wantsCalendarIntegration === null && (
+                  <div className="flex flex-col gap-3 w-full">
+                    <Button
+                      onClick={handleConnectGoogle}
+                      disabled={loading}
+                      className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
+                    >
+                      Connect Google Calendar
+                    </Button>
+                    <Button
+                      onClick={handleSkip}
+                      variant="outline"
+                      className="w-full rounded-lg"
+                    >
+                      Skip for now
+                    </Button>
+                  </div>
                 )}
                 
-                {isConnected && (
-                  <Button
-                    variant="outline"
-                    className="w-full border-green-200 text-green-600 hover:bg-green-50 rounded-lg"
-                    disabled
-                  >
-                    Connected
-                  </Button>
+                {wantsCalendarIntegration === true && (
+                  <div className="flex flex-col gap-3 w-full">
+                    <Button
+                      variant="outline"
+                      className="w-full border-green-200 text-green-600 hover:bg-green-50 rounded-lg"
+                      disabled
+                    >
+                      ✓ Calendar Integration Selected
+                    </Button>
+                    <Button
+                      onClick={() => setWantsCalendarIntegration(null)}
+                      variant="ghost"
+                      className="w-full text-[#6B7280] hover:text-black"
+                    >
+                      Change selection
+                    </Button>
+                  </div>
+                )}
+                
+                {wantsCalendarIntegration === false && (
+                  <div className="flex flex-col gap-3 w-full">
+                    <Button
+                      variant="outline"
+                      className="w-full border-gray-200 text-[#6B7280] rounded-lg"
+                      disabled
+                    >
+                      Skipped - Connect Later
+                    </Button>
+                    <Button
+                      onClick={() => setWantsCalendarIntegration(null)}
+                      variant="ghost"
+                      className="w-full text-[#6B7280] hover:text-black"
+                    >
+                      Change selection
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardContent>
