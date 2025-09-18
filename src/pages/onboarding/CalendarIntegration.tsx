@@ -60,7 +60,7 @@ export default function CalendarIntegration() {
         </div>
 
         {/* Calendar Integration Card */}
-        <div className="w-full max-w-md">
+        <div className="w-full">
           <Card className="border-2 border-[#E5E7EB] rounded-xl overflow-hidden">
             <CardContent className="p-6">
               <div className="flex flex-col items-center gap-4">
