@@ -73,9 +73,6 @@ const AgentManagement = () => {
   const { toast } = useToast();
   const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount } = useNotifications();
   
-  // Google Integration
-  const { integration: googleIntegration, loading: googleLoading, initiateOAuth, disconnectIntegration } = useGoogleIntegration(currentProject?.id || null);
-  
   // State for all tabs
   const [loading, setLoading] = useState(true);
   const [isAgentLive, setIsAgentLive] = useState(true);
@@ -85,6 +82,9 @@ const AgentManagement = () => {
   const [userAgents, setUserAgents] = useState<any[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [agentsLoading, setAgentsLoading] = useState(false);
+
+  // Google Integration - use selected agent ID
+  const { integration: googleIntegration, loading: googleLoading, initiateOAuth, disconnectIntegration } = useGoogleIntegration(selectedAgentId);
   
   // Basic Info
   const [businessName, setBusinessName] = useState('');

@@ -132,6 +132,7 @@ export type Database = {
       google_integrations: {
         Row: {
           access_token: string
+          agent_id: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -145,6 +146,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          agent_id?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -158,6 +160,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          agent_id?: string | null
           created_at?: string
           id?: string
           is_active?: boolean

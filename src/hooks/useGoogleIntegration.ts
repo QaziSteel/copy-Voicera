@@ -13,20 +13,20 @@ export interface GoogleIntegration {
   updated_at: string;
 }
 
-export const useGoogleIntegration = (projectId: string | null) => {
+export const useGoogleIntegration = (agentId: string | null) => {
   const [integration, setIntegration] = useState<GoogleIntegration | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchIntegration = async () => {
-    if (!projectId) return;
+    if (!agentId) return;
     
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('google_integrations')
         .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
-        .eq('project_id', projectId)
+        .eq('agent_id', agentId)
         .eq('is_active', true)
         .maybeSingle();
 
@@ -54,14 +54,14 @@ export const useGoogleIntegration = (projectId: string | null) => {
   };
 
   const disconnectIntegration = async () => {
-    if (!projectId || !integration) return;
+    if (!agentId || !integration) return;
     
     setLoading(true);
     try {
       const { error } = await supabase
         .from('google_integrations')
         .update({ is_active: false })
-        .eq('project_id', projectId);
+        .eq('agent_id', agentId);
 
       if (error) {
         console.error('Error disconnecting Google integration:', error);
@@ -143,7 +143,7 @@ export const useGoogleIntegration = (projectId: string | null) => {
 
   useEffect(() => {
     fetchIntegration();
-  }, [projectId]);
+  }, [agentId]);
 
   return {
     integration,

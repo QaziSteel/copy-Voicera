@@ -132,6 +132,7 @@ serve(async (req) => {
       .upsert({
         user_id: agentUserData.user_id,
         project_id: agentData.project_id,
+        agent_id: state, // Add agent_id to make integration agent-specific
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,
         token_expires_at: expiresAt.toISOString(),
@@ -139,7 +140,7 @@ serve(async (req) => {
         user_email: userInfo.email,
         is_active: true,
       }, {
-        onConflict: 'project_id'
+        onConflict: 'agent_id' // Change to agent_id since integrations are now per-agent
       });
 
     if (integrationError) {
