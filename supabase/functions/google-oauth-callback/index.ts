@@ -170,14 +170,28 @@ serve(async (req) => {
         </head>
         <body>
           <div class="container">
-            <div class="success">✅ Google Calendar Connected Successfully!</div>
-            <p>This window will close automatically...</p>
+            <div class="success">✅ The Calendar is verified. Closing the window in <span id="countdown">5</span> seconds</div>
+            <p>Please wait while we redirect you...</p>
           </div>
           <script>
-            // Close the popup after a short delay
+            // Countdown timer
+            let count = 5;
+            const countdownElement = document.getElementById('countdown');
+            
+            const timer = setInterval(() => {
+              count--;
+              if (countdownElement) {
+                countdownElement.textContent = count;
+              }
+              if (count <= 0) {
+                clearInterval(timer);
+              }
+            }, 1000);
+            
+            // Close the popup after 5 seconds
             setTimeout(() => {
               window.close();
-            }, 2000);
+            }, 5000);
           </script>
         </body>
         </html>
