@@ -254,7 +254,7 @@ const AgentManagement = () => {
       if (data) {
         // Basic Info
         setBusinessName(data.business_name || '');
-        setBusinessType(data.business_type || '');
+        setBusinessType(Array.isArray(data.business_types) ? data.business_types.join(', ') : '');
         setBusinessLocation(data.primary_location || '');
         setContactNumber(data.contact_number || '');
         
@@ -267,7 +267,6 @@ const AgentManagement = () => {
         
         // Booking
         setServices(isStringArray(data.services) ? data.services : []);
-        setAppointmentDuration(data.appointment_duration || '');
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
         setScheduleFullAction(data.schedule_full_action || '');

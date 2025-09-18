@@ -203,12 +203,12 @@ const TestAgent = () => {
           <p className="text-sm text-gray-600 mb-4">Try asking these common customer scenarios</p>
           <div className="space-y-2">
             {testScenarios.map((scenario, index) => (
-              <button
+              <div
                 key={index}
-                className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-sm text-gray-700"
+                className="w-full text-left p-3 border border-gray-200 rounded-lg text-sm text-gray-700"
               >
                 "{scenario}"
-              </button>
+              </div>
             ))}
           </div>
         </div>
