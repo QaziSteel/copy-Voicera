@@ -631,7 +631,7 @@ const AgentManagement = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => setIsAgentLive(!isAgentLive)}
-                className={`px-3 md:px-4 py-2 md:py-3 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors`}
+                className={`px-4 py-2 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors`}
               >
                 {isAgentLive ? 'Go Offline' : 'Go Live'}
               </button>
