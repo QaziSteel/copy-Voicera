@@ -1335,7 +1335,16 @@ const AgentManagement = () => {
                         </label>
                          <div className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg bg-white">
                            {googleIntegration ? (
-                             <span className="text-green-600 font-medium">{googleIntegration.user_email}</span>
+                             <div className="flex items-center justify-between">
+                               <span className="text-green-600 font-medium">{googleIntegration.user_email}</span>
+                               <button
+                                 onClick={disconnectIntegration}
+                                 disabled={googleLoading}
+                                 className="text-red-600 hover:text-red-800 disabled:opacity-50 font-medium"
+                               >
+                                 Disconnect
+                               </button>
+                             </div>
                            ) : (
                              <span className="text-black">Google Calendar</span>
                            )}
