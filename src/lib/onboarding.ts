@@ -47,6 +47,7 @@ export interface OnboardingData {
     questions: string[];
     answers: string[];
   };
+  calendarIntegrationRequired?: boolean;
 }
 
 export const collectOnboardingDataFromSession = (): OnboardingData => {
@@ -160,6 +161,9 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
     }
   }
 
+  const calendarIntegration = sessionStorage.getItem('calendarIntegration');
+  if (calendarIntegration) data.calendarIntegrationRequired = calendarIntegration === 'true';
+
   return data;
 };
 
@@ -203,7 +207,8 @@ export const saveOnboardingResponse = async (data: OnboardingData, projectId?: s
       wants_daily_summary: data.wantsDailySummary,
       wants_email_confirmations: data.wantsEmailConfirmations,
       reminder_settings: data.reminderSettings,
-      faq_data: data.faqData
+      faq_data: data.faqData,
+      calendar_integration_required: data.calendarIntegrationRequired
     })
     .select()
     .single();

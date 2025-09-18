@@ -40,6 +40,19 @@ export default function Completion() {
         throw new Error("Failed to fetch onboarding data");
       }
 
+      // Fetch Google Calendar integration data if onboarding data exists
+      let googleIntegration = null;
+      if (onboardingData?.id) {
+        const { data: integration } = await supabase
+          .from('google_integrations')
+          .select('*')
+          .eq('agent_id', onboardingData.id)
+          .eq('is_active', true)
+          .maybeSingle();
+        
+        googleIntegration = integration;
+      }
+
       // Create phone number record if contact number exists and project is available
       if (onboardingData?.contact_number && currentProject) {
         try {
@@ -72,6 +85,12 @@ export default function Completion() {
         user_email: user.user.email,
         profile: profile,
         onboarding_data: onboardingData,
+        google_calendar_integration: googleIntegration ? {
+          email: googleIntegration.user_email,
+          is_active: googleIntegration.is_active,
+          scopes: googleIntegration.scopes,
+          integrated_at: googleIntegration.created_at
+        } : null,
         timestamp: new Date().toISOString()
       };
 
