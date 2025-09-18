@@ -66,7 +66,24 @@ export default function Reminders() {
         
         // Listen for OAuth completion
         const handleMessage = (event: MessageEvent) => {
-          if (event.origin !== window.location.origin) return;
+          console.log('Received message:', event.data, 'from origin:', event.origin);
+          
+          // Accept messages from Supabase function domain or same origin
+          const allowedOrigins = [
+            window.location.origin,
+            'https://nhhdxwgrmcdsapbuvelx.supabase.co'
+          ];
+          
+          if (!allowedOrigins.includes(event.origin)) {
+            console.log('Message rejected - invalid origin:', event.origin);
+            return;
+          }
+          
+          // Validate message structure
+          if (!event.data || typeof event.data !== 'object') {
+            console.log('Message rejected - invalid data structure');
+            return;
+          }
           
           if (event.data.type === 'OAUTH_SUCCESS') {
             window.removeEventListener('message', handleMessage);
