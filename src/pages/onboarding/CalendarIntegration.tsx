@@ -3,22 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useGoogleIntegration } from '@/hooks/useGoogleIntegration';
-import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
 
 export default function CalendarIntegration() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   
-  // In onboarding mode, we don't fetch actual integration data
-  const { loading, initiateOAuth } = useGoogleIntegration(null, true);
-  
-  // Check if user wants to connect calendar (stored in sessionStorage)
-  const [wantsCalendarIntegration, setWantsCalendarIntegration] = React.useState<boolean | null>(
+  // Check if calendar integration has been acknowledged
+  const [isAcknowledged, setIsAcknowledged] = React.useState<boolean>(
     () => {
-      const stored = sessionStorage.getItem("wantsCalendarIntegration");
-      return stored ? JSON.parse(stored) : null;
+      const stored = sessionStorage.getItem("calendarIntegration");
+      return stored === "true";
     }
   );
 
@@ -31,14 +24,8 @@ export default function CalendarIntegration() {
   };
 
   const handleConnectGoogle = () => {
-    setWantsCalendarIntegration(true);
-    sessionStorage.setItem("wantsCalendarIntegration", "true");
-    // For now, just mark as wanting integration - actual connection happens after onboarding
-  };
-
-  const handleSkip = () => {
-    setWantsCalendarIntegration(false);
-    sessionStorage.setItem("wantsCalendarIntegration", "false");
+    setIsAcknowledged(true);
+    sessionStorage.setItem("calendarIntegration", "true");
   };
 
   return (
@@ -55,7 +42,7 @@ export default function CalendarIntegration() {
             Connect Your Calendar
           </h2>
           <p className="text-base italic text-[#737373] leading-6 max-w-2xl">
-            Sync your calendar so Voicera can manage bookings, calls, and availability automatically.
+            Calendar integration is required. Sync your calendar so Voicera can manage bookings, calls, and availability automatically.
           </p>
         </div>
 
@@ -86,22 +73,13 @@ export default function CalendarIntegration() {
                     Google Calendar
                   </h3>
                   
-                  {wantsCalendarIntegration === true ? (
+                  {isAcknowledged ? (
                     <div className="space-y-2">
                       <p className="text-sm text-green-600 font-medium">
-                        ✓ Calendar integration selected
+                        ✓ Ready for calendar integration
                       </p>
                       <p className="text-xs text-[#6B7280]">
-                        Will be connected after onboarding is complete
-                      </p>
-                    </div>
-                  ) : wantsCalendarIntegration === false ? (
-                    <div className="space-y-2">
-                      <p className="text-sm text-[#6B7280] font-medium">
-                        Skipped - can connect later
-                      </p>
-                      <p className="text-xs text-[#6B7280]">
-                        You can connect your calendar from the dashboard
+                        Will be connected when you complete onboarding
                       </p>
                     </div>
                   ) : (
@@ -111,53 +89,24 @@ export default function CalendarIntegration() {
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                {wantsCalendarIntegration === null && (
+                {/* Action Button */}
+                {!isAcknowledged && (
                   <Button
                     onClick={handleConnectGoogle}
-                    disabled={loading}
                     className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
                   >
                     Connect Google Calendar
                   </Button>
                 )}
                 
-                {wantsCalendarIntegration === true && (
-                  <div className="flex flex-col gap-3 w-full">
-                    <Button
-                      variant="outline"
-                      className="w-full border-green-200 text-green-600 hover:bg-green-50 rounded-lg"
-                      disabled
-                    >
-                      ✓ Calendar Integration Selected
-                    </Button>
-                    <Button
-                      onClick={() => setWantsCalendarIntegration(null)}
-                      variant="ghost"
-                      className="w-full text-[#6B7280] hover:text-black"
-                    >
-                      Change selection
-                    </Button>
-                  </div>
-                )}
-                
-                {wantsCalendarIntegration === false && (
-                  <div className="flex flex-col gap-3 w-full">
-                    <Button
-                      variant="outline"
-                      className="w-full border-gray-200 text-[#6B7280] rounded-lg"
-                      disabled
-                    >
-                      Skipped - Connect Later
-                    </Button>
-                    <Button
-                      onClick={() => setWantsCalendarIntegration(null)}
-                      variant="ghost"
-                      className="w-full text-[#6B7280] hover:text-black"
-                    >
-                      Change selection
-                    </Button>
-                  </div>
+                {isAcknowledged && (
+                  <Button
+                    variant="outline"
+                    className="w-full border-green-200 text-green-600 hover:bg-green-50 rounded-lg"
+                    disabled
+                  >
+                    ✓ Ready for Integration
+                  </Button>
                 )}
               </div>
             </CardContent>
