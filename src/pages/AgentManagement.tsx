@@ -126,18 +126,60 @@ const AgentManagement = () => {
     const oauthStatus = urlParams.get('oauth');
     const userEmail = urlParams.get('email');
     const error = urlParams.get('error');
+    const isFromPopup = urlParams.get('popup') === 'true';
     
-    if (oauthStatus === 'success' && userEmail) {
-      toast({
-        title: "Success",
-        description: `Google Calendar connected successfully for ${userEmail}`,
-      });
-    } else if (oauthStatus === 'error') {
-      toast({
-        title: "Error",
-        description: `Failed to connect Google Calendar: ${error || 'Unknown error'}`,
-        variant: "destructive",
-      });
+    if (oauthStatus) {
+      // Clean URL by removing OAuth parameters
+      const cleanParams = new URLSearchParams(location.search);
+      cleanParams.delete('oauth');
+      cleanParams.delete('email');
+      cleanParams.delete('error');
+      cleanParams.delete('popup');
+      const cleanUrl = cleanParams.toString() ? `?${cleanParams.toString()}` : location.pathname;
+      window.history.replaceState(null, '', cleanUrl);
+      
+      if (oauthStatus === 'success' && userEmail) {
+        toast({
+          title: "Success",
+          description: `Google Calendar connected successfully for ${userEmail}`,
+        });
+        
+        // If from popup, notify opener and close
+        if (isFromPopup) {
+          if (window.opener && window.opener !== window) {
+            window.opener.postMessage({
+              type: 'OAUTH_SUCCESS',
+              email: userEmail
+            }, window.location.origin);
+          }
+          
+          // Close the popup window
+          setTimeout(() => {
+            window.close();
+          }, 1500); // Give time for the success message to be seen
+        }
+      } else if (oauthStatus === 'error') {
+        toast({
+          title: "Error",
+          description: `Failed to connect Google Calendar: ${error || 'Unknown error'}`,
+          variant: "destructive",
+        });
+        
+        // If from popup, notify opener and close
+        if (isFromPopup) {
+          if (window.opener && window.opener !== window) {
+            window.opener.postMessage({
+              type: 'OAUTH_ERROR',
+              error: error || 'Unknown error'
+            }, window.location.origin);
+          }
+          
+          // Close the popup window
+          setTimeout(() => {
+            window.close();
+          }, 2500); // Give more time for error message to be read
+        }
+      }
     }
   }, [location.search]);
 

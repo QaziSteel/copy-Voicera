@@ -109,14 +109,14 @@ export const useGoogleIntegration = (agentId: string | null) => {
     oauthUrl.searchParams.set('prompt', 'consent');
     oauthUrl.searchParams.set('state', agentId);
 
-    // Open OAuth URL in a popup window
-    const popup = window.open(
+    // Open OAuth URL in a new window (not popup to avoid popup blockers)
+    const oauthWindow = window.open(
       oauthUrl.toString(),
       'google-oauth',
       'width=500,height=600,scrollbars=yes,resizable=yes'
     );
 
-    if (!popup) {
+    if (!oauthWindow) {
       toast({
         title: "Popup Blocked",
         description: "Please allow popups for this site and try again",
@@ -125,18 +125,39 @@ export const useGoogleIntegration = (agentId: string | null) => {
       return;
     }
 
-    // Monitor popup for completion
-    const pollTimer = window.setInterval(() => {
-      try {
-        if (popup.closed) {
-          clearInterval(pollTimer);
-          // Refresh integration status when popup closes
-          setTimeout(() => {
-            fetchIntegration();
-          }, 1000);
-        }
-      } catch (error) {
-        // Ignore cross-origin errors when popup is still open
+    // Listen for postMessage from the OAuth window
+    const handleMessage = (event: MessageEvent) => {
+      // Ensure message is from our domain
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data.type === 'OAUTH_SUCCESS') {
+        window.removeEventListener('message', handleMessage);
+        fetchIntegration();
+        toast({
+          title: "Success",
+          description: `Google Calendar connected for ${event.data.email}`,
+        });
+      } else if (event.data.type === 'OAUTH_ERROR') {
+        window.removeEventListener('message', handleMessage);
+        toast({
+          title: "OAuth Error",
+          description: event.data.error || "Failed to connect Google Calendar",
+          variant: "destructive",
+        });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Also monitor window closure as fallback
+    const checkClosed = setInterval(() => {
+      if (oauthWindow.closed) {
+        clearInterval(checkClosed);
+        window.removeEventListener('message', handleMessage);
+        // Refresh integration status when window closes (in case postMessage didn't work)
+        setTimeout(() => {
+          fetchIntegration();
+        }, 1000);
       }
     }, 1000);
   };
