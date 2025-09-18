@@ -53,77 +53,68 @@ export default function Reminders() {
 
       setAgentId(savedAgentId);
 
-      // Check if calendar integration was selected during onboarding
-      const calendarIntegration = sessionStorage.getItem("calendarIntegration");
-      const shouldConnectCalendar = calendarIntegration === "true";
-
-      if (shouldConnectCalendar) {
-        setIsConnectingCalendar(true);
-        toast.success("Onboarding saved! Connecting Google Calendar...");
+      // Always show calendar popup and navigate to completion
+      setIsConnectingCalendar(true);
+      toast.success("Onboarding saved! Connecting Google Calendar...");
+      
+      // Trigger OAuth popup
+      initiateOAuth(savedAgentId);
+      
+      // Listen for OAuth completion
+      const handleMessage = (event: MessageEvent) => {
+        console.log('Received message:', event.data, 'from origin:', event.origin);
         
-        // Trigger OAuth popup
-        initiateOAuth(savedAgentId);
+        // Accept messages from Supabase function domain or same origin
+        const allowedOrigins = [
+          window.location.origin,
+          'https://nhhdxwgrmcdsapbuvelx.supabase.co'
+        ];
         
-        // Listen for OAuth completion
-        const handleMessage = (event: MessageEvent) => {
-          console.log('Received message:', event.data, 'from origin:', event.origin);
-          
-          // Accept messages from Supabase function domain or same origin
-          const allowedOrigins = [
-            window.location.origin,
-            'https://nhhdxwgrmcdsapbuvelx.supabase.co'
-          ];
-          
-          if (!allowedOrigins.includes(event.origin)) {
-            console.log('Message rejected - invalid origin:', event.origin);
-            return;
-          }
-          
-          // Validate message structure
-          if (!event.data || typeof event.data !== 'object') {
-            console.log('Message rejected - invalid data structure');
-            return;
-          }
-          
-          if (event.data.type === 'OAUTH_SUCCESS') {
-            window.removeEventListener('message', handleMessage);
-            setIsConnectingCalendar(false);
-            setIsSubmitting(false);
-            
-            // Save calendar integration flag to session storage
-            sessionStorage.setItem("calendar_integration_required", "true");
-            
-            toast.success(`Google Calendar connected for ${event.data.email}`);
-            navigate("/onboarding/completion");
-          } else if (event.data.type === 'OAUTH_ERROR') {
-            window.removeEventListener('message', handleMessage);
-            setIsConnectingCalendar(false);
-            setIsSubmitting(false);
-            toast.error(`Calendar connection failed: ${event.data.error || 'Unknown error'}`);
-            
-            // Still proceed to completion
-            navigate("/onboarding/completion");
-          }
-        };
-
-        window.addEventListener('message', handleMessage);
+        if (!allowedOrigins.includes(event.origin)) {
+          console.log('Message rejected - invalid origin:', event.origin);
+          return;
+        }
         
-        // Fallback timeout
-        setTimeout(() => {
+        // Validate message structure
+        if (!event.data || typeof event.data !== 'object') {
+          console.log('Message rejected - invalid data structure');
+          return;
+        }
+        
+        if (event.data.type === 'OAUTH_SUCCESS') {
           window.removeEventListener('message', handleMessage);
-          if (isConnectingCalendar) {
-            setIsConnectingCalendar(false);
-            setIsSubmitting(false);
-            toast.info("Calendar connection is taking longer than expected. Proceeding with setup...");
-            // Still navigate to completion even if OAuth wasn't confirmed
-            navigate("/onboarding/completion");
-          }
-        }, 30000); // 30 second timeout
-      } else {
-        // No calendar integration needed, proceed directly
-        toast.success("Onboarding completed successfully!");
+          setIsConnectingCalendar(false);
+          setIsSubmitting(false);
+          
+          // Save calendar integration flag to session storage
+          sessionStorage.setItem("calendar_integration_required", "true");
+          
+          toast.success(`Google Calendar connected for ${event.data.email}`);
+          navigate("/onboarding/completion");
+        } else if (event.data.type === 'OAUTH_ERROR') {
+          window.removeEventListener('message', handleMessage);
+          setIsConnectingCalendar(false);
+          setIsSubmitting(false);
+          toast.error(`Calendar connection failed: ${event.data.error || 'Unknown error'}`);
+          
+          // Still proceed to completion
+          navigate("/onboarding/completion");
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+      
+      // Fallback timeout - always navigate to completion
+      setTimeout(() => {
+        window.removeEventListener('message', handleMessage);
+        if (isConnectingCalendar) {
+          setIsConnectingCalendar(false);
+          setIsSubmitting(false);
+          toast.info("Calendar connection is taking longer than expected. Proceeding with setup...");
+        }
+        // Always navigate to completion
         navigate("/onboarding/completion");
-      }
+      }, 30000); // 30 second timeout
     } catch (error) {
       toast.error("Failed to save onboarding data");
       console.error("Error saving onboarding data:", error);
