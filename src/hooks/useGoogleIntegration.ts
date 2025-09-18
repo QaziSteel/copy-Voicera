@@ -130,8 +130,12 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
 
     // Listen for postMessage from the OAuth window
     const handleMessage = (event: MessageEvent) => {
-      // Ensure message is from our domain
-      if (event.origin !== window.location.origin) return;
+      // Accept messages from our domain or the Supabase function domain
+      const allowedOrigins = [
+        window.location.origin,
+        'https://nhhdxwgrmcdsapbuvelx.supabase.co'
+      ];
+      if (!allowedOrigins.includes(event.origin)) return;
       
       if (event.data.type === 'OAUTH_SUCCESS') {
         window.removeEventListener('message', handleMessage);

@@ -384,15 +384,43 @@ serve(async (req) => {
     if (isOnboardingFlow) {
       // For onboarding flow, return HTML with postMessage
       return new Response(`
+        <!DOCTYPE html>
         <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Google Calendar Connected</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
+              .success { color: #22c55e; margin-bottom: 20px; }
+              .status { color: #6b7280; font-size: 14px; }
+            </style>
+          </head>
           <body>
+            <div class="success">✓ Google Calendar Connected Successfully</div>
+            <div class="status" id="status">Closing window...</div>
             <script>
-              window.opener?.postMessage({
-                type: 'OAUTH_SUCCESS',
-                email: '${userInfo.email}',
-                agentId: '${agentId}'
-              }, '*');
-              window.close();
+              console.log('OAuth callback - sending success message');
+              try {
+                window.opener?.postMessage({
+                  type: 'OAUTH_SUCCESS',
+                  email: '${userInfo.email}',
+                  agentId: '${agentId}'
+                }, '*');
+                console.log('Success message sent successfully');
+              } catch (e) {
+                console.error('Failed to send success message:', e);
+              }
+              
+              // Try to close window with fallback
+              setTimeout(() => {
+                try {
+                  window.close();
+                } catch (e) {
+                  console.log('Auto-close failed, showing manual close option');
+                  document.getElementById('status').innerHTML = 'Please close this window manually';
+                }
+              }, 1000);
             </script>
           </body>
         </html>
