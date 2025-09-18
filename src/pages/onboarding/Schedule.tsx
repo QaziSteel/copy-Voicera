@@ -14,7 +14,7 @@ export default function Schedule() {
   ];
 
   const handlePrevious = () => {
-    navigate("/onboarding/appointment-time");
+    navigate("/onboarding/business-hours");
   };
 
   const handleNext = () => {

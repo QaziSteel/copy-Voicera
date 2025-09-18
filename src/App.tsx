@@ -32,7 +32,7 @@ import BookingIntro from "./pages/onboarding/BookingIntro";
 import Services from "./pages/onboarding/Services";
 import BusinessDays from "./pages/onboarding/BusinessDays";
 import BusinessHours from "./pages/onboarding/BusinessHours";
-import AppointmentTime from "./pages/onboarding/AppointmentTime";
+
 import Schedule from "./pages/onboarding/Schedule";
 import FAQIntro from "./pages/onboarding/FAQIntro";
 import FAQQuestions from "./pages/onboarding/FAQQuestions";
@@ -131,11 +131,6 @@ const App = () => (
             <Route path="/onboarding/business-hours" element={
               <ProtectedRoute>
                 <BusinessHours />
-              </ProtectedRoute>
-            } />
-            <Route path="/onboarding/appointment-time" element={
-              <ProtectedRoute>
-                <AppointmentTime />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/schedule" element={

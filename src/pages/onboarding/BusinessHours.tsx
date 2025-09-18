@@ -30,7 +30,7 @@ export default function BusinessHours() {
         "businessHours",
         JSON.stringify({ from: fromTime, to: toTime }),
       );
-      navigate("/onboarding/appointment-time");
+      navigate("/onboarding/schedule");
     }
   };
 

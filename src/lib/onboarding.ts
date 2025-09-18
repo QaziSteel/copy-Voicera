@@ -2,7 +2,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface OnboardingData {
   businessName?: string;
-  businessType?: string;
+  businessTypes?: Array<{
+    type: string;
+    hours: string;
+    minutes: string;
+  }>;
   primaryLocation?: string;
   contactNumber?: string;
   purchasedNumberDetails?: {
@@ -32,7 +36,6 @@ export interface OnboardingData {
     from: string;
     to: string;
   };
-  appointmentDuration?: string;
   scheduleFullAction?: string;
   wantsDailySummary?: boolean;
   wantsEmailConfirmations?: boolean;
@@ -53,8 +56,14 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
   const businessName = sessionStorage.getItem('businessName');
   if (businessName) data.businessName = businessName;
 
-  const businessType = sessionStorage.getItem('businessType');
-  if (businessType) data.businessType = businessType;
+  const businessTypes = sessionStorage.getItem('businessTypes');
+  if (businessTypes) {
+    try {
+      data.businessTypes = JSON.parse(businessTypes);
+    } catch (e) {
+      console.warn('Failed to parse businessTypes from sessionStorage');
+    }
+  }
 
   const primaryLocation = sessionStorage.getItem('primaryLocation');
   if (primaryLocation) data.primaryLocation = primaryLocation;
@@ -119,8 +128,6 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
     }
   }
 
-  const appointmentDuration = sessionStorage.getItem('appointmentDuration');
-  if (appointmentDuration) data.appointmentDuration = appointmentDuration;
 
   const scheduleFullAction = sessionStorage.getItem('scheduleFullAction');
   if (scheduleFullAction) data.scheduleFullAction = scheduleFullAction;
@@ -180,7 +187,7 @@ export const saveOnboardingResponse = async (data: OnboardingData, projectId?: s
       user_id: user.id,
       project_id: finalProjectId,
       business_name: data.businessName,
-      business_type: data.businessType,
+      business_types: data.businessTypes,
       primary_location: data.primaryLocation,
       contact_number: data.contactNumber,
       purchased_number_details: data.purchasedNumberDetails,
@@ -192,7 +199,6 @@ export const saveOnboardingResponse = async (data: OnboardingData, projectId?: s
       services: data.services,
       business_days: data.businessDays,
       business_hours: data.businessHours,
-      appointment_duration: data.appointmentDuration,
       schedule_full_action: data.scheduleFullAction,
       wants_daily_summary: data.wantsDailySummary,
       wants_email_confirmations: data.wantsEmailConfirmations,
