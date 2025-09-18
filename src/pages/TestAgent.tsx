@@ -30,12 +30,12 @@ const TestAgent = () => {
     }
   ]);
   const [testScenarios] = useState([
-    "I'd like to book a haircut for tomorrow",
+    "I'd like to book an appointment",
     "What are your business hours?",
-    "How much does a beard trim cost?",
-    "Can I reschedule my appointment?",
-    "Do you offer hair washing services?",
-    "I'm running late for my appointment"
+    "How much does a consultation cost?",
+    "Where are you located?",
+    "I need to cancel my appointment",
+    "What services do you offer?"
   ]);
 
   const handleStartTestCall = () => {
@@ -44,102 +44,66 @@ const TestAgent = () => {
 
   const renderTestMode = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-      {/* Left Column - Conversation Area */}
+      {/* Left Column - Test Conversation */}
       <div className="space-y-4">
-        {/* Live Conversation */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 h-80">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-black">Live Conversation</h3>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-green-600 font-medium">Active Call</span>
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 h-full min-h-[400px] flex flex-col">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-4 h-4 border border-gray-400 rounded-sm"></div>
+            <h3 className="text-lg font-semibold text-black">Test Conversation</h3>
           </div>
+          <p className="text-sm text-gray-600 mb-8">Start a test call to begin conversation</p>
           
-          <div className="space-y-3 h-64 overflow-y-auto">
-            <div className="bg-blue-50 rounded-lg p-3 max-w-xs">
-              <p className="text-sm text-gray-800">Hello! Thanks for calling The Gents' Chair. How can I help you today?</p>
-              <span className="text-xs text-gray-500 mt-1">Agent • 2:34 PM</span>
+          {/* Conversation Area */}
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="w-16 h-16 border-2 border-gray-300 rounded-lg flex items-center justify-center mb-4">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gray-400">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
             </div>
-            <div className="bg-gray-100 rounded-lg p-3 max-w-xs ml-auto">
-              <p className="text-sm text-gray-800">Hi, I'd like to book a haircut for tomorrow if possible.</p>
-              <span className="text-xs text-gray-500 mt-1">Customer • 2:35 PM</span>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-3 max-w-xs">
-              <p className="text-sm text-gray-800">Of course! What time works best for you? We have availability at 10 AM, 2 PM, and 4 PM tomorrow.</p>
-              <span className="text-xs text-gray-500 mt-1">Agent • 2:35 PM</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Call History */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 className="text-lg font-semibold text-black mb-3">Recent Test Calls</h3>
-          <div className="space-y-2">
-            {testCalls.map((call, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
-                <div>
-                  <p className="font-medium text-gray-900">{call.name}</p>
-                  <p className="text-sm text-gray-500">{call.phone}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{call.duration}</p>
-                  <p className="text-xs text-gray-500">{call.timestamp}</p>
-                </div>
-              </div>
-            ))}
+            <p className="text-sm text-gray-500 text-center mb-6">Start a test call to begin conversation</p>
+            
+            <Button onClick={handleStartTestCall} className="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-lg">
+              ▶ Start Test Call
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Right Column - Controls */}
+      {/* Right Column - Controls and Scenarios */}
       <div className="space-y-4">
         {/* Call Controls */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 className="text-lg font-semibold text-black mb-3">Call Controls</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center gap-4">
-                <div className="w-3 h-8 bg-green-500 rounded-sm pulse-bar"></div>
-                <div className="w-3 h-12 bg-green-500 rounded-sm pulse-bar"></div>
-                <div className="w-3 h-6 bg-green-500 rounded-sm pulse-bar"></div>
-                <div className="w-3 h-10 bg-green-500 rounded-sm pulse-bar"></div>
-                <div className="w-3 h-4 bg-green-500 rounded-sm pulse-bar"></div>
-              </div>
-            </div>
-            
-            <div className="flex justify-center gap-4">
-              <button className="w-14 h-14 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white transition-colors">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M16 2H8C7.45 2 7 2.45 7 3V21C7 21.55 7.45 22 8 22H16C16.55 22 17 21.55 17 21V3C17 2.45 16.55 2 16 2Z" fill="currentColor"/>
-                </svg>
-              </button>
-              <button className="w-14 h-14 bg-gray-500 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition-colors">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z" fill="currentColor"/>
-                </svg>
-              </button>
-            </div>
-            
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">Call Duration: <span className="font-medium">2m 34s</span></p>
-              <Button onClick={handleStartTestCall} className="w-full">
-                Start New Test Call
-              </Button>
-            </div>
+          <h3 className="text-lg font-semibold text-black mb-4">Call Controls</h3>
+          <div className="flex justify-center gap-8">
+            <button className="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" x2="12" y1="19" y2="22"/>
+                <line x1="8" x2="16" y1="22" y2="22"/>
+              </svg>
+            </button>
+            <button className="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                <path d="M11 5a3 3 0 1 1 4 2.82V8a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V7.82A3 3 0 0 1 11 5Z"/>
+                <path d="M8 8v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V8"/>
+                <path d="M16 8L14 10l-4-2 2-2"/>
+              </svg>
+            </button>
           </div>
         </div>
 
         {/* Test Scenarios */}
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <h3 className="text-lg font-semibold text-black mb-3">Test Scenarios</h3>
+          <h3 className="text-lg font-semibold text-black mb-2">Test Scenarios</h3>
+          <p className="text-sm text-gray-600 mb-4">Try asking these common customer scenarios</p>
           <div className="space-y-2">
             {testScenarios.map((scenario, index) => (
               <button
                 key={index}
-                className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-sm"
+                className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-sm text-gray-700"
               >
-                {scenario}
+                "{scenario}"
               </button>
             ))}
           </div>
