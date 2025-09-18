@@ -31,14 +31,10 @@ export default function CalendarIntegration() {
   };
 
   const handleConnectGoogle = () => {
+    // Always set calendar integration as required
     setWantsCalendarIntegration(true);
     sessionStorage.setItem("wantsCalendarIntegration", "true");
-    // For now, just mark as wanting integration - actual connection happens after onboarding
-  };
-
-  const handleSkip = () => {
-    setWantsCalendarIntegration(false);
-    sessionStorage.setItem("wantsCalendarIntegration", "false");
+    sessionStorage.setItem("calendarIntegrationRequired", "true");
   };
 
   return (
@@ -86,79 +82,24 @@ export default function CalendarIntegration() {
                     Google Calendar
                   </h3>
                   
-                  {wantsCalendarIntegration === true ? (
-                    <div className="space-y-2">
-                      <p className="text-sm text-green-600 font-medium">
-                        ✓ Calendar integration selected
-                      </p>
-                      <p className="text-xs text-[#6B7280]">
-                        Will be connected after onboarding is complete
-                      </p>
-                    </div>
-                  ) : wantsCalendarIntegration === false ? (
-                    <div className="space-y-2">
-                      <p className="text-sm text-[#6B7280] font-medium">
-                        Skipped - can connect later
-                      </p>
-                      <p className="text-xs text-[#6B7280]">
-                        You can connect your calendar from the dashboard
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-[#6B7280]">
-                      Sync your availability and appointments
+                  <div className="space-y-2">
+                    <p className="text-sm text-green-600 font-medium">
+                      ✓ Calendar integration required
                     </p>
-                  )}
+                    <p className="text-xs text-[#6B7280]">
+                      Will be connected automatically after onboarding
+                    </p>
+                  </div>
                 </div>
 
-                {/* Action Buttons */}
-                {wantsCalendarIntegration === null && (
-                  <Button
-                    onClick={handleConnectGoogle}
-                    disabled={loading}
-                    className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
-                  >
-                    Connect Google Calendar
-                  </Button>
-                )}
-                
-                {wantsCalendarIntegration === true && (
-                  <div className="flex flex-col gap-3 w-full">
-                    <Button
-                      variant="outline"
-                      className="w-full border-green-200 text-green-600 hover:bg-green-50 rounded-lg"
-                      disabled
-                    >
-                      ✓ Calendar Integration Selected
-                    </Button>
-                    <Button
-                      onClick={() => setWantsCalendarIntegration(null)}
-                      variant="ghost"
-                      className="w-full text-[#6B7280] hover:text-black"
-                    >
-                      Change selection
-                    </Button>
-                  </div>
-                )}
-                
-                {wantsCalendarIntegration === false && (
-                  <div className="flex flex-col gap-3 w-full">
-                    <Button
-                      variant="outline"
-                      className="w-full border-gray-200 text-[#6B7280] rounded-lg"
-                      disabled
-                    >
-                      Skipped - Connect Later
-                    </Button>
-                    <Button
-                      onClick={() => setWantsCalendarIntegration(null)}
-                      variant="ghost"
-                      className="w-full text-[#6B7280] hover:text-black"
-                    >
-                      Change selection
-                    </Button>
-                  </div>
-                )}
+                {/* Mandatory Integration Button */}
+                <Button
+                  onClick={handleConnectGoogle}
+                  disabled={loading}
+                  className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
+                >
+                  Connect Google Calendar (Required)
+                </Button>
               </div>
             </CardContent>
           </Card>
