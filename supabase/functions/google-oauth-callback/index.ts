@@ -161,17 +161,21 @@ serve(async (req) => {
         <!DOCTYPE html>
         <html>
         <head>
+          <meta charset="utf-8">
           <title>OAuth Success</title>
           <style>
             body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f9fafb; }
             .container { text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
             .success { color: #10b981; font-size: 1.5rem; margin-bottom: 1rem; }
+            .btn { background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 1rem; }
+            .btn:hover { background: #2563eb; }
           </style>
         </head>
         <body>
           <div class="container">
-            <div class="success">✅ The Calendar is verified. Closing the window in <span id="countdown">5</span> seconds</div>
+            <div class="success">&#x2713; The Calendar is verified. Closing the window in <span id="countdown">5</span> seconds</div>
             <p>Please wait while we redirect you...</p>
+            <button class="btn" onclick="window.close()">Close now</button>
           </div>
           <script>
             // Countdown timer
@@ -185,19 +189,28 @@ serve(async (req) => {
               }
               if (count <= 0) {
                 clearInterval(timer);
+                try {
+                  window.close();
+                } catch (e) {
+                  console.log('Could not close window automatically');
+                }
               }
             }, 1000);
             
-            // Close the popup after 5 seconds
+            // Try to close the popup after 5 seconds
             setTimeout(() => {
-              window.close();
+              try {
+                window.close();
+              } catch (e) {
+                console.log('Could not close window automatically');
+              }
             }, 5000);
           </script>
         </body>
         </html>
       `;
       return new Response(successHtml, {
-        headers: { 'Content-Type': 'text/html' }
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
       });
     }
 
