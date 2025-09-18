@@ -181,11 +181,11 @@ export type Database = {
           ai_greeting_style: Json | null
           ai_handling_unknown: string | null
           ai_voice_style: string | null
-          appointment_duration: string | null
           business_days: Json | null
           business_hours: Json | null
           business_name: string | null
           business_type: string | null
+          business_types: Json | null
           contact_number: string | null
           created_at: string
           faq_data: Json | null
@@ -207,11 +207,11 @@ export type Database = {
           ai_greeting_style?: Json | null
           ai_handling_unknown?: string | null
           ai_voice_style?: string | null
-          appointment_duration?: string | null
           business_days?: Json | null
           business_hours?: Json | null
           business_name?: string | null
           business_type?: string | null
+          business_types?: Json | null
           contact_number?: string | null
           created_at?: string
           faq_data?: Json | null
@@ -233,11 +233,11 @@ export type Database = {
           ai_greeting_style?: Json | null
           ai_handling_unknown?: string | null
           ai_voice_style?: string | null
-          appointment_duration?: string | null
           business_days?: Json | null
           business_hours?: Json | null
           business_name?: string | null
           business_type?: string | null
+          business_types?: Json | null
           contact_number?: string | null
           created_at?: string
           faq_data?: Json | null
