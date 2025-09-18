@@ -12,10 +12,20 @@ const businessTypes = [
   "Chiropractor",
 ];
 
+const hourOptions = ["00 hr", "01 hr", "02 hr", "03 hr", "04 hr"];
+const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
+
+interface SelectedBusinessType {
+  type: string;
+  hours: string;
+  minutes: string;
+}
+
 export const BusinessType: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<SelectedBusinessType[]>([]);
   const [customType, setCustomType] = useState("");
+  const [customDuration, setCustomDuration] = useState({ hours: "01 hr", minutes: "00 min" });
   const navigate = useNavigate();
 
   const handlePrevious = () => {
@@ -23,22 +33,44 @@ export const BusinessType: React.FC = () => {
   };
 
   const handleNext = () => {
-    if (selectedType || customType) {
-      const businessType = selectedType === "Other (Custom)" ? customType : selectedType;
-      sessionStorage.setItem("businessType", businessType);
+    if (selectedBusinessTypes.length > 0 || customType.trim()) {
+      const allBusinessTypes = [...selectedBusinessTypes];
+      if (customType.trim()) {
+        allBusinessTypes.push({
+          type: customType.trim(),
+          hours: customDuration.hours,
+          minutes: customDuration.minutes
+        });
+      }
+      sessionStorage.setItem("businessTypes", JSON.stringify(allBusinessTypes));
       navigate("/onboarding/business-location");
     }
   };
 
-  const handleSelectType = (type: string) => {
-    setSelectedType(type);
-    setIsOpen(false);
-    if (type !== "Other (Custom)") {
-      setCustomType("");
-    }
+  const handleBusinessTypeToggle = (type: string) => {
+    setSelectedBusinessTypes((prev) => {
+      const exists = prev.find(item => item.type === type);
+      if (exists) {
+        return prev.filter(item => item.type !== type);
+      } else {
+        return [...prev, { type, hours: "01 hr", minutes: "00 min" }];
+      }
+    });
   };
 
-  const isNextDisabled = !selectedType && !customType;
+  const handleDurationChange = (type: string, field: 'hours' | 'minutes', value: string) => {
+    setSelectedBusinessTypes((prev) =>
+      prev.map(item =>
+        item.type === type ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+  const isNextDisabled = selectedBusinessTypes.length === 0 && !customType.trim();
+
+  const displayText = selectedBusinessTypes.length > 0
+    ? `${selectedBusinessTypes.length} service${selectedBusinessTypes.length > 1 ? 's' : ''} selected`
+    : "Select services and their appointment duration";
 
   return (
     <OnboardingLayout
@@ -52,10 +84,10 @@ export const BusinessType: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col gap-3 md:gap-2 sm:gap-1.5 w-full">
           <h2 className="text-xl md:text-lg sm:text-base font-bold text-foreground">
-            What type of business do you run?
+            Select services and timings
           </h2>
           <p className="text-base md:text-sm sm:text-xs italic text-muted-foreground leading-6 md:leading-5 sm:leading-4">
-            This helps us personalise your AI agent and suggest common FAQs.
+            Choose your services and set the appointment duration for each.
           </p>
         </div>
 
@@ -67,9 +99,9 @@ export const BusinessType: React.FC = () => {
             className="flex items-center justify-between w-full p-4 md:p-3 sm:p-2.5 border-2 border-border rounded-xl md:rounded-lg sm:rounded-lg hover:border-foreground transition-colors"
           >
             <span
-              className={`text-lg md:text-base sm:text-sm ${selectedType ? "text-foreground" : "text-muted-foreground"}`}
+              className={`text-lg md:text-base sm:text-sm ${selectedBusinessTypes.length > 0 ? "text-foreground" : "text-muted-foreground"}`}
             >
-              {(selectedType === "Other (Custom)" && customType) ? customType : selectedType || "Select your business type"}
+              {displayText}
             </span>
             <svg
               width="24"
@@ -91,37 +123,125 @@ export const BusinessType: React.FC = () => {
 
           {/* Dropdown Options */}
           {isOpen && (
-            <div className="border-2 border-border rounded-xl md:rounded-lg sm:rounded-lg overflow-hidden">
-              {businessTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => handleSelectType(type)}
-                  className="w-full p-3 md:p-2.5 sm:p-2 px-4 md:px-3 sm:px-2.5 text-left text-lg md:text-base sm:text-sm text-muted-foreground hover:bg-accent transition-colors"
-                >
-                  {type}
-                </button>
-              ))}
+            <div className="border-2 border-border rounded-xl md:rounded-lg sm:rounded-lg overflow-hidden bg-background z-50">
+              {businessTypes.map((type) => {
+                const isSelected = selectedBusinessTypes.find(item => item.type === type);
+                
+                return (
+                  <div key={type} className="border-b border-border last:border-b-0">
+                    <div className="flex items-center gap-3 p-3 md:p-2.5 sm:p-2 px-4 md:px-3 sm:px-2.5">
+                      <button
+                        onClick={() => handleBusinessTypeToggle(type)}
+                        className="flex items-center gap-2.5"
+                      >
+                        <div
+                          className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                            isSelected ? "border-foreground bg-foreground" : "border-muted-foreground"
+                          }`}
+                        >
+                          {isSelected && (
+                            <svg
+                              width="8"
+                              height="6"
+                              viewBox="0 0 8 6"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M1 3L3 5L7 1"
+                                stroke="white"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-lg md:text-base sm:text-sm text-muted-foreground min-w-[120px]">
+                          {type}
+                        </span>
+                      </button>
+                      
+                      {isSelected && (
+                        <div className="flex items-center gap-2 ml-auto">
+                          <select
+                            value={isSelected.hours}
+                            onChange={(e) => handleDurationChange(type, 'hours', e.target.value)}
+                            className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                          >
+                            {hourOptions.map(hour => (
+                              <option key={hour} value={hour}>{hour}</option>
+                            ))}
+                          </select>
+                          <select
+                            value={isSelected.minutes}
+                            onChange={(e) => handleDurationChange(type, 'minutes', e.target.value)}
+                            className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                          >
+                            {minuteOptions.map(minute => (
+                              <option key={minute} value={minute}>{minute}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
 
-              {/* Other Custom Option */}
-              <div className="flex items-center gap-3 md:gap-2 sm:gap-1.5 p-3 md:p-2.5 sm:p-2 px-4 md:px-3 sm:px-2.5">
-                <button
-                  onClick={() => handleSelectType("Other (Custom)")}
-                  className="text-lg md:text-base sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Other (Custom)
-                </button>
-                <input
-                  type="text"
-                  value={customType}
-                  onChange={(e) => {
-                    setCustomType(e.target.value);
-                    if (e.target.value) {
-                      setSelectedType("Other (Custom)");
-                    }
-                  }}
-                  placeholder="Enter your business type..."
-                  className="flex-1 p-3 md:p-2.5 sm:p-2 border-2 border-border rounded-xl md:rounded-lg sm:rounded-lg placeholder-muted-foreground focus:outline-none focus:border-foreground transition-colors bg-background"
-                />
+              {/* Custom Option */}
+              <div className="flex items-center gap-3 p-3 md:p-2.5 sm:p-2 px-4 md:px-3 sm:px-2.5">
+                <div className="flex items-center gap-2.5 flex-1">
+                  <div className="w-4 h-4 border-[1.5px] border-muted-foreground rounded flex items-center justify-center">
+                    {customType.trim() && (
+                      <svg
+                        width="8"
+                        height="6"
+                        viewBox="0 0 8 6"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 3L3 5L7 1"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={customType}
+                    onChange={(e) => setCustomType(e.target.value)}
+                    placeholder="Other (Custom type)"
+                    className="flex-1 p-2 border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:border-foreground bg-background"
+                  />
+                </div>
+                
+                {customType.trim() && (
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={customDuration.hours}
+                      onChange={(e) => setCustomDuration(prev => ({ ...prev, hours: e.target.value }))}
+                      className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                    >
+                      {hourOptions.map(hour => (
+                        <option key={hour} value={hour}>{hour}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={customDuration.minutes}
+                      onChange={(e) => setCustomDuration(prev => ({ ...prev, minutes: e.target.value }))}
+                      className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                    >
+                      {minuteOptions.map(minute => (
+                        <option key={minute} value={minute}>{minute}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           )}
