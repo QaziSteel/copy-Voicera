@@ -48,9 +48,6 @@ export default function CalendarIntegration() {
       <div className="flex flex-col gap-8 w-full">
         {/* Header */}
         <div className="flex flex-col gap-3 w-full">
-          <p className="text-xl font-bold text-black">
-            Step 3 of 5
-          </p>
           <h2 className="text-xl font-bold text-black">
             Connect Your Calendar
           </h2>
