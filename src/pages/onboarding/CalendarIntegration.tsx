@@ -130,13 +130,6 @@ export default function CalendarIntegration() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Skip Option */}
-        {!isConnected && (
-          <p className="text-sm text-[#6B7280]">
-            You can skip this step and connect your calendar later from the dashboard
-          </p>
-        )}
       </div>
     </OnboardingLayout>
   );
