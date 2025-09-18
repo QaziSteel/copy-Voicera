@@ -76,10 +76,6 @@ export const BusinessType: React.FC = () => {
 
   const isNextDisabled = selectedBusinessTypes.length === 0 && !(isCustomSelected && customType.trim());
 
-  const displayText = selectedBusinessTypes.length > 0
-    ? `${selectedBusinessTypes.length} service${selectedBusinessTypes.length > 1 ? 's' : ''} selected`
-    : "Select services and their appointment duration";
-
   return (
     <OnboardingLayout
       onPrevious={handlePrevious}
