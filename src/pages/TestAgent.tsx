@@ -104,9 +104,9 @@ const TestAgent = () => {
             </button>
             <button className="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
-                <path d="M11 5a3 3 0 1 1 4 2.82V8a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V7.82A3 3 0 0 1 11 5Z"/>
-                <path d="M8 8v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V8"/>
-                <path d="M16 8L14 10l-4-2 2-2"/>
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
               </svg>
             </button>
           </div>
