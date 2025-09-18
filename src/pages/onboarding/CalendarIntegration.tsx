@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 export default function CalendarIntegration() {
   const navigate = useNavigate();
   
-  // Check if calendar integration has been acknowledged
+  // Check if calendar integration has been acknowledged (cache refresh)
   const [isAcknowledged, setIsAcknowledged] = React.useState<boolean>(
     () => {
       const stored = sessionStorage.getItem("calendarIntegration");
