@@ -48,7 +48,14 @@ const TestAgent = () => {
       <div className="space-y-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6 h-full min-h-[400px] flex flex-col">
           <div className="flex items-center gap-2 mb-6">
-            <div className="w-4 h-4 border border-gray-400 rounded-sm"></div>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M5.0823 15.8335C3.99888 15.7269 3.18725 15.4015 2.64293 14.8572C1.66663 13.8809 1.66663 12.3095 1.66663 9.16683V8.75016C1.66663 5.60746 1.66663 4.03612 2.64293 3.0598C3.61925 2.0835 5.19059 2.0835 8.33329 2.0835H11.6666C14.8093 2.0835 16.3807 2.0835 17.357 3.0598C18.3333 4.03612 18.3333 5.60746 18.3333 8.75016V9.16683C18.3333 12.3095 18.3333 13.8809 17.357 14.8572C16.3807 15.8335 14.8093 15.8335 11.6666 15.8335C11.1995 15.8439 10.8275 15.8794 10.4621 15.9627C9.46346 16.1926 8.53871 16.7036 7.62485 17.1492C6.32270 17.7842 5.67163 18.1017 5.26303 17.8044C4.48137 17.2222 5.24541 15.4184 5.41663 14.5835"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
             <h3 className="text-lg font-semibold text-black">Test Conversation</h3>
           </div>
           <p className="text-sm text-gray-600 mb-8">Start a test call to begin conversation</p>
