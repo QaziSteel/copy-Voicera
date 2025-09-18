@@ -22,6 +22,7 @@ import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
 import BusinessLocation from "./pages/onboarding/BusinessLocation";
 import ContactNumber from "./pages/onboarding/ContactNumber";
+import CalendarIntegration from "./pages/onboarding/CalendarIntegration";
 import { PersonalityIntro } from "./pages/onboarding/PersonalityIntro";
 import { VoiceStyle } from "./pages/onboarding/VoiceStyle";
 import { Greetings } from "./pages/onboarding/Greetings";
@@ -80,6 +81,11 @@ const App = () => (
             <Route path="/onboarding/contact-number" element={
               <ProtectedRoute>
                 <ContactNumber />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/calendar-integration" element={
+              <ProtectedRoute>
+                <CalendarIntegration />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/personality-intro" element={

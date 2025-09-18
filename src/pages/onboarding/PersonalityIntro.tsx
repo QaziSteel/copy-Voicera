@@ -10,7 +10,7 @@ export const PersonalityIntro: React.FC = () => {
   };
 
   const handlePrevious = () => {
-    navigate("/onboarding/contact-number");
+    navigate("/onboarding/calendar-integration");
   };
 
   return (

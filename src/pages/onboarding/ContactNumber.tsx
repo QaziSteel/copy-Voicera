@@ -177,7 +177,7 @@ export default function ContactNumber() {
   const handleNext = () => {
     if (isNumberPurchased) {
       // If number is already purchased, proceed directly
-      navigate("/onboarding/personality-intro");
+      navigate("/onboarding/calendar-integration");
     } else if (selectedNumber) {
       setShowConfirmationPopup(true);
     }
@@ -227,7 +227,7 @@ export default function ContactNumber() {
 
   const handlePurchaseSuccess = () => {
     setShowPurchaseSuccessPopup(false);
-    navigate("/onboarding/personality-intro");
+    navigate("/onboarding/calendar-integration");
   };
 
   const handleDiscard = () => {
