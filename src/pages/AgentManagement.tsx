@@ -1333,26 +1333,13 @@ const AgentManagement = () => {
                         <label className="block text-lg font-semibold text-black mb-3">
                           Calendar Integration
                         </label>
-                        <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>Google Calendar</option>
-                          </select>
-                          <svg
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                              stroke="#141B34"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
+                         <div className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg bg-white">
+                           {googleIntegration ? (
+                             <span className="text-green-600 font-medium">{googleIntegration.user_email}</span>
+                           ) : (
+                             <span className="text-black">Google Calendar</span>
+                           )}
+                         </div>
                       </div>
                       
                       {/* Sync Account Button */}
