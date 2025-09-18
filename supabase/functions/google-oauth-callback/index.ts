@@ -425,7 +425,7 @@ serve(async (req) => {
           </body>
         </html>
       `, {
-        headers: { 'Content-Type': 'text/html' }
+        headers: { ...corsHeaders, 'Content-Type': 'text/html' }
       });
     } else {
       // For agent management flow, redirect as before
