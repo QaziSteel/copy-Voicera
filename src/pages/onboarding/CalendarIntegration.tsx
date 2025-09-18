@@ -113,22 +113,13 @@ export default function CalendarIntegration() {
 
                 {/* Action Buttons */}
                 {wantsCalendarIntegration === null && (
-                  <div className="flex flex-col gap-3 w-full">
-                    <Button
-                      onClick={handleConnectGoogle}
-                      disabled={loading}
-                      className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
-                    >
-                      Connect Google Calendar
-                    </Button>
-                    <Button
-                      onClick={handleSkip}
-                      variant="outline"
-                      className="w-full rounded-lg"
-                    >
-                      Skip for now
-                    </Button>
-                  </div>
+                  <Button
+                    onClick={handleConnectGoogle}
+                    disabled={loading}
+                    className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
+                  >
+                    Connect Google Calendar
+                  </Button>
                 )}
                 
                 {wantsCalendarIntegration === true && (
