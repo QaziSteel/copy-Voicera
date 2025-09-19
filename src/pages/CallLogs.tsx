@@ -421,7 +421,7 @@ const CallLogs: React.FC = () => {
                     {/* Call ID */}
                     <div className="flex-shrink-0">
                       <span className="text-sm font-semibold text-foreground">
-                        Call-{String(index + 1).padStart(3, '0')}
+                        Call {call.id}
                       </span>
                     </div>
 
