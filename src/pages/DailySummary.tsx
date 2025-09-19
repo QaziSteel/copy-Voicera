@@ -25,6 +25,8 @@ const DailySummary: React.FC = () => {
     setFromDate,
     setToDate,
     applyFilter,
+    getButtonText,
+    getDateFilter,
   } = useDateFilter();
   const { 
     notifications, 
@@ -35,7 +37,7 @@ const DailySummary: React.FC = () => {
   } = useNotifications();
 
   // Get real daily summary data from database
-  const { dailySummaryEntries, loading } = useDailySummary();
+  const { dailySummaryEntries, loading } = useDailySummary(getDateFilter());
 
   const openSummaryPopup = (entry: DailySummaryEntry) => {
     setSelectedSummary(entry);
@@ -216,7 +218,7 @@ const DailySummary: React.FC = () => {
                 </clipPath>
               </defs>
             </svg>
-            <span className="text-sm font-medium">Today</span>
+            <span className="text-sm font-medium">{getButtonText()}</span>
           </button>
         </div>
 

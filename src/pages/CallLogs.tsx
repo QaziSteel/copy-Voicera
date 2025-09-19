@@ -28,6 +28,8 @@ const CallLogs: React.FC = () => {
     setFromDate,
     setToDate,
     applyFilter,
+    getButtonText,
+    getDateFilter,
   } = useDateFilter();
   const { 
     notifications, 
@@ -38,7 +40,7 @@ const CallLogs: React.FC = () => {
   } = useNotifications();
 
   // Get real call logs from database
-  const { callLogs, loading } = useCallLogs(searchTerm);
+  const { callLogs, loading } = useCallLogs(searchTerm, getDateFilter());
   const audioPlayer = useAudioPlayer();
   const [currentlyPlayingPath, setCurrentlyPlayingPath] = useState<string | null>(null);
   const [showAudioPlayer, setShowAudioPlayer] = useState<boolean>(false);
@@ -395,7 +397,7 @@ const CallLogs: React.FC = () => {
                   </clipPath>
                 </defs>
               </svg>
-              <span className="text-sm font-medium">Today</span>
+              <span className="text-sm font-medium">{getButtonText()}</span>
             </button>
           </div>
         </div>

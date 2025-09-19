@@ -56,6 +56,19 @@ export const DateFilterPopup: React.FC<DateFilterPopupProps> = ({
 
         {/* Filter Options */}
         <div className="p-5 space-y-6">
+          {/* All */}
+          <div className="flex items-center gap-4">
+            <div
+              className={`w-4 h-4 rounded-full border-2 cursor-pointer ${
+                selectedFilter === "all"
+                  ? "border-black bg-black"
+                  : "border-gray-400"
+              }`}
+              onClick={() => onFilterChange("all")}
+            />
+            <span className="text-gray-600">All</span>
+          </div>
+
           {/* Today */}
           <div className="flex items-center gap-4">
             <div
@@ -79,7 +92,7 @@ export const DateFilterPopup: React.FC<DateFilterPopupProps> = ({
               }`}
               onClick={() => onFilterChange("30days")}
             />
-            <span className="text-gray-600">30 days ago</span>
+            <span className="text-gray-600">Last 30 days</span>
           </div>
 
           {/* Custom */}
@@ -101,7 +114,7 @@ export const DateFilterPopup: React.FC<DateFilterPopupProps> = ({
               <div className="flex-1">
                 <label className="block text-sm text-gray-600 mb-2">From</label>
                 <input
-                  type="text"
+                  type="date"
                   placeholder="Enter the start date"
                   value={fromDate}
                   onChange={(e) => onFromDateChange(e.target.value)}
@@ -111,7 +124,7 @@ export const DateFilterPopup: React.FC<DateFilterPopupProps> = ({
               <div className="flex-1">
                 <label className="block text-sm text-gray-600 mb-2">To</label>
                 <input
-                  type="text"
+                  type="date"
                   placeholder="Enter the end date"
                   value={toDate}
                   onChange={(e) => onToDateChange(e.target.value)}

@@ -23,6 +23,8 @@ const Dashboard: React.FC = () => {
     setFromDate,
     setToDate,
     applyFilter,
+    getButtonText,
+    getDateFilter,
   } = useDateFilter();
   const { 
     notifications, 
@@ -33,8 +35,8 @@ const Dashboard: React.FC = () => {
   } = useNotifications();
 
   // Get real dashboard metrics from database
-  const { metrics, loading: metricsLoading } = useDashboardMetrics();
-  const { callLogs, loading: callLogsLoading } = useCallLogs();
+  const { metrics, loading: metricsLoading } = useDashboardMetrics(getDateFilter());
+  const { callLogs, loading: callLogsLoading } = useCallLogs('', getDateFilter());
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -142,7 +144,7 @@ const Dashboard: React.FC = () => {
                   </clipPath>
                 </defs>
               </svg>
-              <span className="text-base font-medium">Today</span>
+              <span className="text-base font-medium">{getButtonText()}</span>
             </button>
           </div>
         </div>
