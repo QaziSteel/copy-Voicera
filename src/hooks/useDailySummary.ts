@@ -18,8 +18,8 @@ export interface UseDailySummaryResult {
   error: string | null;
 }
 
-export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }): UseDailySummaryResult => {
-  const { callLogs, loading, error } = useCallLogs('', dateFilter);
+export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterVersion?: number): UseDailySummaryResult => {
+  const { callLogs, loading, error } = useCallLogs('', dateFilter, filterVersion);
   const [dailySummaryEntries, setDailySummaryEntries] = useState<DailySummaryEntry[]>([]);
 
   useEffect(() => {

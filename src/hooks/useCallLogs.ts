@@ -25,7 +25,7 @@ export interface UseCallLogsResult {
   refetch: () => void;
 }
 
-export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date; to?: Date }): UseCallLogsResult => {
+export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date; to?: Date }, filterVersion?: number): UseCallLogsResult => {
   const [callLogs, setCallLogs] = useState<CallLogRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +106,7 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
 
   useEffect(() => {
     fetchCallLogs();
-  }, [user, currentProject, searchTerm, dateFilter]);
+  }, [user, currentProject, searchTerm, dateFilter, filterVersion]);
 
   // Set up real-time subscription
   useEffect(() => {

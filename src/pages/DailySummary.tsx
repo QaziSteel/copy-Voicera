@@ -27,6 +27,7 @@ const DailySummary: React.FC = () => {
     applyFilter,
     getButtonText,
     getDateFilter,
+    filterVersion,
   } = useDateFilter();
   const { 
     notifications, 
@@ -37,7 +38,7 @@ const DailySummary: React.FC = () => {
   } = useNotifications();
 
   // Get real daily summary data from database
-  const { dailySummaryEntries, loading } = useDailySummary(getDateFilter());
+  const { dailySummaryEntries, loading } = useDailySummary(getDateFilter(), filterVersion);
 
   const openSummaryPopup = (entry: DailySummaryEntry) => {
     setSelectedSummary(entry);

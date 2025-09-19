@@ -30,6 +30,7 @@ const CallLogs: React.FC = () => {
     applyFilter,
     getButtonText,
     getDateFilter,
+    filterVersion,
   } = useDateFilter();
   const { 
     notifications, 
@@ -40,7 +41,7 @@ const CallLogs: React.FC = () => {
   } = useNotifications();
 
   // Get real call logs from database
-  const { callLogs, loading } = useCallLogs(searchTerm, getDateFilter());
+  const { callLogs, loading } = useCallLogs(searchTerm, getDateFilter(), filterVersion);
   const audioPlayer = useAudioPlayer();
   const [currentlyPlayingPath, setCurrentlyPlayingPath] = useState<string | null>(null);
   const [showAudioPlayer, setShowAudioPlayer] = useState<boolean>(false);

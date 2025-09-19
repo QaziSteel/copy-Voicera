@@ -5,13 +5,25 @@ export const useDateFilter = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  
+  // Applied filter states - these are used for actual data filtering
+  const [appliedFilter, setAppliedFilter] = useState("all");
+  const [appliedFromDate, setAppliedFromDate] = useState("");
+  const [appliedToDate, setAppliedToDate] = useState("");
+  
+  // Version counter to trigger data re-fetching when filter is applied
+  const [filterVersion, setFilterVersion] = useState(0);
 
   const openDateFilter = () => setShowDateFilter(true);
   const closeDateFilter = () => setShowDateFilter(false);
 
   const applyFilter = () => {
-    // Here you would typically apply the filter logic
-    // For now, we'll just close the popup
+    // Apply the selected filter by copying to applied states
+    setAppliedFilter(selectedFilter);
+    setAppliedFromDate(fromDate);
+    setAppliedToDate(toDate);
+    // Increment version to trigger data re-fetching
+    setFilterVersion(prev => prev + 1);
     setShowDateFilter(false);
   };
 
@@ -19,10 +31,14 @@ export const useDateFilter = () => {
     setSelectedFilter("all");
     setFromDate("");
     setToDate("");
+    // Also reset applied filters
+    setAppliedFilter("all");
+    setAppliedFromDate("");
+    setAppliedToDate("");
   };
 
   const getButtonText = () => {
-    switch (selectedFilter) {
+    switch (appliedFilter) {
       case "all":
         return "All";
       case "today":
@@ -30,7 +46,7 @@ export const useDateFilter = () => {
       case "30days":
         return "Last 30 days";
       case "custom":
-        return fromDate && toDate ? "Custom" : "Custom";
+        return appliedFromDate && appliedToDate ? "Custom" : "Custom";
       default:
         return "All";
     }
@@ -38,7 +54,7 @@ export const useDateFilter = () => {
 
   const getDateFilter = () => {
     const now = new Date();
-    switch (selectedFilter) {
+    switch (appliedFilter) {
       case "today":
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
@@ -47,10 +63,10 @@ export const useDateFilter = () => {
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         return { from: thirtyDaysAgo, to: now };
       case "custom":
-        if (fromDate && toDate) {
+        if (appliedFromDate && appliedToDate) {
           return { 
-            from: new Date(fromDate), 
-            to: new Date(toDate + 'T23:59:59') 
+            from: new Date(appliedFromDate), 
+            to: new Date(appliedToDate + 'T23:59:59') 
           };
         }
         return undefined;
@@ -74,5 +90,6 @@ export const useDateFilter = () => {
     resetFilter,
     getButtonText,
     getDateFilter,
+    filterVersion,
   };
 };

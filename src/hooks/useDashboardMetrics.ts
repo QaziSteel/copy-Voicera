@@ -17,8 +17,8 @@ export interface UseDashboardMetricsResult {
   error: string | null;
 }
 
-export const useDashboardMetrics = (dateFilter?: { from?: Date; to?: Date }): UseDashboardMetricsResult => {
-  const { callLogs, loading, error } = useCallLogs('', dateFilter);
+export const useDashboardMetrics = (dateFilter?: { from?: Date; to?: Date }, filterVersion?: number): UseDashboardMetricsResult => {
+  const { callLogs, loading, error } = useCallLogs('', dateFilter, filterVersion);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalCalls: 0,
     totalBookings: 0,

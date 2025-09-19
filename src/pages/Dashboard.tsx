@@ -25,6 +25,7 @@ const Dashboard: React.FC = () => {
     applyFilter,
     getButtonText,
     getDateFilter,
+    filterVersion,
   } = useDateFilter();
   const { 
     notifications, 
@@ -35,8 +36,8 @@ const Dashboard: React.FC = () => {
   } = useNotifications();
 
   // Get real dashboard metrics from database
-  const { metrics, loading: metricsLoading } = useDashboardMetrics(getDateFilter());
-  const { callLogs, loading: callLogsLoading } = useCallLogs('', getDateFilter());
+  const { metrics, loading: metricsLoading } = useDashboardMetrics(getDateFilter(), filterVersion);
+  const { callLogs, loading: callLogsLoading } = useCallLogs('', getDateFilter(), filterVersion);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
