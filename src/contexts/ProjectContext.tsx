@@ -43,22 +43,33 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      // First get project memberships
+      const { data: memberships, error: memberError } = await supabase
         .from('project_members')
-        .select(`
-          *,
-          projects (*)
-        `)
+        .select('project_id')
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (memberError) throw memberError;
 
-      const userProjects = data?.map(member => member.projects).filter(Boolean) as Project[];
-      setProjects(userProjects);
+      if (!memberships || memberships.length === 0) {
+        setProjects([]);
+        return;
+      }
+
+      // Then get the actual projects
+      const projectIds = memberships.map(m => m.project_id);
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('*')
+        .in('id', projectIds);
+
+      if (projectsError) throw projectsError;
+
+      setProjects(projectsData || []);
       
       // Set current project to the first one if none is selected
-      if (userProjects.length > 0 && !currentProject) {
-        setCurrentProject(userProjects[0]);
+      if (projectsData && projectsData.length > 0 && !currentProject) {
+        setCurrentProject(projectsData[0]);
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -69,18 +80,46 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     if (!currentProject) return;
 
     try {
-      const { data, error } = await supabase
+      // First get project members
+      const { data: membersData, error: membersError } = await supabase
         .from('project_members')
-        .select(`
-          *,
-          profiles!inner (full_name, email)
-        `)
+        .select('*')
         .eq('project_id', currentProject.id);
 
-      if (error) throw error;
-      setProjectMembers((data as any) || []);
+      if (membersError) throw membersError;
+
+      if (!membersData || membersData.length === 0) {
+        setProjectMembers([]);
+        return;
+      }
+
+      // Then get profiles for these members
+      const userIds = membersData.map(m => m.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.warn('Could not fetch profiles:', profilesError);
+        // Still set members even if profiles fail
+        setProjectMembers(membersData.map(member => ({ ...member, profiles: null })));
+        return;
+      }
+
+      // Combine members with their profiles
+      const membersWithProfiles = membersData.map(member => {
+        const profile = profilesData?.find(p => p.id === member.user_id);
+        return {
+          ...member,
+          profiles: profile || null
+        };
+      });
+
+      setProjectMembers(membersWithProfiles);
     } catch (error) {
       console.error('Error fetching project members:', error);
+      setProjectMembers([]);
     }
   };
 
