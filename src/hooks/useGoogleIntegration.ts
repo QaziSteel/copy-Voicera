@@ -139,6 +139,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       
       if (event.data.type === 'OAUTH_SUCCESS') {
         window.removeEventListener('message', handleMessage);
+        oauthWindow.close();
         fetchIntegration();
         toast({
           title: "Success",
@@ -146,6 +147,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
         });
       } else if (event.data.type === 'OAUTH_ERROR') {
         window.removeEventListener('message', handleMessage);
+        oauthWindow.close();
         toast({
           title: "OAuth Error",
           description: event.data.error || "Failed to connect Google Calendar",

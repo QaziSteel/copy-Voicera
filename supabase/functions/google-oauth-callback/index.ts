@@ -31,48 +31,37 @@ serve(async (req) => {
     if (error) {
       console.error('OAuth error:', error);
       if (isOnboardingFlow) {
-        return new Response(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>OAuth Error</title>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
-                .error { color: #ef4444; margin-bottom: 20px; }
-                .status { color: #6b7280; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="error">OAuth Error: ${encodeURIComponent(error)}</div>
-              <div class="status" id="status">Closing window...</div>
-              <script>
-                console.log('OAuth callback - sending error message');
-                try {
-                  window.opener?.postMessage({
-                    type: 'OAUTH_ERROR',
-                    error: '${encodeURIComponent(error)}'
-                  }, '*');
-                  console.log('Error message sent successfully');
-                } catch (e) {
-                  console.error('Failed to send error message:', e);
-                }
-                
-                // Try to close window with fallback
-                setTimeout(() => {
-                  try {
-                    window.close();
-                  } catch (e) {
-                    console.log('Auto-close failed, showing manual close option');
-                    document.getElementById('status').innerHTML = 'Please close this window manually';
-                  }
-                }, 1000);
-              </script>
-            </body>
-          </html>
-        `, {
-          headers: { 'Content-Type': 'text/html' }
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ OAuth Error: ${error}</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: '${error}'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
       const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=${encodeURIComponent(error)}`;
@@ -82,46 +71,37 @@ serve(async (req) => {
     if (!code || !agentId) {
       console.error('Missing required parameters:', { code: !!code, agentId: !!agentId });
       if (isOnboardingFlow) {
-        return new Response(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>OAuth Error</title>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
-                .error { color: #ef4444; margin-bottom: 20px; }
-                .status { color: #6b7280; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="error">Missing required parameters</div>
-              <div class="status" id="status">Closing window...</div>
-              <script>
-                console.log('OAuth callback - missing parameters error');
-                try {
-                  window.opener?.postMessage({
-                    type: 'OAUTH_ERROR',
-                    error: 'Missing required parameters'
-                  }, '*');
-                  console.log('Error message sent successfully');
-                } catch (e) {
-                  console.error('Failed to send error message:', e);
-                }
-                
-                setTimeout(() => {
-                  try {
-                    window.close();
-                  } catch (e) {
-                    document.getElementById('status').innerHTML = 'Please close this window manually';
-                  }
-                }, 1000);
-              </script>
-            </body>
-          </html>
-        `, {
-          headers: { 'Content-Type': 'text/html' }
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Missing required parameters</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Missing required parameters'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
       const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId || 'unknown'}&oauth=error&error=missing_parameters`;
@@ -197,46 +177,37 @@ serve(async (req) => {
     if (agentError || !agentData) {
       console.error('Error fetching agent data:', agentError);
       if (isOnboardingFlow) {
-        return new Response(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>OAuth Error</title>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
-                .error { color: #ef4444; margin-bottom: 20px; }
-                .status { color: #6b7280; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="error">Agent not found</div>
-              <div class="status" id="status">Closing window...</div>
-              <script>
-                console.log('OAuth callback - agent not found error');
-                try {
-                  window.opener?.postMessage({
-                    type: 'OAUTH_ERROR',
-                    error: 'Agent not found'
-                  }, '*');
-                  console.log('Error message sent successfully');
-                } catch (e) {
-                  console.error('Failed to send error message:', e);
-                }
-                
-                setTimeout(() => {
-                  try {
-                    window.close();
-                  } catch (e) {
-                    document.getElementById('status').innerHTML = 'Please close this window manually';
-                  }
-                }, 1000);
-              </script>
-            </body>
-          </html>
-        `, {
-          headers: { 'Content-Type': 'text/html' }
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Agent not found</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Agent not found'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
       const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=agent_not_found`;
@@ -246,46 +217,37 @@ serve(async (req) => {
     if (!agentData.project_id || !agentData.user_id) {
       console.error('Missing project_id or user_id for agent:', agentId);
       if (isOnboardingFlow) {
-        return new Response(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>OAuth Error</title>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
-                .error { color: #ef4444; margin-bottom: 20px; }
-                .status { color: #6b7280; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="error">Project or user not found</div>
-              <div class="status" id="status">Closing window...</div>
-              <script>
-                console.log('OAuth callback - project/user not found error');
-                try {
-                  window.opener?.postMessage({
-                    type: 'OAUTH_ERROR',
-                    error: 'Project or user not found'
-                  }, '*');
-                  console.log('Error message sent successfully');
-                } catch (e) {
-                  console.error('Failed to send error message:', e);
-                }
-                
-                setTimeout(() => {
-                  try {
-                    window.close();
-                  } catch (e) {
-                    document.getElementById('status').innerHTML = 'Please close this window manually';
-                  }
-                }, 1000);
-              </script>
-            </body>
-          </html>
-        `, {
-          headers: { 'Content-Type': 'text/html' }
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Project or user not found</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Project or user not found'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
       const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=project_not_found`;
@@ -332,46 +294,37 @@ serve(async (req) => {
     if (integrationError) {
       console.error('Error storing Google integration:', integrationError);
       if (isOnboardingFlow) {
-        return new Response(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>OAuth Error</title>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
-                .error { color: #ef4444; margin-bottom: 20px; }
-                .status { color: #6b7280; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="error">Failed to store integration</div>
-              <div class="status" id="status">Closing window...</div>
-              <script>
-                console.log('OAuth callback - storage failed error');
-                try {
-                  window.opener?.postMessage({
-                    type: 'OAUTH_ERROR',
-                    error: 'Failed to store integration'
-                  }, '*');
-                  console.log('Error message sent successfully');
-                } catch (e) {
-                  console.error('Failed to send error message:', e);
-                }
-                
-                setTimeout(() => {
-                  try {
-                    window.close();
-                  } catch (e) {
-                    document.getElementById('status').innerHTML = 'Please close this window manually';
-                  }
-                }, 1000);
-              </script>
-            </body>
-          </html>
-        `, {
-          headers: { 'Content-Type': 'text/html' }
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Failed to store integration</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Failed to store integration'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
       const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=storage_failed`;
@@ -382,55 +335,40 @@ serve(async (req) => {
 
     // Handle response based on flow type
     if (isOnboardingFlow) {
-      // For onboarding flow, return HTML with postMessage
-      return new Response(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Google Calendar Connected</title>
-            <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
-              .success { color: #22c55e; margin-bottom: 20px; }
-              .status { color: #6b7280; font-size: 14px; }
-            </style>
-          </head>
-          <body>
-            <div class="success">✓ Google Calendar Connected Successfully</div>
-            <div class="status" id="status">Closing window...</div>
-            <script>
-              console.log('OAuth callback - sending success message');
-              try {
-                window.opener?.postMessage({
-                  type: 'OAUTH_SUCCESS',
-                  email: '${userInfo.email}',
-                  agentId: '${agentId}'
-                }, '*');
-                console.log('Success message sent successfully');
-              } catch (e) {
-                console.error('Failed to send success message:', e);
-              }
-              
-              // Try to close window with fallback
-              setTimeout(() => {
-                try {
-                  window.close();
-                } catch (e) {
-                  console.log('Auto-close failed, showing manual close option');
-                  document.getElementById('status').innerHTML = 'Please close this window manually';
-                }
-              }, 1000);
-            </script>
-          </body>
-        </html>
-      `, {
+      // For onboarding flow, return simple HTML with postMessage
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Google Calendar Connected</title>
+</head>
+<body>
+    <p>✓ Google Calendar Connected Successfully</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_SUCCESS',
+                email: '${userInfo.email}',
+                agentId: '${agentId}'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      
+      return new Response(htmlResponse, {
         headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'text/html; charset=utf-8',
-          'X-Frame-Options': 'ALLOWALL',
-          'X-Content-Type-Options': 'nosniff',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Content-Type': 'text/html; charset=utf-8'
         }
       });
     } else {
@@ -447,46 +385,37 @@ serve(async (req) => {
     const isOnboardingFlow = flow === 'onboarding';
     
     if (isOnboardingFlow) {
-      return new Response(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>OAuth Error</title>
-            <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; padding: 20px; }
-              .error { color: #ef4444; margin-bottom: 20px; }
-              .status { color: #6b7280; font-size: 14px; }
-            </style>
-          </head>
-          <body>
-            <div class="error">Unexpected error occurred</div>
-            <div class="status" id="status">Closing window...</div>
-            <script>
-              console.error('OAuth callback - unexpected error');
-              try {
-                window.opener?.postMessage({
-                  type: 'OAUTH_ERROR',
-                  error: 'Unexpected error occurred'
-                }, '*');
-                console.log('Error message sent successfully');
-              } catch (e) {
-                console.error('Failed to send error message:', e);
-              }
-              
-              setTimeout(() => {
-                try {
-                  window.close();
-                } catch (e) {
-                  document.getElementById('status').innerHTML = 'Please close this window manually';
-                }
-              }, 1000);
-            </script>
-          </body>
-        </html>
-      `, {
-        headers: { 'Content-Type': 'text/html' }
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Unexpected error occurred</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Unexpected error occurred'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
       });
     }
     
