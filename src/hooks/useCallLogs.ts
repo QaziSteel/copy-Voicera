@@ -106,7 +106,7 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
 
   useEffect(() => {
     fetchCallLogs();
-  }, [user, currentProject, searchTerm, dateFilter, filterVersion]);
+  }, [user, currentProject, searchTerm, filterVersion]);
 
   // Set up real-time subscription
   useEffect(() => {

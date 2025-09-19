@@ -18,10 +18,36 @@ export const useDateFilter = () => {
   const closeDateFilter = () => setShowDateFilter(false);
 
   const applyFilter = () => {
-    // Apply the selected filter by copying to applied states
+    // Compute and freeze applied date range at the moment of applying
+    const formatDate = (d: Date) => d.toISOString().slice(0, 10); // YYYY-MM-DD
+
+    let nextAppliedFrom = "";
+    let nextAppliedTo = "";
+
+    if (selectedFilter === "today") {
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      nextAppliedFrom = formatDate(startOfDay);
+      nextAppliedTo = formatDate(endOfDay);
+    } else if (selectedFilter === "30days") {
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      nextAppliedFrom = formatDate(thirtyDaysAgo);
+      nextAppliedTo = formatDate(now);
+    } else if (selectedFilter === "custom") {
+      nextAppliedFrom = fromDate || "";
+      nextAppliedTo = toDate || "";
+    } else {
+      // "all" or any default
+      nextAppliedFrom = "";
+      nextAppliedTo = "";
+    }
+
     setAppliedFilter(selectedFilter);
-    setAppliedFromDate(fromDate);
-    setAppliedToDate(toDate);
+    setAppliedFromDate(nextAppliedFrom);
+    setAppliedToDate(nextAppliedTo);
+
     // Increment version to trigger data re-fetching
     setFilterVersion(prev => prev + 1);
     setShowDateFilter(false);
@@ -35,6 +61,8 @@ export const useDateFilter = () => {
     setAppliedFilter("all");
     setAppliedFromDate("");
     setAppliedToDate("");
+    // Trigger refetch
+    setFilterVersion(prev => prev + 1);
   };
 
   const getButtonText = () => {
@@ -53,27 +81,13 @@ export const useDateFilter = () => {
   };
 
   const getDateFilter = () => {
-    const now = new Date();
-    switch (appliedFilter) {
-      case "today":
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-        return { from: startOfDay, to: endOfDay };
-      case "30days":
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        return { from: thirtyDaysAgo, to: now };
-      case "custom":
-        if (appliedFromDate && appliedToDate) {
-          return { 
-            from: new Date(appliedFromDate), 
-            to: new Date(appliedToDate + 'T23:59:59') 
-          };
-        }
-        return undefined;
-      case "all":
-      default:
-        return undefined;
+    if (appliedFromDate && appliedToDate) {
+      return {
+        from: new Date(appliedFromDate),
+        to: new Date(appliedToDate + 'T23:59:59'),
+      };
     }
+    return undefined;
   };
 
   return {
