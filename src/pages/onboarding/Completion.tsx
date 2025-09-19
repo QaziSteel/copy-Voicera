@@ -133,8 +133,120 @@ export default function Completion() {
     }
   };
 
-  const handleTestAI = () => {
-    navigate("/dashboard");
+  const handleTestAI = async () => {
+    setIsGoingLive(true);
+    
+    try {
+      // Fetch user information
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        throw new Error("User not authenticated");
+      }
+
+      // Fetch user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.user.id)
+        .single();
+
+      // Fetch latest onboarding response
+      const { data: onboardingData, error: onboardingError } = await getLatestOnboardingResponse();
+      if (onboardingError) {
+        throw new Error("Failed to fetch onboarding data");
+      }
+
+      // Fetch Google Calendar integration data if onboarding data exists
+      let googleIntegration = null;
+      if (onboardingData?.id) {
+        const { data: integration } = await supabase
+          .from('google_integrations')
+          .select('*')
+          .eq('agent_id', onboardingData.id)
+          .eq('is_active', true)
+          .maybeSingle();
+        
+        googleIntegration = integration;
+      }
+
+      // Create phone number record if contact number exists and project is available
+      if (onboardingData?.contact_number && currentProject) {
+        try {
+          // Extract external ID from purchased number details
+          const purchasedDetails = onboardingData.purchased_number_details as any;
+          const externalId = purchasedDetails?.id;
+          const phoneNumber = purchasedDetails?.number || onboardingData.contact_number;
+          
+          if (!externalId) {
+            console.warn('No external phone ID found in onboarding data');
+            throw new Error('External phone ID is required for phone number creation');
+          }
+          
+          const createdPhoneNumber = await createPhoneNumber(phoneNumber, externalId);
+          if (!createdPhoneNumber) {
+            throw new Error('Failed to create phone number record');
+          }
+          
+          console.log('Phone number record created successfully with external ID:', externalId);
+        } catch (phoneError) {
+          console.error('Error creating phone number record:', phoneError);
+          throw phoneError; // Throw error to prevent webhook from proceeding
+        }
+      }
+
+      // Construct webhook payload with complete data
+      const webhookPayload = {
+        event: "agent_went_live",
+        user_id: user.user.id,
+        user_email: user.user.email,
+        profile: profile,
+        onboarding_data: onboardingData,
+        google_calendar_integration: googleIntegration ? {
+          email: googleIntegration.user_email,
+          is_active: googleIntegration.is_active,
+          scopes: googleIntegration.scopes,
+          integrated_at: googleIntegration.created_at
+        } : null,
+        timestamp: new Date().toISOString()
+      };
+
+      // Call webhook with complete payload
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook failed with status: ${response.status}`);
+      }
+
+      toast({
+        title: "Success!",
+        description: "Your AI agent is ready for testing.",
+      });
+
+      // Navigate to test agent page after successful webhook
+      navigate("/test-agent");
+
+    } catch (error) {
+      console.error('Error preparing agent for testing:', error);
+      
+      toast({
+        title: "Webhook Error",
+        description: "There was an issue notifying our system, but you can still proceed to test your agent.",
+        variant: "destructive",
+      });
+
+      // Allow user to proceed to test page even on webhook failure
+      setTimeout(() => {
+        navigate("/test-agent");
+      }, 2000);
+    } finally {
+      setIsGoingLive(false);
+    }
   };
 
   return (
