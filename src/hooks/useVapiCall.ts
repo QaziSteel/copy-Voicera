@@ -122,7 +122,7 @@ export const useVapiCall = () => {
       }
 
       // Build call configuration - ensure only one method is used
-      const callConfig: any = {};
+      let callConfig: any = {};
 
       // Validation: ensure only one configuration method is provided
       const configMethods = [
@@ -141,35 +141,41 @@ export const useVapiCall = () => {
 
       if (config.assistantId) {
         // Modern assistant support - preferred method
-        callConfig.assistantId = config.assistantId;
-        console.log('Vapi call config (Assistant ID):', { assistantId: config.assistantId });
+        callConfig = {
+          assistantId: config.assistantId
+        };
+        console.log('Vapi call config (Assistant ID):', callConfig);
       } else if (config.workflowId) {
         // Legacy workflow support
-        callConfig.workflowId = config.workflowId;
-        console.log('Vapi call config (Workflow ID):', { workflowId: config.workflowId });
-      } else if (config.agentData) {
-        // Create dynamic assistant from agent data
-        callConfig.assistant = {
-          model: {
-            provider: 'openai',
-            model: 'gpt-4',
-            messages: [
-              {
-                role: 'system',
-                content: `You are ${config.agentData.ai_assistant_name || 'an AI assistant'} for ${config.agentData.business_name || 'a business'}. ${
-                  config.agentData.ai_greeting_style ? `Your greeting style is ${config.agentData.ai_greeting_style}.` : ''
-                } Help customers with their inquiries about services, bookings, and general information.`
-              }
-            ]
-          },
-          voice: {
-            provider: 'playht',
-            voiceId: config.agentData.ai_voice_style || 'jennifer'
-          },
-          name: config.agentData.ai_assistant_name || 'AI Assistant',
-          firstMessage: `Hello! I'm ${config.agentData.ai_assistant_name || 'your AI assistant'}. How can I help you today?`
+        callConfig = {
+          workflowId: config.workflowId
         };
-        console.log('Vapi call config (Dynamic Assistant):', { assistant: callConfig.assistant.name });
+        console.log('Vapi call config (Workflow ID):', callConfig);
+      } else if (config.agentData) {
+        // Create dynamic assistant from agent data - no IDs allowed
+        callConfig = {
+          assistant: {
+            model: {
+              provider: 'openai',
+              model: 'gpt-4',
+              messages: [
+                {
+                  role: 'system',
+                  content: `You are ${config.agentData.ai_assistant_name || 'an AI assistant'} for ${config.agentData.business_name || 'a business'}. ${
+                    config.agentData.ai_greeting_style ? `Your greeting style is ${config.agentData.ai_greeting_style}.` : ''
+                  } Help customers with their inquiries about services, bookings, and general information.`
+                }
+              ]
+            },
+            voice: {
+              provider: 'playht',
+              voiceId: config.agentData.ai_voice_style || 'jennifer'
+            },
+            name: config.agentData.ai_assistant_name || 'AI Assistant',
+            firstMessage: `Hello! I'm ${config.agentData.ai_assistant_name || 'your AI assistant'}. How can I help you today?`
+          }
+        };
+        console.log('Vapi call config (Dynamic Assistant):', { assistantName: callConfig.assistant.name });
       }
 
       await vapiInstance.current.start(callConfig);
