@@ -40,6 +40,14 @@ export const useVapiCall = () => {
         throw new Error('Vapi public key not found. Please set VITE_VAPI_PUBLIC_KEY environment variable.');
       }
 
+      // Always create a fresh instance to avoid config bleed between calls
+      if (vapiInstance.current) {
+        try {
+          vapiInstance.current.stop();
+        } catch (e) {
+          console.warn('Previous Vapi instance stop error (ignored):', e);
+        }
+      }
       vapiInstance.current = new Vapi.default(publicKey);
 
       // Set up event listeners
@@ -117,9 +125,7 @@ export const useVapiCall = () => {
       setTranscript('');
       setIsConnecting(true);
 
-      if (!vapiInstance.current) {
-        await initializeVapi();
-      }
+      await initializeVapi();
 
       // Build call configuration - ensure only one method is used
       let callConfig: any = {};
