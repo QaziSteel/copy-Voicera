@@ -121,15 +121,32 @@ export const useVapiCall = () => {
         await initializeVapi();
       }
 
-      // Build call configuration
+      // Build call configuration - ensure only one method is used
       const callConfig: any = {};
 
-      if (config.workflowId) {
+      // Validation: ensure only one configuration method is provided
+      const configMethods = [
+        !!config.workflowId,
+        !!config.assistantId,
+        !!config.agentData
+      ].filter(Boolean).length;
+
+      if (configMethods === 0) {
+        throw new Error('No call configuration provided. Please specify workflowId, assistantId, or agentData.');
+      }
+
+      if (configMethods > 1) {
+        throw new Error('Multiple call configurations provided. Please specify only one: workflowId, assistantId, or agentData.');
+      }
+
+      if (config.assistantId) {
+        // Modern assistant support - preferred method
+        callConfig.assistantId = config.assistantId;
+        console.log('Vapi call config (Assistant ID):', { assistantId: config.assistantId });
+      } else if (config.workflowId) {
         // Legacy workflow support
         callConfig.workflowId = config.workflowId;
-      } else if (config.assistantId) {
-        // Modern assistant support
-        callConfig.assistantId = config.assistantId;
+        console.log('Vapi call config (Workflow ID):', { workflowId: config.workflowId });
       } else if (config.agentData) {
         // Create dynamic assistant from agent data
         callConfig.assistant = {
@@ -152,6 +169,7 @@ export const useVapiCall = () => {
           name: config.agentData.ai_assistant_name || 'AI Assistant',
           firstMessage: `Hello! I'm ${config.agentData.ai_assistant_name || 'your AI assistant'}. How can I help you today?`
         };
+        console.log('Vapi call config (Dynamic Assistant):', { assistant: callConfig.assistant.name });
       }
 
       await vapiInstance.current.start(callConfig);

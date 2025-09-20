@@ -38,15 +38,23 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
     const config: any = {};
     
     if (useCustomIds) {
-      if (customWorkflowId) {
-        config.workflowId = customWorkflowId;
-      } else if (customAssistantId) {
-        config.assistantId = customAssistantId;
+      // Ensure only one ID type is used - prioritize Assistant ID
+      if (customAssistantId && customAssistantId.trim()) {
+        config.assistantId = customAssistantId.trim();
+        console.log('Using Assistant ID:', config.assistantId);
+      } else if (customWorkflowId && customWorkflowId.trim()) {
+        config.workflowId = customWorkflowId.trim();
+        console.log('Using Workflow ID:', config.workflowId);
+      } else {
+        console.error('No valid ID provided');
+        return;
       }
     } else {
       config.agentData = agentData;
+      console.log('Using agent data configuration');
     }
     
+    console.log('Final call config:', config);
     await startCall(config);
   };
 
