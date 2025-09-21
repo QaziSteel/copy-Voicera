@@ -6,20 +6,17 @@ import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX } from 'lucide-react';
 
 interface VoiceCallInterfaceProps {
   agentData?: any;
-  workflowId?: string;
   assistantId?: string;
   testScenarios: string[];
 }
 
 export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
   agentData,
-  workflowId,
   assistantId,
   testScenarios
 }) => {
-  const [customWorkflowId, setCustomWorkflowId] = useState(workflowId || '');
   const [customAssistantId, setCustomAssistantId] = useState(assistantId || '');
-  const [useCustomIds, setUseCustomIds] = useState(!!workflowId || !!assistantId);
+  const [useCustomIds, setUseCustomIds] = useState(!!assistantId);
   
   const {
     startCall,
@@ -38,15 +35,11 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
     const config: any = {};
     
     if (useCustomIds) {
-      // Ensure only one ID type is used - prioritize Assistant ID
       if (customAssistantId && customAssistantId.trim()) {
         config.assistantId = customAssistantId.trim();
-        console.log('Using Assistant (string):', config.assistantId);
-      } else if (customWorkflowId && customWorkflowId.trim()) {
-        config.workflowId = customWorkflowId.trim();
-        console.log('Using Workflow (string):', config.workflowId);
+        console.log('Using Assistant ID:', config.assistantId);
       } else {
-        console.error('No valid ID provided');
+        console.error('No assistant ID provided');
         return;
       }
     } else {
@@ -60,6 +53,16 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Migration Notice */}
+      {!isCallActive && !isConnecting && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <p className="text-sm text-blue-800">
+            <strong>Web SDK Support:</strong> This interface supports Vapi Assistants only. 
+            Workflows are deprecated and not supported by the Web SDK.
+          </p>
+        </div>
+      )}
+
       {/* Configuration Panel */}
       {!isCallActive && !isConnecting && (
         <div className="bg-gray-50 rounded-lg p-4 space-y-4">
@@ -72,37 +75,25 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
               className="rounded"
             />
             <label htmlFor="useCustomIds" className="text-sm font-medium">
-              Use custom Workflow/Assistant ID
+              Use custom Assistant ID
             </label>
           </div>
           
           {useCustomIds && (
-            <div className="space-y-3">
-              <div>
-                <label htmlFor="workflowId" className="block text-sm font-medium text-gray-700 mb-1">
-                  Workflow ID (Legacy)
-                </label>
-                <Input
-                  id="workflowId"
-                  value={customWorkflowId}
-                  onChange={(e) => setCustomWorkflowId(e.target.value)}
-                  placeholder="Enter your Vapi Workflow ID"
-                  className="w-full"
-                />
-              </div>
-              <div className="text-center text-sm text-gray-500">OR</div>
-              <div>
-                <label htmlFor="assistantId" className="block text-sm font-medium text-gray-700 mb-1">
-                  Assistant ID (Recommended)
-                </label>
-                <Input
-                  id="assistantId"
-                  value={customAssistantId}
-                  onChange={(e) => setCustomAssistantId(e.target.value)}
-                  placeholder="Enter your Vapi Assistant ID"
-                  className="w-full"
-                />
-              </div>
+            <div>
+              <label htmlFor="assistantId" className="block text-sm font-medium text-gray-700 mb-1">
+                Assistant ID
+              </label>
+              <Input
+                id="assistantId"
+                value={customAssistantId}
+                onChange={(e) => setCustomAssistantId(e.target.value)}
+                placeholder="Enter your Vapi Assistant ID"
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Find your Assistant ID in the Vapi Dashboard under Assistants
+              </p>
             </div>
           )}
           
@@ -118,11 +109,10 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-red-700 text-sm">{error}</p>
-          {error.includes('workflow should not exist') && (
+          {error.includes('workflow') && (
             <div className="mt-2 text-xs text-red-600">
-              <strong>Hint:</strong> If workflow calls keep failing, try setting{' '}
-              <code className="bg-red-100 px-1 rounded">VITE_VAPI_WORKFLOW_PARAM=workflowId</code>{' '}
-              in your environment variables.
+              <strong>Note:</strong> Workflows are not supported by the Web SDK. 
+              Please use an Assistant ID instead or create an Assistant from your Workflow in the Vapi Dashboard.
             </div>
           )}
         </div>
@@ -155,7 +145,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
           {!isCallActive ? (
             <Button
               onClick={handleStartCall}
-              disabled={isConnecting || (useCustomIds && !customWorkflowId && !customAssistantId)}
+              disabled={isConnecting || (useCustomIds && !customAssistantId)}
               className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg disabled:opacity-50"
             >
               {isConnecting ? (

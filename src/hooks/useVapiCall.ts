@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface VapiCallConfig {
   assistantId?: string;
-  workflowId?: string;
   agentData?: any;
 }
 
@@ -140,37 +139,22 @@ export const useVapiCall = () => {
 
       // Validation: ensure only one configuration method is provided
       const configMethods = [
-        !!config.workflowId,
         !!config.assistantId,
         !!config.agentData
       ].filter(Boolean).length;
 
       if (configMethods === 0) {
-        throw new Error('No call configuration provided. Please specify workflowId, assistantId, or agentData.');
+        throw new Error('No call configuration provided. Please specify assistantId or agentData.');
       }
 
       if (configMethods > 1) {
-        throw new Error('Multiple call configurations provided. Please specify only one: workflowId, assistantId, or agentData.');
+        throw new Error('Multiple call configurations provided. Please specify only one: assistantId or agentData.');
       }
 
       if (config.assistantId) {
         // Assistant ID support - pass as string per SDK
         callConfig = String(config.assistantId).trim();
         console.log('Vapi call config (assistantId as string):', callConfig);
-      } else if (config.workflowId) {
-        // Workflow support - try workflow first, fallback to workflowId
-        const workflowId = String(config.workflowId).trim();
-        
-        // Try the preferred parameter from env, default to 'workflow'
-        const preferredParam = import.meta.env.VITE_VAPI_WORKFLOW_PARAM || 'workflow';
-        
-        if (preferredParam === 'workflowId') {
-          callConfig = { workflowId };
-          console.log('Vapi call config (workflowId):', callConfig);
-        } else {
-          callConfig = { workflow: workflowId };
-          console.log('Vapi call config (workflow):', callConfig);
-        }
       } else if (config.agentData) {
         // Create dynamic assistant from agent data - full assistant object
         callConfig = {
@@ -215,21 +199,6 @@ export const useVapiCall = () => {
         if (schemaText.includes('assistant should be string') && config.assistantId) {
           console.warn('Retrying Vapi.start with assistant as string');
           await vapiInstance.current.start(String(config.assistantId).trim());
-          return;
-        }
-        
-        // Handle workflow parameter conflicts - try both formats
-        if ((schemaText.includes('workflow should not exist') || schemaText.includes('workflowid should not exist') || schemaText.includes('assistant.property workflow should not exist') || schemaText.includes('assistant.property workflowid should not exist')) && config.workflowId) {
-          const workflowId = String(config.workflowId).trim();
-          
-          // Try the opposite parameter format
-          if (schemaText.includes('workflow should not exist')) {
-            console.warn('Retrying Vapi.start with workflowId parameter');
-            await vapiInstance.current.start({ workflowId });
-          } else {
-            console.warn('Retrying Vapi.start with workflow parameter');
-            await vapiInstance.current.start({ workflow: workflowId });
-          }
           return;
         }
       } catch (retryErr) {
