@@ -21,6 +21,8 @@ export const useProjectInvite = () => {
         return { success: false };
       }
 
+      console.log('Sending invitation via edge function:', { email, projectId: currentProject.id, role });
+
       // Call the edge function to send invitation
       const { data, error } = await supabase.functions.invoke('send-project-invite', {
         body: {
@@ -37,8 +39,22 @@ export const useProjectInvite = () => {
         return { success: false };
       }
 
-      toast.success(`Invitation sent to ${email}!`);
-      return { success: true, invitationId: data.invitationId };
+      if (!data?.success) {
+        console.error('Invitation failed:', data);
+        toast.error(data?.error || 'Failed to send invitation');
+        return { success: false };
+      }
+
+      console.log('Invitation sent successfully:', data);
+      toast.success(`Invitation sent to ${email}! They will receive an email with instructions to join.`);
+      
+      return { 
+        success: true, 
+        invitationId: data.invitationId,
+        token: data.token,
+        emailId: data.emailId,
+        expiresAt: data.expiresAt
+      };
     } catch (error) {
       console.error('Error inviting user:', error);
       toast.error('Failed to send invitation');

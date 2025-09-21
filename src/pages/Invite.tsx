@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Users, Mail } from 'lucide-react';
+import { Loader2, Users, Mail, Clock } from 'lucide-react';
 
 export const Invite: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -26,56 +26,75 @@ export const Invite: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
-  const projectId = searchParams.get('project');
-  const invitationId = searchParams.get('invitation');
+  const token = searchParams.get('token');
 
   useEffect(() => {
-    if (!projectId || !invitationId) {
-      toast.error('Invalid invitation link');
+    if (!token) {
+      toast.error('Invalid invitation link - missing token');
       navigate('/');
       return;
     }
 
     loadInvitationData();
-  }, [projectId, invitationId]);
+  }, [token]);
 
   const loadInvitationData = async () => {
     try {
       setLoading(true);
 
-      // Load invitation details
+      console.log('Loading invitation data for token:', token);
+
+      // Load invitation details using token
       const { data: invitationData, error: inviteError } = await supabase
         .from('project_invitations')
         .select('*')
-        .eq('id', invitationId)
-        .eq('project_id', projectId)
+        .eq('token', token)
         .eq('status', 'pending')
         .single();
 
       if (inviteError || !invitationData) {
-        toast.error('Invitation not found or has expired');
+        console.error('Invitation lookup error:', inviteError);
+        toast.error('Invitation not found, has expired, or has already been used');
+        navigate('/');
+        return;
+      }
+
+      // Check if invitation has expired
+      const now = new Date();
+      const expiresAt = new Date(invitationData.expires_at);
+      
+      if (now > expiresAt) {
+        console.log('Invitation expired:', { now, expiresAt });
+        toast.error('This invitation has expired');
         navigate('/');
         return;
       }
 
       setInvitation(invitationData);
+      console.log('Invitation loaded:', invitationData);
 
       // Load project details
-      const { data: projectData } = await supabase
+      const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('*')
-        .eq('id', projectId)
+        .eq('id', invitationData.project_id)
         .single();
 
+      if (projectError) {
+        console.error('Error loading project:', projectError);
+      }
       setProject(projectData);
 
       // Load inviter details
-      const { data: inviterData } = await supabase
+      const { data: inviterData, error: inviterError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', invitationData.inviter_id)
         .single();
 
+      if (inviterError) {
+        console.error('Error loading inviter:', inviterError);
+      }
       setInviter(inviterData);
 
     } catch (error) {
@@ -88,10 +107,15 @@ export const Invite: React.FC = () => {
   };
 
   const joinProject = async () => {
-    if (!user || !invitation) return;
+    if (!user || !invitation) {
+      console.error('Missing user or invitation for join:', { user: !!user, invitation: !!invitation });
+      return;
+    }
 
     setJoining(true);
     try {
+      console.log('Attempting to join project:', invitation.project_id);
+
       // Add user to project
       const { error: memberError } = await supabase
         .from('project_members')
@@ -105,15 +129,20 @@ export const Invite: React.FC = () => {
         if (memberError.code === '23505') {
           toast.error('You are already a member of this project');
         } else {
+          console.error('Error adding user to project:', memberError);
           throw memberError;
         }
       }
 
       // Mark invitation as accepted
-      await supabase
+      const { error: updateError } = await supabase
         .from('project_invitations')
         .update({ status: 'accepted' })
         .eq('id', invitation.id);
+
+      if (updateError) {
+        console.error('Error updating invitation status:', updateError);
+      }
 
       toast.success(`Successfully joined ${project?.name}!`);
       navigate('/dashboard');
@@ -127,7 +156,10 @@ export const Invite: React.FC = () => {
   };
 
   const handleSignUp = async () => {
-    if (!invitation) return;
+    if (!invitation) {
+      console.error('No invitation available for signup');
+      return;
+    }
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
@@ -141,13 +173,17 @@ export const Invite: React.FC = () => {
 
     setSigningUp(true);
     try {
+      console.log('Attempting signup for invitation email:', invitation.email);
+
       const { error } = await signUp(invitation.email, password, fullName);
       
       if (error) {
+        console.error('Signup error:', error);
         toast.error(error.message || 'Failed to create account');
         return;
       }
 
+      console.log('Signup successful, now joining project');
       // After successful signup, join the project
       await joinProject();
 
@@ -156,6 +192,22 @@ export const Invite: React.FC = () => {
       toast.error('Failed to create account');
     } finally {
       setSigningUp(false);
+    }
+  };
+
+  // Format expiration date for display
+  const formatExpiryDate = (expiresAt: string) => {
+    const date = new Date(expiresAt);
+    const now = new Date();
+    const diffHours = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 1) {
+      return `${diffDays} days`;
+    } else if (diffHours > 1) {
+      return `${diffHours} hours`;
+    } else {
+      return 'soon';
     }
   };
 
@@ -177,7 +229,7 @@ export const Invite: React.FC = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-destructive">Invalid Invitation</CardTitle>
             <CardDescription>
-              This invitation link is invalid or has expired.
+              This invitation link is invalid, has expired, or has already been used.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -202,6 +254,12 @@ export const Invite: React.FC = () => {
             {inviter?.full_name || inviter?.email} has invited you to join{' '}
             <strong>{project.name}</strong> as a {invitation.role}.
           </CardDescription>
+          
+          {/* Show expiration info */}
+          <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>Expires in {formatExpiryDate(invitation.expires_at)}</span>
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-4">

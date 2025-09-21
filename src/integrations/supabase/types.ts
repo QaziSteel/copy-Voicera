@@ -329,34 +329,40 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          expires_at: string | null
           id: string
           invited_at: string
           inviter_id: string
           project_id: string
           role: Database["public"]["Enums"]["project_role"]
           status: string
+          token: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           email: string
+          expires_at?: string | null
           id?: string
           invited_at?: string
           inviter_id: string
           project_id: string
           role?: Database["public"]["Enums"]["project_role"]
           status?: string
+          token?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           email?: string
+          expires_at?: string | null
           id?: string
           invited_at?: string
           inviter_id?: string
           project_id?: string
           role?: Database["public"]["Enums"]["project_role"]
           status?: string
+          token?: string | null
           updated_at?: string
         }
         Relationships: []
