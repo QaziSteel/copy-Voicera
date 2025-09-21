@@ -479,101 +479,7 @@ export type Database = {
       }
     }
     Views: {
-      bookings_basic: {
-        Row: {
-          appointment_date: string | null
-          appointment_day: string | null
-          appointment_time: string | null
-          call_log_id: string | null
-          created_at: string | null
-          id: string | null
-          notes: string | null
-          project_id: string | null
-          service_type: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          appointment_date?: string | null
-          appointment_day?: string | null
-          appointment_time?: string | null
-          call_log_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          notes?: string | null
-          project_id?: string | null
-          service_type?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          appointment_date?: string | null
-          appointment_day?: string | null
-          appointment_time?: string | null
-          call_log_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          notes?: string | null
-          project_id?: string | null
-          service_type?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_call_log_id_fkey"
-            columns: ["call_log_id"]
-            isOneToOne: false
-            referencedRelation: "call_logs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      google_integrations_safe: {
-        Row: {
-          access_token_status: string | null
-          agent_id: string | null
-          created_at: string | null
-          id: string | null
-          is_active: boolean | null
-          project_id: string | null
-          refresh_token_status: string | null
-          scopes: string[] | null
-          token_expires_at: string | null
-          updated_at: string | null
-          user_email: string | null
-          user_id: string | null
-        }
-        Insert: {
-          access_token_status?: never
-          agent_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          project_id?: string | null
-          refresh_token_status?: never
-          scopes?: string[] | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          access_token_status?: never
-          agent_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          project_id?: string | null
-          refresh_token_status?: never
-          scopes?: string[] | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       can_access_booking: {
@@ -635,6 +541,10 @@ export type Database = {
       }
       project_owns_phone_number: {
         Args: { _phone_number: string; _user_id: string }
+        Returns: boolean
+      }
+      user_can_see_customer_data: {
+        Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
       user_owns_phone_number: {
