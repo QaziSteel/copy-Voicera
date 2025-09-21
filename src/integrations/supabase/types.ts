@@ -325,6 +325,42 @@ export type Database = {
         }
         Relationships: []
       }
+      project_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          invited_at: string
+          inviter_id: string
+          project_id: string
+          role: Database["public"]["Enums"]["project_role"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          invited_at?: string
+          inviter_id: string
+          project_id: string
+          role?: Database["public"]["Enums"]["project_role"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          invited_at?: string
+          inviter_id?: string
+          project_id?: string
+          role?: Database["public"]["Enums"]["project_role"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_members: {
         Row: {
           created_at: string

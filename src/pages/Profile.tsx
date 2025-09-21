@@ -69,9 +69,9 @@ export default function Profile() {
   }, [user, navigate]);
 
   const handleInviteUser = async () => {
-    if (!inviteEmail || !currentProject) return;
+    if (!inviteEmail) return;
     
-    const result = await inviteUserToProject(inviteEmail, currentProject.id, inviteRole);
+    const result = await inviteUserToProject(inviteEmail, inviteRole);
     if (result.success) {
       setShowInviteModal(false);
       setInviteEmail('');
@@ -81,9 +81,7 @@ export default function Profile() {
   };
 
   const handleRemoveUser = async (userId: string) => {
-    if (!currentProject) return;
-    
-    const result = await removeUserFromProject(userId, currentProject.id);
+    const result = await removeUserFromProject(userId);
     if (result.success) {
       refreshProjectMembers();
     }

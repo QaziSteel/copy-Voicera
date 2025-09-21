@@ -1,60 +1,60 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useProject } from '@/contexts/ProjectContext';
 
 export const useProjectInvite = () => {
   const [loading, setLoading] = useState(false);
+  const { currentProject } = useProject();
 
-  const inviteUserToProject = async (email: string, projectId: string, role: 'member' | 'admin' = 'member') => {
+  const inviteUserToProject = async (email: string, role: 'member' | 'admin' = 'member') => {
+    if (!currentProject) {
+      toast.error('No project selected');
+      return { success: false };
+    }
+
     setLoading(true);
     try {
-      // First, check if user exists
-      const { data: existingUser, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .single();
-
-      if (userError && userError.code !== 'PGRST116') {
-        throw userError;
-      }
-
-      if (existingUser) {
-        // User exists, add them directly to the project
-        const { error: memberError } = await supabase
-          .from('project_members')
-          .insert({
-            project_id: projectId,
-            user_id: existingUser.id,
-            role: role
-          });
-
-        if (memberError) {
-          if (memberError.code === '23505') {
-            toast.error('User is already a member of this project');
-            return { success: false };
-          }
-          throw memberError;
-        }
-
-        toast.success('User invited successfully!');
-        return { success: true };
-      } else {
-        // User doesn't exist, send invitation email
-        // For now, we'll just show a message that the user needs to sign up first
-        toast.error('User not found. They need to sign up first.');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to send invitations');
         return { success: false };
       }
+
+      // Call the edge function to send invitation
+      const { data, error } = await supabase.functions.invoke('send-project-invite', {
+        body: {
+          email,
+          projectId: currentProject.id,
+          inviterId: user.id,
+          role
+        }
+      });
+
+      if (error) {
+        console.error('Error sending invitation:', error);
+        toast.error(error.message || 'Failed to send invitation');
+        return { success: false };
+      }
+
+      toast.success(`Invitation sent to ${email}!`);
+      return { success: true, invitationId: data.invitationId };
     } catch (error) {
       console.error('Error inviting user:', error);
-      toast.error('Failed to invite user');
+      toast.error('Failed to send invitation');
       return { success: false };
     } finally {
       setLoading(false);
     }
   };
 
-  const removeUserFromProject = async (userId: string, projectId: string) => {
+  const removeUserFromProject = async (userId: string) => {
+    if (!currentProject) {
+      toast.error('No project selected');
+      return { success: false };
+    }
+
+    const projectId = currentProject.id;
     setLoading(true);
     try {
       const { error } = await supabase

@@ -15,6 +15,7 @@ import AgentManagement from "./pages/AgentManagement";
 import AgentOverview from "./pages/AgentOverview";
 import TestAgent from "./pages/TestAgent";
 import Profile from "./pages/Profile";
+import { Invite } from "./pages/Invite";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import MagicLinkHandler from "@/components/auth/MagicLinkHandler";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
@@ -213,6 +214,7 @@ const App = () => (
                 <Profile />
               </ProtectedRoute>
             } />
+            <Route path="/invite" element={<Invite />} />
             <Route path="/" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
