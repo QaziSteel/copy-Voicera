@@ -479,15 +479,13 @@ export type Database = {
       }
     }
     Views: {
-      bookings_secure: {
+      bookings_basic: {
         Row: {
           appointment_date: string | null
           appointment_day: string | null
           appointment_time: string | null
           call_log_id: string | null
           created_at: string | null
-          customer_name: string | null
-          customer_number: string | null
           id: string | null
           notes: string | null
           project_id: string | null
@@ -501,8 +499,6 @@ export type Database = {
           appointment_time?: string | null
           call_log_id?: string | null
           created_at?: string | null
-          customer_name?: never
-          customer_number?: never
           id?: string | null
           notes?: string | null
           project_id?: string | null
@@ -516,8 +512,6 @@ export type Database = {
           appointment_time?: string | null
           call_log_id?: string | null
           created_at?: string | null
-          customer_name?: never
-          customer_number?: never
           id?: string | null
           notes?: string | null
           project_id?: string | null
