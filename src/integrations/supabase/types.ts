@@ -535,6 +535,51 @@ export type Database = {
           },
         ]
       }
+      google_integrations_safe: {
+        Row: {
+          access_token_status: string | null
+          agent_id: string | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          project_id: string | null
+          refresh_token_status: string | null
+          scopes: string[] | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token_status?: never
+          agent_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          project_id?: string | null
+          refresh_token_status?: never
+          scopes?: string[] | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token_status?: never
+          agent_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          project_id?: string | null
+          refresh_token_status?: never
+          scopes?: string[] | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_access_booking: {
@@ -562,6 +607,14 @@ export type Database = {
       get_booking_project_id: {
         Args: { booking_id: string }
         Returns: string
+      }
+      get_google_integration_tokens: {
+        Args: { _integration_id: string; _requesting_user_id: string }
+        Returns: {
+          access_token: string
+          refresh_token: string
+          token_expires_at: string
+        }[]
       }
       get_user_projects: {
         Args: { _user_id: string }
