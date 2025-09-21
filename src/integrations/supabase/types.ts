@@ -479,7 +479,62 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      bookings_secure: {
+        Row: {
+          appointment_date: string | null
+          appointment_day: string | null
+          appointment_time: string | null
+          call_log_id: string | null
+          created_at: string | null
+          customer_name: string | null
+          customer_number: string | null
+          id: string | null
+          notes: string | null
+          project_id: string | null
+          service_type: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_date?: string | null
+          appointment_day?: string | null
+          appointment_time?: string | null
+          call_log_id?: string | null
+          created_at?: string | null
+          customer_name?: never
+          customer_number?: never
+          id?: string | null
+          notes?: string | null
+          project_id?: string | null
+          service_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_date?: string | null
+          appointment_day?: string | null
+          appointment_time?: string | null
+          call_log_id?: string | null
+          created_at?: string | null
+          customer_name?: never
+          customer_number?: never
+          id?: string | null
+          notes?: string | null
+          project_id?: string | null
+          service_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_call_log_id_fkey"
+            columns: ["call_log_id"]
+            isOneToOne: false
+            referencedRelation: "call_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_access_booking: {
@@ -488,6 +543,10 @@ export type Database = {
       }
       can_access_project: {
         Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_view_customer_data: {
+        Args: { _booking_id: string; _user_id: string }
         Returns: boolean
       }
       get_booking_customer_info: {
