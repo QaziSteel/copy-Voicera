@@ -117,43 +117,26 @@ export const Invite: React.FC = () => {
 
     setJoining(true);
     try {
-      console.log('Attempting to join project:', invitation.project_id, 'as role:', invitation.role);
+      console.log('Attempting to join project via edge function:', invitation.project_id, 'as role:', invitation.role);
 
-      // Add user to project
-      const { error: memberError } = await supabase
-        .from('project_members')
-        .insert({
-          project_id: invitation.project_id,
-          user_id: user.id,
-          role: invitation.role
-        });
+      // Call the edge function to accept the invitation
+      const { data, error } = await supabase.functions.invoke('accept-project-invite', {
+        body: { token }
+      });
 
-      if (memberError) {
-        console.error('Error adding user to project:', memberError);
-        
-        if (memberError.code === '23505') {
-          toast.error('You are already a member of this project');
-          return; // Return early - don't update invitation status
-        } else {
-          toast.error('Failed to join project - insufficient permissions or project not found');
-          return; // Return early - don't update invitation status
-        }
+      if (error) {
+        console.error('Error calling accept-project-invite function:', error);
+        toast.error('Failed to join project - server error');
+        return;
       }
 
-      console.log('Successfully added user to project members');
-
-      // Only mark invitation as accepted if member addition was successful
-      const { error: updateError } = await supabase
-        .from('project_invitations')
-        .update({ status: 'accepted' })
-        .eq('id', invitation.id);
-
-      if (updateError) {
-        console.error('Error updating invitation status:', updateError);
-        toast.error('Joined project but failed to update invitation status');
-      } else {
-        console.log('Successfully updated invitation status to accepted');
+      if (!data?.success) {
+        console.error('Invitation acceptance failed:', data);
+        toast.error(data?.error || 'Failed to join project');
+        return;
       }
+
+      console.log('Successfully accepted invitation:', data);
 
       // Refresh project context and set current project
       console.log('Refreshing project context...');

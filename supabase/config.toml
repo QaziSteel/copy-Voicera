@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.send-project-invite]
 verify_jwt = true
+
+[functions.accept-project-invite]
+verify_jwt = true
