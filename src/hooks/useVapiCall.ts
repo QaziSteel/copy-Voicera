@@ -105,9 +105,17 @@ export const useVapiCall = () => {
         }
       });
 
-      vapiInstance.current.on('error', (error: any) => {
-        console.error('Vapi error:', error);
-        setError(error.message || 'An error occurred during the call');
+      vapiInstance.current.on('error', (err: any) => {
+        console.error('Vapi error:', err);
+        const apiMsg = (() => {
+          if (!err) return null;
+          if (typeof err === 'string') return err;
+          if (err.message) return err.message;
+          if (err.error?.message) return Array.isArray(err.error.message) ? err.error.message.join(', ') : err.error.message;
+          if (err.error) return typeof err.error === 'string' ? err.error : JSON.stringify(err.error);
+          try { return JSON.stringify(err); } catch { return 'An error occurred during the call'; }
+        })();
+        setError(apiMsg || 'An error occurred during the call');
         setIsConnecting(false);
         setIsCallActive(false);
       });
@@ -146,19 +154,19 @@ export const useVapiCall = () => {
       }
 
       if (config.assistantId) {
-        // Modern assistant support - preferred method
+        // Modern assistant support - pass as string per SDK
         callConfig = {
-          assistantId: config.assistantId
+          assistant: String(config.assistantId).trim()
         };
-        console.log('Vapi call config (Assistant ID):', callConfig);
+        console.log('Vapi call config (assistant as string):', callConfig);
       } else if (config.workflowId) {
-        // Legacy workflow support
+        // Legacy workflow support - pass as string per SDK
         callConfig = {
-          workflowId: config.workflowId
+          workflow: String(config.workflowId).trim()
         };
-        console.log('Vapi call config (Workflow ID):', callConfig);
+        console.log('Vapi call config (workflow as string):', callConfig);
       } else if (config.agentData) {
-        // Create dynamic assistant from agent data - no IDs allowed
+        // Create dynamic assistant from agent data - full assistant object
         callConfig = {
           assistant: {
             model: {
@@ -167,9 +175,7 @@ export const useVapiCall = () => {
               messages: [
                 {
                   role: 'system',
-                  content: `You are ${config.agentData.ai_assistant_name || 'an AI assistant'} for ${config.agentData.business_name || 'a business'}. ${
-                    config.agentData.ai_greeting_style ? `Your greeting style is ${config.agentData.ai_greeting_style}.` : ''
-                  } Help customers with their inquiries about services, bookings, and general information.`
+                  content: `You are ${config.agentData.ai_assistant_name || 'an AI assistant'} for ${config.agentData.business_name || 'a business'}. ${config.agentData.ai_greeting_style ? `Your greeting style is ${config.agentData.ai_greeting_style}.` : ''} Help customers with their inquiries about services, bookings, and general information.`
                 }
               ]
             },
@@ -181,15 +187,37 @@ export const useVapiCall = () => {
             firstMessage: `Hello! I'm ${config.agentData.ai_assistant_name || 'your AI assistant'}. How can I help you today?`
           }
         };
-        console.log('Vapi call config (Dynamic Assistant):', { assistantName: callConfig.assistant.name });
+        console.log('Vapi call config (dynamic assistant object):', { assistantName: callConfig.assistant.name });
       }
 
+      console.log('Vapi start payload:', callConfig);
       await vapiInstance.current.start(callConfig);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to start call:', err);
-      setError('Failed to start the call. Please try again.');
+      const rawMsg = typeof err === 'string' ? err : (err?.message || err?.error?.message || err?.error);
+      const msgStr = Array.isArray(rawMsg) ? rawMsg.join(', ') : (typeof rawMsg === 'string' ? rawMsg : (rawMsg ? JSON.stringify(rawMsg) : ''));
+
+      // Targeted retry for known schema errors
+      const schemaText = String(msgStr || '');
+      try {
+        if (schemaText.includes('assistant.property assistantId should not exist') && config.assistantId) {
+          console.warn('Retrying Vapi.start with assistant as string due to schema error');
+          await vapiInstance.current.start(String(config.assistantId).trim());
+          return;
+        }
+        if (schemaText.includes('assistant should be string') && config.assistantId) {
+          console.warn('Retrying Vapi.start with assistant as string');
+          await vapiInstance.current.start(String(config.assistantId).trim());
+          return;
+        }
+      } catch (retryErr) {
+        console.error('Retry also failed:', retryErr);
+      }
+
+      setError(msgStr || 'Failed to start the call. Please try again.');
       setIsConnecting(false);
+      setIsCallActive(false);
     }
   }, [initializeVapi]);
 

@@ -41,10 +41,10 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       // Ensure only one ID type is used - prioritize Assistant ID
       if (customAssistantId && customAssistantId.trim()) {
         config.assistantId = customAssistantId.trim();
-        console.log('Using Assistant ID:', config.assistantId);
+        console.log('Using Assistant (string):', config.assistantId);
       } else if (customWorkflowId && customWorkflowId.trim()) {
         config.workflowId = customWorkflowId.trim();
-        console.log('Using Workflow ID:', config.workflowId);
+        console.log('Using Workflow (string):', config.workflowId);
       } else {
         console.error('No valid ID provided');
         return;
