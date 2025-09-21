@@ -154,17 +154,15 @@ export const useVapiCall = () => {
       }
 
       if (config.assistantId) {
-        // Modern assistant support - pass as string per SDK
-        callConfig = {
-          assistant: String(config.assistantId).trim()
-        };
-        console.log('Vapi call config (assistant as string):', callConfig);
+        // Assistant ID support - pass as string per SDK
+        callConfig = String(config.assistantId).trim();
+        console.log('Vapi call config (assistantId as string):', callConfig);
       } else if (config.workflowId) {
-        // Legacy workflow support - pass as string per SDK
+        // Workflow support - use workflowId key per SDK
         callConfig = {
-          workflow: String(config.workflowId).trim()
+          workflowId: String(config.workflowId).trim()
         };
-        console.log('Vapi call config (workflow as string):', callConfig);
+        console.log('Vapi call config (workflowId):', callConfig);
       } else if (config.agentData) {
         // Create dynamic assistant from agent data - full assistant object
         callConfig = {
@@ -209,6 +207,11 @@ export const useVapiCall = () => {
         if (schemaText.includes('assistant should be string') && config.assistantId) {
           console.warn('Retrying Vapi.start with assistant as string');
           await vapiInstance.current.start(String(config.assistantId).trim());
+          return;
+        }
+        if ((schemaText.includes('workflow should not exist') || schemaText.includes('assistant.property workflow should not exist')) && config.workflowId) {
+          console.warn('Retrying Vapi.start with workflowId key');
+          await vapiInstance.current.start({ workflowId: String(config.workflowId).trim() });
           return;
         }
       } catch (retryErr) {
