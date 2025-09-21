@@ -158,11 +158,19 @@ export const useVapiCall = () => {
         callConfig = String(config.assistantId).trim();
         console.log('Vapi call config (assistantId as string):', callConfig);
       } else if (config.workflowId) {
-        // Workflow support - use workflow key per SDK
-        callConfig = {
-          workflow: String(config.workflowId).trim()
-        };
-        console.log('Vapi call config (workflow):', callConfig);
+        // Workflow support - try workflow first, fallback to workflowId
+        const workflowId = String(config.workflowId).trim();
+        
+        // Try the preferred parameter from env, default to 'workflow'
+        const preferredParam = import.meta.env.VITE_VAPI_WORKFLOW_PARAM || 'workflow';
+        
+        if (preferredParam === 'workflowId') {
+          callConfig = { workflowId };
+          console.log('Vapi call config (workflowId):', callConfig);
+        } else {
+          callConfig = { workflow: workflowId };
+          console.log('Vapi call config (workflow):', callConfig);
+        }
       } else if (config.agentData) {
         // Create dynamic assistant from agent data - full assistant object
         callConfig = {
@@ -209,9 +217,19 @@ export const useVapiCall = () => {
           await vapiInstance.current.start(String(config.assistantId).trim());
           return;
         }
-        if ((schemaText.includes('workflowId should not exist') || schemaText.includes('assistant.property workflowId should not exist') || schemaText.includes('assistant.property workflow should not exist') || schemaText.includes('workflow should not exist')) && config.workflowId) {
-          console.warn('Retrying Vapi.start with workflow key');
-          await vapiInstance.current.start({ workflow: String(config.workflowId).trim() });
+        
+        // Handle workflow parameter conflicts - try both formats
+        if ((schemaText.includes('workflow should not exist') || schemaText.includes('workflowid should not exist') || schemaText.includes('assistant.property workflow should not exist') || schemaText.includes('assistant.property workflowid should not exist')) && config.workflowId) {
+          const workflowId = String(config.workflowId).trim();
+          
+          // Try the opposite parameter format
+          if (schemaText.includes('workflow should not exist')) {
+            console.warn('Retrying Vapi.start with workflowId parameter');
+            await vapiInstance.current.start({ workflowId });
+          } else {
+            console.warn('Retrying Vapi.start with workflow parameter');
+            await vapiInstance.current.start({ workflow: workflowId });
+          }
           return;
         }
       } catch (retryErr) {

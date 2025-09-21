@@ -118,6 +118,13 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-red-700 text-sm">{error}</p>
+          {error.includes('workflow should not exist') && (
+            <div className="mt-2 text-xs text-red-600">
+              <strong>Hint:</strong> If workflow calls keep failing, try setting{' '}
+              <code className="bg-red-100 px-1 rounded">VITE_VAPI_WORKFLOW_PARAM=workflowId</code>{' '}
+              in your environment variables.
+            </div>
+          )}
         </div>
       )}
 
