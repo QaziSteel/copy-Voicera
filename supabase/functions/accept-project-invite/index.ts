@@ -103,7 +103,23 @@ serve(async (req) => {
       );
     }
 
-    console.log('Found valid invitation:', invitation.id);
+    console.log('Found valid invitation:', invitation.id, 'for email:', invitation.email);
+
+    // Verify the invitation email matches the authenticated user
+    const invitedEmail = (invitation.email || '').toLowerCase().trim();
+    const userEmail = (user.email || '').toLowerCase().trim();
+    if (!userEmail || invitedEmail !== userEmail) {
+      console.error('Authenticated user email does not match invitation email', { invitedEmail, userEmail });
+      return new Response(
+        JSON.stringify({ error: 'This invitation was sent to a different email address. Please sign in with the invited email.' }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('Email verified for invitation token:', token);
 
     // Check if user is already a member
     const { data: existingMember } = await supabase

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { useProjectInvite } from '@/hooks/useProjectInvite';
+import { useInvitations } from '@/hooks/useInvitations';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, X, UserPlus, Users, Mail, Crown, Shield, User, Trash2 } from 'lucide-react';
@@ -16,9 +17,10 @@ import { toast } from 'sonner';
 
 export default function Profile() {
   const { user, updatePassword, signOut } = useAuth();
-  const { currentProject, projects, projectMembers, switchProject, refreshProjectMembers } = useProject();
+  const { currentProject, projects, projectMembers, switchProject, refreshProjectMembers, refreshProjects } = useProject();
   const { inviteUserToProject, removeUserFromProject, loading: inviteLoading } = useProjectInvite();
   const navigate = useNavigate();
+  const { invites, loading: invitesLoading, acceptInvite, declineInvite, refresh: refreshInvites } = useInvitations();
   
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
@@ -104,6 +106,16 @@ export default function Profile() {
     }
   };
 
+  const formatExpiryDate = (expiresAt?: string | null) => {
+    if (!expiresAt) return 'soon';
+    const diffMs = new Date(expiresAt).getTime() - Date.now();
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (hours <= 0) return 'soon';
+    if (hours < 24) return `in ${hours}h`;
+    const days = Math.floor(hours / 24);
+    return `in ${days}d`;
+  };
+
   // Password Management Functions
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -174,6 +186,51 @@ export default function Profile() {
                     ))}
                   </SelectContent>
                 </Select>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pending Invitations */}
+          {invites && invites.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Invitations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {invites.map((inv) => (
+                    <div key={inv.id} className="flex items-center justify-between border border-gray-200 rounded-lg p-3">
+                      <div>
+                        <div className="text-sm font-medium text-black">{inv.project_name || 'Project'}</div>
+                        <div className="text-xs text-gray-500">Role: {inv.role} • Expires {formatExpiryDate(inv.expires_at)}</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={async () => {
+                          const res = await acceptInvite(inv.token);
+                          if (res.success) {
+                            toast.success('Joined project');
+                            await refreshInvites();
+                            await refreshProjects();
+                            if (res.projectId) {
+                              switchProject(res.projectId);
+                            }
+                          } else {
+                            toast.error(res.error || 'Failed to accept');
+                          }
+                        }}>Accept</Button>
+                        <Button size="sm" variant="outline" onClick={async () => {
+                          const res = await declineInvite(inv.token);
+                          if (res.success) {
+                            toast.info('Invitation declined');
+                            await refreshInvites();
+                          } else {
+                            toast.error(res.error || 'Failed to decline');
+                          }
+                        }}>Decline</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}

@@ -14,3 +14,9 @@ verify_jwt = true
 
 [functions.accept-project-invite]
 verify_jwt = true
+
+[functions.list-user-invitations]
+verify_jwt = true
+
+[functions.decline-project-invite]
+verify_jwt = true
