@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,7 @@ export const Invite: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, signUp, signIn } = useAuth();
+  const { refreshProjects, switchProject } = useProject();
   
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -109,12 +111,13 @@ export const Invite: React.FC = () => {
   const joinProject = async () => {
     if (!user || !invitation) {
       console.error('Missing user or invitation for join:', { user: !!user, invitation: !!invitation });
+      toast.error('Unable to join project - missing user or invitation data');
       return;
     }
 
     setJoining(true);
     try {
-      console.log('Attempting to join project:', invitation.project_id);
+      console.log('Attempting to join project:', invitation.project_id, 'as role:', invitation.role);
 
       // Add user to project
       const { error: memberError } = await supabase
@@ -126,15 +129,20 @@ export const Invite: React.FC = () => {
         });
 
       if (memberError) {
+        console.error('Error adding user to project:', memberError);
+        
         if (memberError.code === '23505') {
           toast.error('You are already a member of this project');
+          return; // Return early - don't update invitation status
         } else {
-          console.error('Error adding user to project:', memberError);
-          throw memberError;
+          toast.error('Failed to join project - insufficient permissions or project not found');
+          return; // Return early - don't update invitation status
         }
       }
 
-      // Mark invitation as accepted
+      console.log('Successfully added user to project members');
+
+      // Only mark invitation as accepted if member addition was successful
       const { error: updateError } = await supabase
         .from('project_invitations')
         .update({ status: 'accepted' })
@@ -142,14 +150,25 @@ export const Invite: React.FC = () => {
 
       if (updateError) {
         console.error('Error updating invitation status:', updateError);
+        toast.error('Joined project but failed to update invitation status');
+      } else {
+        console.log('Successfully updated invitation status to accepted');
       }
+
+      // Refresh project context and set current project
+      console.log('Refreshing project context...');
+      await refreshProjects();
+      
+      // Switch to the newly joined project
+      console.log('Switching to project ID:', invitation.project_id);
+      switchProject(invitation.project_id);
 
       toast.success(`Successfully joined ${project?.name}!`);
       navigate('/dashboard');
 
     } catch (error) {
-      console.error('Error joining project:', error);
-      toast.error('Failed to join project');
+      console.error('Unexpected error joining project:', error);
+      toast.error('Failed to join project - please try again');
     } finally {
       setJoining(false);
     }
@@ -158,6 +177,7 @@ export const Invite: React.FC = () => {
   const handleSignUp = async () => {
     if (!invitation) {
       console.error('No invitation available for signup');
+      toast.error('Invalid invitation - please request a new one');
       return;
     }
 
@@ -184,12 +204,16 @@ export const Invite: React.FC = () => {
       }
 
       console.log('Signup successful, now joining project');
+      
+      // Small delay to ensure auth state is updated
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // After successful signup, join the project
       await joinProject();
 
     } catch (error) {
-      console.error('Error signing up:', error);
-      toast.error('Failed to create account');
+      console.error('Unexpected error during signup:', error);
+      toast.error('Failed to create account - please try again');
     } finally {
       setSigningUp(false);
     }
