@@ -120,62 +120,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left Column - Call Controls & Test Scenarios */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Call Controls Section */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">Call Controls</h2>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={toggleMute}
-                disabled={!isCallActive}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                  !isCallActive 
-                    ? 'bg-gray-300 cursor-not-allowed' 
-                    : isMuted 
-                      ? 'bg-red-500 hover:bg-red-600 text-white' 
-                      : 'bg-black hover:bg-gray-800 text-white'
-                }`}
-              >
-                {isMuted ? (
-                  <MicOff className="w-5 h-5" />
-                ) : (
-                  <Mic className="w-5 h-5" />
-                )}
-              </button>
-              <button
-                disabled={!isCallActive}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                  !isCallActive 
-                    ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
-                    : 'bg-black hover:bg-gray-800 text-white'
-                }`}
-              >
-                <Volume2 className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Test Scenarios Section */}
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold text-black mb-1">Test Scenarios</h2>
-              <p className="text-sm text-gray-600">Try asking these common customer scenarios</p>
-            </div>
-            <div className="space-y-3">
-              {testScenarios.map((scenario, index) => (
-                <div
-                  key={index}
-                  className="p-3 border border-gray-200 rounded-lg bg-white text-sm text-gray-700"
-                >
-                  {scenario}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Test Conversation & Live Transcript */}
+        {/* Left Column - Test Conversation & Live Transcript */}
         <div className="lg:col-span-3 space-y-6">
           {/* Test Conversation Section */}
           <div className="space-y-4">
@@ -258,6 +203,61 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
               </div>
             </div>
           )}
+        </div>
+
+        {/* Right Column - Call Controls & Test Scenarios */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Call Controls Section */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-black">Call Controls</h2>
+            <div className="flex justify-center gap-6">
+              <button
+                onClick={toggleMute}
+                disabled={!isCallActive}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                  !isCallActive 
+                    ? 'bg-gray-300 cursor-not-allowed' 
+                    : isMuted 
+                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                      : 'bg-black hover:bg-gray-800 text-white'
+                }`}
+              >
+                {isMuted ? (
+                  <MicOff className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
+              </button>
+              <button
+                disabled={!isCallActive}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                  !isCallActive 
+                    ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
+                    : 'bg-black hover:bg-gray-800 text-white'
+                }`}
+              >
+                <Volume2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Test Scenarios Section */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold text-black mb-1">Test Scenarios</h2>
+              <p className="text-sm text-gray-600">Try asking these common customer scenarios</p>
+            </div>
+            <div className="space-y-3">
+              {testScenarios.map((scenario, index) => (
+                <div
+                  key={index}
+                  className="p-3 border border-gray-200 rounded-lg bg-white text-sm text-gray-700"
+                >
+                  {scenario}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
