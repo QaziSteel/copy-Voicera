@@ -107,6 +107,23 @@ export default function Completion() {
         throw new Error(`Webhook failed with status: ${response.status}`);
       }
 
+      // Parse webhook response to get assistant_id
+      const responseData = await response.json();
+      const assistantId = responseData?.assistant_id;
+
+      if (assistantId && onboardingData?.id) {
+        // Save assistant_id to onboarding record
+        const { error: updateError } = await supabase
+          .from('onboarding_responses')
+          .update({ assistant_id: assistantId })
+          .eq('id', onboardingData.id);
+
+        if (updateError) {
+          console.error('Error saving assistant_id:', updateError);
+          throw new Error('Failed to save assistant ID');
+        }
+      }
+
       toast({
         title: "Success!",
         description: "Your AI agent has gone live successfully.",
@@ -221,6 +238,23 @@ export default function Completion() {
 
       if (!response.ok) {
         throw new Error(`Webhook failed with status: ${response.status}`);
+      }
+
+      // Parse webhook response to get assistant_id
+      const responseData = await response.json();
+      const assistantId = responseData?.assistant_id;
+
+      if (assistantId && onboardingData?.id) {
+        // Save assistant_id to onboarding record
+        const { error: updateError } = await supabase
+          .from('onboarding_responses')
+          .update({ assistant_id: assistantId })
+          .eq('id', onboardingData.id);
+
+        if (updateError) {
+          console.error('Error saving assistant_id:', updateError);
+          throw new Error('Failed to save assistant ID');
+        }
       }
 
       toast({
