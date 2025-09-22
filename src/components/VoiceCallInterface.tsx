@@ -133,7 +133,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                 <button
                   onClick={handleStartCall}
                   disabled={isConnecting || (useCustomIds && !customAssistantId)}
-                  className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
+                  className="flex items-center gap-2.5 px-4 py-2 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white rounded-xl transition-colors"
                 >
                   {isConnecting ? (
                     <>
@@ -142,8 +142,15 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                     </>
                   ) : (
                     <>
-                      <Play className="w-4 h-4" fill="white" />
-                      Start Test Call
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path
+                          d="M15.7421 10.705C15.4475 11.8242 14.0555 12.615 11.2714 14.1968C8.57996 15.7258 7.23429 16.4903 6.14982 16.183C5.70146 16.0559 5.29295 15.8147 4.96349 15.4822C4.16663 14.6782 4.16663 13.1188 4.16663 10C4.16663 6.88117 4.16663 5.32175 4.96349 4.51777C5.29295 4.18538 5.70146 3.94407 6.14982 3.81702C7.23429 3.50971 8.57996 4.27423 11.2714 5.80328C14.0555 7.38498 15.4475 8.17583 15.7421 9.295C15.8637 9.757 15.8637 10.243 15.7421 10.705Z"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <span className="text-white text-base">Start Test Call</span>
                     </>
                   )}
                 </button>
