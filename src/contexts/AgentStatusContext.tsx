@@ -27,11 +27,12 @@ interface AgentStatusProviderProps {
 }
 
 export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ children }) => {
-  const [isAgentLive, setIsAgentLive] = useState(true);
+  const [isAgentLive, setIsAgentLive] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [contactNumber, setContactNumber] = useState<string | null>(null);
   const [assistantId, setAssistantId] = useState<string | null>(null);
   const [externalId, setExternalId] = useState<string | null>(null);
+  const [currentAgentId, setCurrentAgentId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const callStatusWebhook = useCallback(async (newStatus: 'Live' | 'Offline') => {
@@ -84,6 +85,19 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
       const success = await callStatusWebhook(newStatus);
       if (success) {
         setIsAgentLive(!isAgentLive);
+        
+        // Update database status
+        if (currentAgentId) {
+          const { error } = await supabase
+            .from('onboarding_responses')
+            .update({ current_status: newStatus.toLowerCase() })
+            .eq('id', currentAgentId);
+            
+          if (error) {
+            console.error('Error updating agent status in database:', error);
+          }
+        }
+        
         toast({
           title: "Success", 
           description: `Agent is now ${newStatus}`,
@@ -92,13 +106,13 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
     } finally {
       setIsTogglingStatus(false);
     }
-  }, [isAgentLive, isTogglingStatus, callStatusWebhook, toast]);
+  }, [isAgentLive, isTogglingStatus, callStatusWebhook, currentAgentId, toast]);
 
   const loadAgentStatus = useCallback(async (agentId: string) => {
     try {
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('contact_number, assistant_id, purchased_number_details')
+        .select('contact_number, assistant_id, purchased_number_details, current_status')
         .eq('id', agentId)
         .single();
 
@@ -108,8 +122,12 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
       }
 
       if (data) {
+        setCurrentAgentId(agentId);
         setContactNumber(data.contact_number || null);
         setAssistantId(data.assistant_id || null);
+        
+        // Set initial live status from database
+        setIsAgentLive(data.current_status === 'live');
         
         // Extract external ID from purchased number details
         if (data.purchased_number_details && typeof data.purchased_number_details === 'object') {

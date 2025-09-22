@@ -15,6 +15,9 @@ interface Agent {
   ai_assistant_name: string;
   primary_location: string;
   contact_number: string;
+  assistant_id: string;
+  purchased_number_details: any;
+  current_status: string;
   created_at: string;
 }
 
@@ -35,7 +38,7 @@ const AgentOverview = () => {
       
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('id, business_name, ai_assistant_name, primary_location, contact_number, created_at')
+        .select('id, business_name, ai_assistant_name, primary_location, contact_number, assistant_id, purchased_number_details, current_status, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -156,10 +159,33 @@ const AgentOverview = () => {
                       </h3>
                       <p className="text-sm text-gray-500">{agent.business_name}</p>
                     </div>
-                    <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-green-700">Live</span>
-                    </div>
+                    {(() => {
+                      const isConfigured = agent.contact_number && agent.assistant_id && agent.purchased_number_details?.id;
+                      const status = isConfigured ? agent.current_status || 'offline' : 'setup_required';
+                      
+                      if (status === 'live') {
+                        return (
+                          <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-green-700">Live</span>
+                          </div>
+                        );
+                      } else if (status === 'offline') {
+                        return (
+                          <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full">
+                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-gray-700">Offline</span>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-yellow-700">Setup Required</span>
+                          </div>
+                        );
+                      }
+                    })()}
                   </div>
 
                   <div className="space-y-2 mb-6">

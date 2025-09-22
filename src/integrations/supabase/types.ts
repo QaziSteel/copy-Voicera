@@ -189,6 +189,7 @@ export type Database = {
           calendar_integration_required: boolean | null
           contact_number: string | null
           created_at: string
+          current_status: string
           faq_data: Json | null
           id: string
           primary_location: string | null
@@ -216,6 +217,7 @@ export type Database = {
           calendar_integration_required?: boolean | null
           contact_number?: string | null
           created_at?: string
+          current_status?: string
           faq_data?: Json | null
           id?: string
           primary_location?: string | null
@@ -243,6 +245,7 @@ export type Database = {
           calendar_integration_required?: boolean | null
           contact_number?: string | null
           created_at?: string
+          current_status?: string
           faq_data?: Json | null
           id?: string
           primary_location?: string | null

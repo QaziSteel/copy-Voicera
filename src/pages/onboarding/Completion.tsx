@@ -112,15 +112,18 @@ export default function Completion() {
       const assistantId = responseData?.assistant_id;
 
       if (assistantId && onboardingData?.id) {
-        // Save assistant_id to onboarding record
+        // Save assistant_id and set status to live
         const { error: updateError } = await supabase
           .from('onboarding_responses')
-          .update({ assistant_id: assistantId })
+          .update({ 
+            assistant_id: assistantId,
+            current_status: 'live'
+          })
           .eq('id', onboardingData.id);
 
         if (updateError) {
-          console.error('Error saving assistant_id:', updateError);
-          throw new Error('Failed to save assistant ID');
+          console.error('Error saving assistant_id and status:', updateError);
+          throw new Error('Failed to save assistant ID and status');
         }
       }
 
@@ -245,15 +248,18 @@ export default function Completion() {
       const assistantId = responseData?.assistant_id;
 
       if (assistantId && onboardingData?.id) {
-        // Save assistant_id to onboarding record
+        // Save assistant_id and set status to live
         const { error: updateError } = await supabase
           .from('onboarding_responses')
-          .update({ assistant_id: assistantId })
+          .update({ 
+            assistant_id: assistantId,
+            current_status: 'live'
+          })
           .eq('id', onboardingData.id);
 
         if (updateError) {
-          console.error('Error saving assistant_id:', updateError);
-          throw new Error('Failed to save assistant ID');
+          console.error('Error saving assistant_id and status:', updateError);
+          throw new Error('Failed to save assistant ID and status');
         }
       }
 
