@@ -10,7 +10,8 @@ interface AuthContextType {
   sendMagicLink: (email: string, fullName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  updatePassword: (newPassword: string) => Promise<{ error: any }>;
+  verifyCurrentPassword: (currentPassword: string) => Promise<{ error: any }>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -114,7 +115,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const updatePassword = async (newPassword: string) => {
+  const verifyCurrentPassword = async (currentPassword: string) => {
+    if (!user?.email) {
+      return { error: { message: 'No email found' } };
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    
+    return { error };
+  };
+
+  const updatePassword = async (currentPassword: string, newPassword: string) => {
+    // First verify current password
+    const verifyResult = await verifyCurrentPassword(currentPassword);
+    if (verifyResult.error) {
+      return { error: { message: 'Current password is incorrect' } };
+    }
+
+    // If verification passed, update the password
     const { error } = await supabase.auth.updateUser({
       password: newPassword
     });
@@ -129,6 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     sendMagicLink,
     signIn,
     signOut,
+    verifyCurrentPassword,
     updatePassword,
   };
 

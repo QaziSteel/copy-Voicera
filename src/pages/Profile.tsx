@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
 export default function Profile() {
-  const { user, updatePassword, signOut } = useAuth();
+  const { user, verifyCurrentPassword, updatePassword, signOut } = useAuth();
   const { currentProject, projects, projectMembers, switchProject, refreshProjectMembers, refreshProjects } = useProject();
   const { inviteUserToProject, removeUserFromProject, loading: inviteLoading } = useProjectInvite();
   const navigate = useNavigate();
@@ -40,6 +40,8 @@ export default function Profile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCurrentPasswordDisplay, setShowCurrentPasswordDisplay] = useState(false);
+  const [currentPasswordVerified, setCurrentPasswordVerified] = useState(false);
+  const [verifyingPassword, setVerifyingPassword] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -117,21 +119,48 @@ export default function Profile() {
   };
 
   // Password Management Functions
+  const handleVerifyCurrentPassword = async () => {
+    if (!currentPassword) {
+      toast.error('Please enter your current password');
+      return;
+    }
+
+    setVerifyingPassword(true);
+    const { error } = await verifyCurrentPassword(currentPassword);
+    
+    if (error) {
+      toast.error('Current password is incorrect');
+      setVerifyingPassword(false);
+      return;
+    }
+    
+    setCurrentPasswordVerified(true);
+    setVerifyingPassword(false);
+    toast.success('Password verified! You can now enter a new password.');
+  };
+
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       toast.error('New passwords do not match.');
       return;
     }
 
-    const { error } = await updatePassword(newPassword);
+    if (!currentPasswordVerified) {
+      toast.error('Please verify your current password first');
+      return;
+    }
+
+    const { error } = await updatePassword(currentPassword, newPassword);
 
     if (error) {
       toast.error(`Failed to update password: ${error.message}`);
     } else {
       toast.success('Password updated successfully!');
       setShowChangePasswordModal(false);
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setCurrentPasswordVerified(false);
     }
   };
 
@@ -386,60 +415,79 @@ export default function Profile() {
         </div>
       </main>
 
-      {/* Change Password Modal (simplified version) */}
+      {/* Change Password Modal */}
       {showChangePasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Change Password</h3>
-              <button onClick={() => setShowChangePasswordModal(false)}>
+              <button onClick={() => {
+                setShowChangePasswordModal(false);
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setCurrentPasswordVerified(false);
+              }}>
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="space-y-4">
-              <Input
-                type="password"
-                placeholder="Current Password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
+              <div className="space-y-2">
+                <Input
+                  type="password"
+                  placeholder="Current Password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  disabled={currentPasswordVerified}
+                />
+                {!currentPasswordVerified && (
+                  <Button 
+                    onClick={handleVerifyCurrentPassword}
+                    disabled={!currentPassword || verifyingPassword}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {verifyingPassword ? 'Verifying...' : 'Verify Current Password'}
+                  </Button>
+                )}
+                {currentPasswordVerified && (
+                  <div className="text-sm text-green-600 flex items-center gap-2">
+                    ✓ Current password verified
+                  </div>
+                )}
+              </div>
+              
               <Input
                 type="password"
                 placeholder="New Password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                disabled={!currentPasswordVerified}
               />
               <Input
                 type="password"
                 placeholder="Confirm New Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={!currentPasswordVerified}
               />
               <div className="flex gap-2">
                 <Button 
-                  onClick={async () => {
-                    if (newPassword !== confirmPassword) {
-                      toast.error('Passwords do not match');
-                      return;
-                    }
-                    const { error } = await updatePassword(newPassword);
-                    if (error) {
-                      toast.error(error.message);
-                    } else {
-                      toast.success('Password updated successfully');
-                      setShowChangePasswordModal(false);
-                      setCurrentPassword('');
-                      setNewPassword('');
-                      setConfirmPassword('');
-                    }
-                  }}
+                  onClick={handleChangePassword}
+                  disabled={!currentPasswordVerified || !newPassword || !confirmPassword}
                   className="flex-1"
                 >
                   Update Password
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => setShowChangePasswordModal(false)}
+                  onClick={() => {
+                    setShowChangePasswordModal(false);
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setCurrentPasswordVerified(false);
+                  }}
                   className="flex-1"
                 >
                   Cancel
