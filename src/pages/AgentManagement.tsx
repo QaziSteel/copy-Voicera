@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { useProject } from "@/contexts/ProjectContext";
+import { useAgentStatus } from "@/contexts/AgentStatusContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -71,15 +72,12 @@ const AgentManagement = () => {
   const { user } = useAuth();
   const { currentProject } = useProject();
   const { toast } = useToast();
+  const { isAgentLive, isTogglingStatus, contactNumber, assistantId, externalId, handleStatusToggle, loadAgentStatus } = useAgentStatus();
   const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount } = useNotifications();
   
   // State for all tabs
   const [loading, setLoading] = useState(true);
-  const [isAgentLive, setIsAgentLive] = useState(true);
-  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState('basic-info');
-  const [assistantId, setAssistantId] = useState<string | null>(null);
-  const [externalId, setExternalId] = useState<string | null>(null);
   
   // Multi-agent state
   const [userAgents, setUserAgents] = useState<any[]>([]);
@@ -93,7 +91,6 @@ const AgentManagement = () => {
   const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState('');
   const [businessLocation, setBusinessLocation] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
   
   // AI Personality  
   const [aiAssistantName, setAiAssistantName] = useState('');
@@ -259,7 +256,6 @@ const AgentManagement = () => {
         setBusinessName(data.business_name || '');
         setBusinessType(Array.isArray(data.business_types) ? data.business_types.join(', ') : '');
         setBusinessLocation(data.primary_location || '');
-        setContactNumber(data.contact_number || '');
         
         // AI Personality
         setAiAssistantName(data.ai_assistant_name || '');
@@ -282,15 +278,9 @@ const AgentManagement = () => {
         // Advanced
         setDailySummary(data.wants_daily_summary || false);
         setEmailConfirmations(data.wants_email_confirmations || false);
-        setAssistantId(data.assistant_id || null);
         
-        // Extract external ID from purchased number details
-        if (data.purchased_number_details && typeof data.purchased_number_details === 'object') {
-          const purchasedDetails = data.purchased_number_details as { id?: string };
-          setExternalId(purchasedDetails.id || null);
-        } else {
-          setExternalId(null);
-        }
+        // Load agent status data into context
+        await loadAgentStatus(agentId);
         
         // Handle reminder settings (jsonb format)
         if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
@@ -417,66 +407,6 @@ const AgentManagement = () => {
   const removeFaq = useCallback((id: string) => {
     setFaqs(prev => prev.filter(faq => faq.id !== id));
   }, []);
-
-  const callStatusWebhook = useCallback(async (newStatus: 'Live' | 'Offline') => {
-    if (!contactNumber || !assistantId || !externalId) {
-      toast({
-        title: "Error",
-        description: "Contact number, assistant ID, or external ID not found. Please save your agent settings first.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    try {
-      const response = await fetch('https://teamhypergrowth.app.n8n.cloud/webhook/9053f9bc-bd58-44b6-b83e-17b2174446f6', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phone_number: contactNumber,
-          assistant_id: assistantId,
-          status: newStatus,
-          id: externalId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Webhook failed with status: ${response.status}`);
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error calling status webhook:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update agent status. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  }, [contactNumber, assistantId, externalId, toast]);
-
-  const handleStatusToggle = useCallback(async () => {
-    if (isTogglingStatus) return;
-
-    const newStatus = isAgentLive ? 'Offline' : 'Live';
-    setIsTogglingStatus(true);
-
-    try {
-      const success = await callStatusWebhook(newStatus);
-      if (success) {
-        setIsAgentLive(!isAgentLive);
-        toast({
-          title: "Success",
-          description: `Agent is now ${newStatus}`,
-        });
-      }
-    } finally {
-      setIsTogglingStatus(false);
-    }
-  }, [isAgentLive, isTogglingStatus, callStatusWebhook, toast]);
 
 
   const renderBasicInfo = () => (
