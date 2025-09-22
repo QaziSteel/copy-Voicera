@@ -427,6 +427,7 @@ export default function Profile() {
                 setNewPassword('');
                 setConfirmPassword('');
                 setCurrentPasswordVerified(false);
+                setShowCurrentPassword(false);
                 setShowNewPassword(false);
                 setShowConfirmPassword(false);
               }}>
@@ -435,13 +436,24 @@ export default function Profile() {
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Input
-                  type="password"
-                  placeholder="Current Password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  disabled={currentPasswordVerified}
-                />
+                <div className="relative">
+                  <Input
+                    type={showCurrentPassword ? "text" : "password"}
+                    placeholder="Current Password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    disabled={currentPasswordVerified}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    disabled={currentPasswordVerified}
+                  >
+                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 {!currentPasswordVerified && (
                   <Button 
                     onClick={handleVerifyCurrentPassword}
@@ -511,6 +523,7 @@ export default function Profile() {
                     setNewPassword('');
                     setConfirmPassword('');
                     setCurrentPasswordVerified(false);
+                    setShowCurrentPassword(false);
                     setShowNewPassword(false);
                     setShowConfirmPassword(false);
                   }}
