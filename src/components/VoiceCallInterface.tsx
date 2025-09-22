@@ -69,38 +69,10 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Configuration Panel - Hidden when call is active */}
-      {!isCallActive && !isConnecting && (
-        <div className={`rounded-lg p-4 ${hasAssistantId ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${hasAssistantId ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm font-medium">
-              {hasAssistantId ? 'Assistant ID Configured' : 'No Assistant ID Configured'}
-            </span>
-          </div>
-          
-          {hasAssistantId ? (
-            <div className="mt-2">
-              <p className="text-xs text-green-700">
-                Assistant ID: {agentData.assistant_id}
-              </p>
-            </div>
-          ) : (
-            <div className="mt-2">
-              <p className="text-xs text-red-700">
-                This agent doesn't have an Assistant ID configured. Please configure it in the agent settings.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Error Display */}
-      {(error || !hasAssistantId) && (
+      {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-red-700 text-sm">
-            {error || 'Assistant ID not configured for this agent'}
-          </p>
+          <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
 
