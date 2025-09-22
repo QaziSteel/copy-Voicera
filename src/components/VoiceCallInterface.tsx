@@ -133,15 +133,26 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                 <button
                   onClick={handleStartCall}
                   disabled={isConnecting || (useCustomIds && !customAssistantId)}
-                  className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
                 >
-                  {isConnecting ? 'Connecting...' : 'Start Test Call'}
+                  {isConnecting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" fill="white" />
+                      Start Test Call
+                    </>
+                  )}
                 </button>
               ) : (
                 <button
                   onClick={endCall}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
                 >
+                  <Square className="w-4 h-4" fill="white" />
                   End Call
                 </button>
               )}
