@@ -123,7 +123,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
         {/* Left Column - Test Conversation & Live Transcript */}
         <div className="lg:col-span-3 space-y-6">
           {/* Test Conversation Section */}
-          <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
             <div>
               <h2 className="text-xl font-semibold text-black mb-1">Test Conversation</h2>
               <p className="text-sm text-gray-600">Start a test call to begin conversation</p>
@@ -196,7 +196,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
 
           {/* Live Transcript */}
           {transcript && (
-            <div className="space-y-2">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-2">
               <h3 className="text-lg font-medium text-black">Live Transcript</h3>
               <div className="bg-gray-50 rounded-lg p-4 max-h-32 overflow-y-auto">
                 <pre className="text-sm text-gray-700 whitespace-pre-wrap">{transcript}</pre>
@@ -208,7 +208,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
         {/* Right Column - Call Controls & Test Scenarios */}
         <div className="lg:col-span-2 space-y-6">
           {/* Call Controls Section */}
-          <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
             <h2 className="text-xl font-semibold text-black">Call Controls</h2>
             <div className="flex justify-center gap-6">
               <button
@@ -242,7 +242,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
           </div>
 
           {/* Test Scenarios Section */}
-          <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
             <div>
               <h2 className="text-xl font-semibold text-black mb-1">Test Scenarios</h2>
               <p className="text-sm text-gray-600">Try asking these common customer scenarios</p>
