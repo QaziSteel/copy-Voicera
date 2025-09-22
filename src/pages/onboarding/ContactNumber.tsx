@@ -70,14 +70,14 @@ export default function ContactNumber() {
       setSelectedNumber(savedNumber);
     }
 
-    // Check if webhook has been called before
-    const hasCalledWebhook = sessionStorage.getItem("contactNumbersWebhookCalled");
+    // Check if webhook has been called before for this specific onboarding
+    const hasCalledWebhook = sessionStorage.getItem(`contactNumbersWebhookCalled_${onboardingId}`);
     
     if (!hasCalledWebhook) {
-      fetchContactNumbers();
+      fetchContactNumbers(onboardingId);
     } else {
-      // Use cached numbers or fallback to defaults
-      const cachedNumbers = sessionStorage.getItem("cachedContactNumbers");
+      // Use cached numbers for this onboarding or fallback to defaults
+      const cachedNumbers = sessionStorage.getItem(`cachedContactNumbers_${onboardingId}`);
       if (cachedNumbers) {
         setContactNumbers(JSON.parse(cachedNumbers));
       } else {
@@ -86,7 +86,7 @@ export default function ContactNumber() {
     }
   }, []);
 
-  const fetchContactNumbers = async () => {
+  const fetchContactNumbers = async (onboardingId: string) => {
     setIsLoading(true);
     try {
       // TODO: Replace with your actual n8n webhook URL
@@ -108,9 +108,9 @@ export default function ContactNumber() {
       
       if (Array.isArray(numbers) && numbers.length > 0) {
         setContactNumbers(numbers);
-        // Cache the numbers and mark webhook as called
-        sessionStorage.setItem("cachedContactNumbers", JSON.stringify(numbers));
-        sessionStorage.setItem("contactNumbersWebhookCalled", "true");
+        // Cache the numbers and mark webhook as called for this specific onboarding
+        sessionStorage.setItem(`cachedContactNumbers_${onboardingId}`, JSON.stringify(numbers));
+        sessionStorage.setItem(`contactNumbersWebhookCalled_${onboardingId}`, "true");
       } else {
         throw new Error('Invalid response format');
       }
