@@ -124,31 +124,25 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
         <div className="lg:col-span-3 space-y-6">
           {/* Test Conversation Section */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold text-black mb-1">Test Conversation</h2>
-              <p className="text-sm text-gray-600">Start a test call to begin conversation</p>
-            </div>
-
-            {/* Main Call Button */}
-            <div className="flex justify-center">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-black mb-1">Test Conversation</h2>
+                <p className="text-sm text-gray-600">Start a test call to begin conversation</p>
+              </div>
               {!isCallActive ? (
                 <button
                   onClick={handleStartCall}
                   disabled={isConnecting || (useCustomIds && !customAssistantId)}
-                  className="w-16 h-16 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center transition-colors"
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
                 >
-                  {isConnecting ? (
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                  ) : (
-                    <Play className="w-6 h-6 ml-1" fill="white" />
-                  )}
+                  {isConnecting ? 'Connecting...' : 'Start Test Call'}
                 </button>
               ) : (
                 <button
                   onClick={endCall}
-                  className="w-16 h-16 bg-black hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-colors"
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
                 >
-                  <Square className="w-6 h-6" fill="white" />
+                  End Call
                 </button>
               )}
             </div>
