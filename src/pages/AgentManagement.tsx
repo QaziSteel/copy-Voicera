@@ -79,6 +79,7 @@ const AgentManagement = () => {
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState('basic-info');
   const [assistantId, setAssistantId] = useState<string | null>(null);
+  const [externalId, setExternalId] = useState<string | null>(null);
   
   // Multi-agent state
   const [userAgents, setUserAgents] = useState<any[]>([]);
@@ -283,6 +284,14 @@ const AgentManagement = () => {
         setEmailConfirmations(data.wants_email_confirmations || false);
         setAssistantId(data.assistant_id || null);
         
+        // Extract external ID from purchased number details
+        if (data.purchased_number_details && typeof data.purchased_number_details === 'object') {
+          const purchasedDetails = data.purchased_number_details as { id?: string };
+          setExternalId(purchasedDetails.id || null);
+        } else {
+          setExternalId(null);
+        }
+        
         // Handle reminder settings (jsonb format)
         if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
           const reminderData = data.reminder_settings as { wantsReminders?: boolean };
@@ -410,10 +419,10 @@ const AgentManagement = () => {
   }, []);
 
   const callStatusWebhook = useCallback(async (newStatus: 'Live' | 'Offline') => {
-    if (!contactNumber || !assistantId) {
+    if (!contactNumber || !assistantId || !externalId) {
       toast({
         title: "Error",
-        description: "Contact number or assistant ID not found. Please save your agent settings first.",
+        description: "Contact number, assistant ID, or external ID not found. Please save your agent settings first.",
         variant: "destructive",
       });
       return false;
@@ -428,7 +437,8 @@ const AgentManagement = () => {
         body: JSON.stringify({
           phone_number: contactNumber,
           assistant_id: assistantId,
-          status: newStatus
+          status: newStatus,
+          id: externalId
         })
       });
 
@@ -446,7 +456,7 @@ const AgentManagement = () => {
       });
       return false;
     }
-  }, [contactNumber, assistantId, toast]);
+  }, [contactNumber, assistantId, externalId, toast]);
 
   const handleStatusToggle = useCallback(async () => {
     if (isTogglingStatus) return;
@@ -692,7 +702,7 @@ const AgentManagement = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <button 
                 onClick={handleStatusToggle}
-                disabled={isTogglingStatus || !contactNumber || !assistantId}
+                disabled={isTogglingStatus || !contactNumber || !assistantId || !externalId}
                 className={`px-4 py-2 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isTogglingStatus ? 'Updating...' : (isAgentLive ? 'Go Offline' : 'Go Live')}
