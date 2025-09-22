@@ -13,7 +13,7 @@ const TestAgent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { isAgentLive, isTogglingStatus, handleStatusToggle, loadAgentStatus } = useAgentStatus();
+  const { isAgentLive, isTogglingStatus, handleStatusToggle, loadAgentStatus, contactNumber, assistantId, externalId } = useAgentStatus();
   
   
   const [loading, setLoading] = useState(true);
@@ -193,7 +193,7 @@ const TestAgent = () => {
             <div className="flex items-center gap-4">
               <button 
                 onClick={handleStatusToggle}
-                disabled={isTogglingStatus}
+                disabled={isTogglingStatus || !contactNumber || !assistantId || !externalId}
                 className={`px-4 py-2 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isTogglingStatus ? 'Updating...' : (isAgentLive ? 'Go Offline' : 'Go Live')}
