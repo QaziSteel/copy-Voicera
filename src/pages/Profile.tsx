@@ -427,6 +427,8 @@ export default function Profile() {
                 setNewPassword('');
                 setConfirmPassword('');
                 setCurrentPasswordVerified(false);
+                setShowNewPassword(false);
+                setShowConfirmPassword(false);
               }}>
                 <X className="w-5 h-5" />
               </button>
@@ -457,20 +459,42 @@ export default function Profile() {
                 )}
               </div>
               
-              <Input
-                type="password"
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={!currentPasswordVerified}
-              />
-              <Input
-                type="password"
-                placeholder="Confirm New Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={!currentPasswordVerified}
-              />
+              <div className="relative">
+                <Input
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={!currentPasswordVerified}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={!currentPasswordVerified}
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={!currentPasswordVerified}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={!currentPasswordVerified}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
               <div className="flex gap-2">
                 <Button 
                   onClick={handleChangePassword}
@@ -487,6 +511,8 @@ export default function Profile() {
                     setNewPassword('');
                     setConfirmPassword('');
                     setCurrentPasswordVerified(false);
+                    setShowNewPassword(false);
+                    setShowConfirmPassword(false);
                   }}
                   className="flex-1"
                 >
