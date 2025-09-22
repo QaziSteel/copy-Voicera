@@ -56,7 +56,7 @@ const TestAgent = () => {
       
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('id, business_name, ai_assistant_name, created_at')
+        .select('id, business_name, ai_assistant_name, assistant_id, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 

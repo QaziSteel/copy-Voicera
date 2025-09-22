@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useVapiCall } from '@/hooks/useVapiCall';
 import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX, Play, Pause, Square } from 'lucide-react';
 
@@ -15,8 +14,8 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
   assistantId,
   testScenarios
 }) => {
-  const [customAssistantId, setCustomAssistantId] = useState(assistantId || '');
-  const [useCustomIds, setUseCustomIds] = useState(!!assistantId);
+  // Check if assistant_id exists in agentData
+  const hasAssistantId = agentData?.assistant_id;
   
   const {
     startCall,
@@ -32,21 +31,16 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
   } = useVapiCall();
 
   const handleStartCall = async () => {
-    const config: any = {};
-    
-    if (useCustomIds) {
-      if (customAssistantId && customAssistantId.trim()) {
-        config.assistantId = customAssistantId.trim();
-        console.log('Using Assistant ID:', config.assistantId);
-      } else {
-        console.error('No assistant ID provided');
-        return;
-      }
-    } else {
-      config.agentData = agentData;
-      console.log('Using agent data configuration');
+    if (!hasAssistantId) {
+      console.error('No assistant ID found for this agent');
+      return;
     }
+
+    const config = {
+      assistantId: agentData.assistant_id
+    };
     
+    console.log('Using Assistant ID:', config.assistantId);
     console.log('Final call config:', config);
     await startCall(config);
   };
@@ -77,34 +71,24 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
     <div className="space-y-6">
       {/* Configuration Panel - Hidden when call is active */}
       {!isCallActive && !isConnecting && (
-        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+        <div className={`rounded-lg p-4 ${hasAssistantId ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="useCustomIds"
-              checked={useCustomIds}
-              onChange={(e) => setUseCustomIds(e.target.checked)}
-              className="rounded"
-            />
-            <label htmlFor="useCustomIds" className="text-sm font-medium">
-              Use custom Assistant ID
-            </label>
+            <div className={`w-3 h-3 rounded-full ${hasAssistantId ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="text-sm font-medium">
+              {hasAssistantId ? 'Assistant ID Configured' : 'No Assistant ID Configured'}
+            </span>
           </div>
           
-          {useCustomIds && (
-            <div>
-              <label htmlFor="assistantId" className="block text-sm font-medium text-gray-700 mb-1">
-                Assistant ID
-              </label>
-              <Input
-                id="assistantId"
-                value={customAssistantId}
-                onChange={(e) => setCustomAssistantId(e.target.value)}
-                placeholder="Enter your Vapi Assistant ID"
-                className="w-full"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Find your Assistant ID in the Vapi Dashboard under Assistants
+          {hasAssistantId ? (
+            <div className="mt-2">
+              <p className="text-xs text-green-700">
+                Assistant ID: {agentData.assistant_id}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-2">
+              <p className="text-xs text-red-700">
+                This agent doesn't have an Assistant ID configured. Please configure it in the agent settings.
               </p>
             </div>
           )}
@@ -112,9 +96,11 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       )}
 
       {/* Error Display */}
-      {error && (
+      {(error || !hasAssistantId) && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-red-700 text-sm">{error}</p>
+          <p className="text-red-700 text-sm">
+            {error || 'Assistant ID not configured for this agent'}
+          </p>
         </div>
       )}
 
@@ -132,7 +118,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
               {!isCallActive ? (
                 <button
                   onClick={handleStartCall}
-                  disabled={isConnecting || (useCustomIds && !customAssistantId)}
+                  disabled={isConnecting || !hasAssistantId}
                   className="flex items-center gap-2.5 px-4 py-2 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white rounded-xl transition-colors"
                 >
                   {isConnecting ? (
