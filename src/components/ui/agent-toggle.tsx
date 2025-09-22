@@ -13,10 +13,14 @@ export const AgentToggle = ({ className }: AgentToggleProps) => {
   const isTestAgent = location.pathname === '/test-agent';
   
   const handleToggle = (mode: 'configurations' | 'test-agent') => {
+    const searchParams = new URLSearchParams(location.search);
+    const agentId = searchParams.get('agentId');
+    const queryString = agentId ? `?agentId=${agentId}` : '';
+    
     if (mode === 'configurations') {
-      navigate('/agent-management');
+      navigate(`/agent-management${queryString}`);
     } else {
-      navigate('/test-agent');
+      navigate(`/test-agent${queryString}`);
     }
   };
 
