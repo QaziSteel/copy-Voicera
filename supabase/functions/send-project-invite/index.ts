@@ -40,6 +40,23 @@ serve(async (req) => {
       }
     );
 
+    // Check for existing pending invitation
+    const { data: existingInvite } = await supabaseAdmin
+      .from('project_invitations')
+      .select('id, status')
+      .eq('project_id', projectId)
+      .eq('email', email.toLowerCase())
+      .eq('status', 'pending')
+      .single();
+
+    if (existingInvite) {
+      console.log('Pending invitation already exists for:', email);
+      return new Response(
+        JSON.stringify({ error: 'An invitation for this email is already pending for this project' }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Generate unique invitation token
     const invitationToken = crypto.randomUUID() + '-' + Date.now();
 
@@ -90,7 +107,7 @@ serve(async (req) => {
     const inviterEmail = inviter?.email || '';
 
     // Construct invitation URL with token
-    const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app') || 'https://loving-scooter-37.lovableproject.com';
+    const baseUrl = 'https://nhhdxwgrmcdsapbuvelx.lovable.app';
     const invitationUrl = `${baseUrl}/invite?token=${invitationToken}`;
 
     console.log('Sending invitation email with token-based URL:', invitationUrl);
