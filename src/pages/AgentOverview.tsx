@@ -164,16 +164,16 @@ const AgentOverview = () => {
                       
                       if (status === 'live') {
                         return (
-                          <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full">
+                          <div className="flex items-center gap-2 ring-2 ring-green-500 bg-green-50 px-3 py-1 rounded-full">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                             <span className="text-sm font-medium text-green-700">Live</span>
                           </div>
                         );
                       } else {
                         return (
-                          <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full">
-                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                            <span className="text-sm font-medium text-gray-700">Offline</span>
+                          <div className="flex items-center gap-2 ring-2 ring-red-500 bg-red-50 px-3 py-1 rounded-full">
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-red-600">Offline</span>
                           </div>
                         );
                       }
