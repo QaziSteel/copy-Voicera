@@ -16,8 +16,6 @@ interface Agent {
   primary_location: string;
   contact_number: string;
   created_at: string;
-  assistant_id: string;
-  purchased_number_details: any;
 }
 
 const AgentOverview = () => {
@@ -26,15 +24,6 @@ const AgentOverview = () => {
   const { toast } = useToast();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const getAgentStatus = (agent: Agent): 'Online' | 'Offline' => {
-    const hasContactNumber = agent.contact_number && agent.contact_number.trim() !== '';
-    const hasAssistantId = agent.assistant_id && agent.assistant_id.trim() !== '';
-    const hasPurchasedNumber = agent.purchased_number_details && 
-      Object.keys(agent.purchased_number_details).length > 0;
-    
-    return (hasContactNumber && hasAssistantId && hasPurchasedNumber) ? 'Online' : 'Offline';
-  };
 
   useEffect(() => {
     loadAgents();
@@ -46,7 +35,7 @@ const AgentOverview = () => {
       
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('id, business_name, ai_assistant_name, primary_location, contact_number, created_at, assistant_id, purchased_number_details')
+        .select('id, business_name, ai_assistant_name, primary_location, contact_number, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -167,24 +156,10 @@ const AgentOverview = () => {
                       </h3>
                       <p className="text-sm text-gray-500">{agent.business_name}</p>
                     </div>
-                    {(() => {
-                      const status = getAgentStatus(agent);
-                      const isOnline = status === 'Online';
-                      return (
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ring-2 ${
-                          isOnline ? 'ring-green-500 bg-green-50' : 'ring-red-500 bg-red-50'
-                        }`}>
-                          <div className={`w-2 h-2 rounded-full ${
-                            isOnline ? 'bg-green-500' : 'bg-red-500'
-                          }`}></div>
-                          <span className={`text-sm font-medium ${
-                            isOnline ? 'text-green-700' : 'text-red-700'
-                          }`}>
-                            {status}
-                          </span>
-                        </div>
-                      );
-                    })()}
+                    <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-green-700">Live</span>
+                    </div>
                   </div>
 
                   <div className="space-y-2 mb-6">
