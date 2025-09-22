@@ -182,7 +182,7 @@ const TestAgent = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg font-semibold text-gray-500">Agent status:</span>
-              <div className={`flex items-center gap-1 px-3 py-1 rounded-full ring-2 ${isAgentLive ? 'ring-green-500' : 'ring-red-500'}`}>
+              <div className={`flex items-center gap-1 px-3 py-1 rounded-full ring-2 ${isAgentLive ? 'ring-green-500 bg-green-50' : 'ring-red-500 bg-red-50'}`}>
                 <div className={`w-2 h-2 ${isAgentLive ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></div>
                 <span className={`text-lg font-semibold ${isAgentLive ? 'text-green-600' : 'text-red-600'}`}>
                   {isAgentLive ? 'Live' : 'Offline'}
