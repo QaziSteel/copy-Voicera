@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useVapiCall } from '@/hooks/useVapiCall';
-import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX } from 'lucide-react';
+import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX, Play, Pause, Square } from 'lucide-react';
 
 interface VoiceCallInterfaceProps {
   agentData?: any;
@@ -51,19 +51,31 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
     await startCall(config);
   };
 
-  return (
-    <div className="space-y-4">
-      {/* Migration Notice */}
-      {!isCallActive && !isConnecting && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-          <p className="text-sm text-blue-800">
-            <strong>Web SDK Support:</strong> This interface supports Vapi Assistants only. 
-            Workflows are deprecated and not supported by the Web SDK.
-          </p>
-        </div>
-      )}
+  // Mock data for previous calls
+  const mockPreviousCalls = [
+    {
+      id: 1,
+      phone: "+1 (555) 987-6543",
+      duration: "1:35",
+      timestamp: "01/08/2025, 15:16:07"
+    },
+    {
+      id: 2,
+      phone: "+1 (555) 123-4567",
+      duration: "2:12",
+      timestamp: "01/08/2025, 14:45:22"
+    },
+    {
+      id: 3,
+      phone: "+1 (555) 456-7890",
+      duration: "0:58",
+      timestamp: "01/08/2025, 13:28:15"
+    }
+  ];
 
-      {/* Configuration Panel */}
+  return (
+    <div className="space-y-8">
+      {/* Configuration Panel - Hidden when call is active */}
       {!isCallActive && !isConnecting && (
         <div className="bg-gray-50 rounded-lg p-4 space-y-4">
           <div className="flex items-center gap-2">
@@ -96,12 +108,6 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
               </p>
             </div>
           )}
-          
-          {!useCustomIds && agentData && (
-            <div className="text-sm text-gray-600">
-              Using agent configuration: <strong>{agentData.ai_assistant_name || agentData.business_name || 'Default Agent'}</strong>
-            </div>
-          )}
         </div>
       )}
 
@@ -109,146 +115,141 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-red-700 text-sm">{error}</p>
-          {error.includes('workflow') && (
-            <div className="mt-2 text-xs text-red-600">
-              <strong>Note:</strong> Workflows are not supported by the Web SDK. 
-              Please use an Assistant ID instead or create an Assistant from your Workflow in the Vapi Dashboard.
-            </div>
-          )}
         </div>
       )}
 
-      {/* Call Interface */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M5.0823 15.8335C3.99888 15.7269 3.18725 15.4015 2.64293 14.8572C1.66663 13.8809 1.66663 12.3095 1.66663 9.16683V8.75016C1.66663 5.60746 1.66663 4.03612 2.64293 3.0598C3.61925 2.0835 5.19059 2.0835 8.33329 2.0835H11.6666C14.8093 2.0835 16.3807 2.0835 17.357 3.0598C18.3333 4.03612 18.3333 5.60746 18.3333 8.75016V9.16683C18.3333 12.3095 18.3333 13.8809 17.357 14.8572C16.3807 15.8335 14.8093 15.8335 11.6666 15.8335C11.1995 15.8439 10.8275 15.8794 10.4621 15.9627C9.46346 16.1926 8.53871 16.7036 7.62485 17.1492C6.32270 17.7842 5.67163 18.1017 5.26303 17.8044C4.48137 17.2222 5.24541 15.4184 5.41663 14.5835"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            <h3 className="text-lg font-semibold text-black">Voice Test Call</h3>
-            {isCallActive && (
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-green-600 font-medium">
-                  {formatDuration(callMetrics.duration)}
-                </span>
-              </div>
-            )}
-          </div>
+      {/* Test Conversation Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-black mb-1">Test Conversation</h2>
+          <p className="text-sm text-gray-600">Start a test call to begin conversation</p>
+        </div>
 
-          {/* Main Call Button */}
+        {/* Main Call Button */}
+        <div className="flex justify-center">
           {!isCallActive ? (
-            <Button
+            <button
               onClick={handleStartCall}
               disabled={isConnecting || (useCustomIds && !customAssistantId)}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg disabled:opacity-50"
+              className="w-16 h-16 bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center transition-colors"
             >
               {isConnecting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Connecting...
-                </>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
               ) : (
-                <>
-                  <Phone className="w-4 h-4 mr-2" />
-                  Start Voice Call
-                </>
+                <Play className="w-6 h-6 ml-1" fill="white" />
               )}
-            </Button>
+            </button>
           ) : (
-            <Button
+            <button
               onClick={endCall}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg"
+              className="w-16 h-16 bg-black hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-colors"
             >
-              <PhoneOff className="w-4 h-4 mr-2" />
-              End Call
-            </Button>
+              <Square className="w-6 h-6" fill="white" />
+            </button>
           )}
         </div>
 
         {/* Call Status */}
-        <div className="mb-6">
-          {isConnecting && (
-            <p className="text-sm text-gray-600">
-              <span className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600 mr-2"></span>
-              Connecting to voice agent...
-            </p>
-          )}
-          {!isCallActive && !isConnecting && (
-            <p className="text-sm text-gray-600">Click "Start Voice Call" to begin testing your agent</p>
-          )}
-        </div>
-
-        {/* Call Controls */}
         {isCallActive && (
-          <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Call Controls</h4>
-            <div className="flex justify-center gap-4">
-              <Button
-                onClick={toggleMute}
-                variant="outline"
-                size="sm"
-                className={`w-12 h-12 rounded-full ${isMuted ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}
-              >
-                {isMuted ? (
-                  <MicOff className="w-5 h-5 text-red-600" />
-                ) : (
-                  <Mic className="w-5 h-5 text-gray-600" />
-                )}
-              </Button>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-green-600 font-medium">
+                Call Active - {formatDuration(callMetrics.duration)}
+              </span>
             </div>
           </div>
         )}
 
-        {/* Audio Visualization */}
-        {isCallActive && (
-          <div className="mb-6">
-            <div className="flex justify-center items-end gap-1 h-12">
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-2 bg-blue-500 rounded-full pulse-bar"
-                  style={{ height: `${Math.random() * 40 + 10}px` }}
-                ></div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Live Transcript */}
-        {transcript && (
-          <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Live Transcript</h4>
-            <div className="bg-gray-50 rounded-lg p-3 max-h-32 overflow-y-auto">
-              <pre className="text-sm text-gray-700 whitespace-pre-wrap">{transcript}</pre>
-            </div>
-          </div>
-        )}
-
-        {/* Test Scenarios (only when not in call) */}
-        {!isCallActive && !isConnecting && testScenarios.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Suggested Test Scenarios</h4>
-            <div className="grid grid-cols-1 gap-2">
-              {testScenarios.map((scenario, index) => (
-                <div
-                  key={index}
-                  className="p-3 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50"
-                >
-                  "{scenario}"
+        {/* Previous Calls List */}
+        {!isCallActive && !isConnecting && (
+          <div className="space-y-3">
+            {mockPreviousCalls.map((call) => (
+              <div key={call.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <Phone className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{call.phone}</p>
+                    <p className="text-sm text-gray-500">{call.timestamp}</p>
+                  </div>
+                  <span className="text-sm text-gray-600">{call.duration}</span>
                 </div>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Start a voice call and try asking these questions to test your agent's responses.
-            </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="text-xs">
+                    Transcript
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    Replay
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
+      </div>
+
+      {/* Call Controls Section */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-black">Call Controls</h2>
+        <div className="flex justify-center gap-6">
+          <button
+            onClick={toggleMute}
+            disabled={!isCallActive}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+              !isCallActive 
+                ? 'bg-gray-300 cursor-not-allowed' 
+                : isMuted 
+                  ? 'bg-red-500 hover:bg-red-600 text-white' 
+                  : 'bg-black hover:bg-gray-800 text-white'
+            }`}
+          >
+            {isMuted ? (
+              <MicOff className="w-5 h-5" />
+            ) : (
+              <Mic className="w-5 h-5" />
+            )}
+          </button>
+          <button
+            disabled={!isCallActive}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+              !isCallActive 
+                ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
+                : 'bg-black hover:bg-gray-800 text-white'
+            }`}
+          >
+            <Volume2 className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Live Transcript */}
+      {transcript && (
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium text-black">Live Transcript</h3>
+          <div className="bg-gray-50 rounded-lg p-4 max-h-32 overflow-y-auto">
+            <pre className="text-sm text-gray-700 whitespace-pre-wrap">{transcript}</pre>
+          </div>
+        </div>
+      )}
+
+      {/* Test Scenarios Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-black mb-1">Test Scenarios</h2>
+          <p className="text-sm text-gray-600">Try asking these common customer scenarios</p>
+        </div>
+        <div className="space-y-3">
+          {testScenarios.map((scenario, index) => (
+            <div
+              key={index}
+              className="p-3 border border-gray-200 rounded-lg bg-white text-sm text-gray-700"
+            >
+              {scenario}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
