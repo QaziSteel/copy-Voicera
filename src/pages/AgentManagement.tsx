@@ -76,7 +76,9 @@ const AgentManagement = () => {
   // State for all tabs
   const [loading, setLoading] = useState(true);
   const [isAgentLive, setIsAgentLive] = useState(true);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState('basic-info');
+  const [assistantId, setAssistantId] = useState<string | null>(null);
   
   // Multi-agent state
   const [userAgents, setUserAgents] = useState<any[]>([]);
@@ -279,6 +281,7 @@ const AgentManagement = () => {
         // Advanced
         setDailySummary(data.wants_daily_summary || false);
         setEmailConfirmations(data.wants_email_confirmations || false);
+        setAssistantId(data.assistant_id || null);
         
         // Handle reminder settings (jsonb format)
         if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
@@ -405,6 +408,65 @@ const AgentManagement = () => {
   const removeFaq = useCallback((id: string) => {
     setFaqs(prev => prev.filter(faq => faq.id !== id));
   }, []);
+
+  const callStatusWebhook = useCallback(async (newStatus: 'Live' | 'Offline') => {
+    if (!contactNumber || !assistantId) {
+      toast({
+        title: "Error",
+        description: "Contact number or assistant ID not found. Please save your agent settings first.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const response = await fetch('https://teamhypergrowth.app.n8n.cloud/webhook/9053f9bc-bd58-44b6-b83e-17b2174446f6', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone_number: contactNumber,
+          assistant_id: assistantId,
+          status: newStatus
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook failed with status: ${response.status}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error calling status webhook:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update agent status. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  }, [contactNumber, assistantId, toast]);
+
+  const handleStatusToggle = useCallback(async () => {
+    if (isTogglingStatus) return;
+
+    const newStatus = isAgentLive ? 'Offline' : 'Live';
+    setIsTogglingStatus(true);
+
+    try {
+      const success = await callStatusWebhook(newStatus);
+      if (success) {
+        setIsAgentLive(!isAgentLive);
+        toast({
+          title: "Success",
+          description: `Agent is now ${newStatus}`,
+        });
+      }
+    } finally {
+      setIsTogglingStatus(false);
+    }
+  }, [isAgentLive, isTogglingStatus, callStatusWebhook, toast]);
 
 
   const renderBasicInfo = () => (
@@ -629,10 +691,11 @@ const AgentManagement = () => {
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <button 
-                onClick={() => setIsAgentLive(!isAgentLive)}
-                className={`px-4 py-2 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors`}
+                onClick={handleStatusToggle}
+                disabled={isTogglingStatus || !contactNumber || !assistantId}
+                className={`px-4 py-2 ${isAgentLive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {isAgentLive ? 'Go Offline' : 'Go Live'}
+                {isTogglingStatus ? 'Updating...' : (isAgentLive ? 'Go Offline' : 'Go Live')}
               </button>
               
               {/* Agent selector removed - using back button for navigation */}
