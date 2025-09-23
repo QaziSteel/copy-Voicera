@@ -123,6 +123,13 @@ const AgentManagement = () => {
   const [handlingUnknown, setHandlingUnknown] = useState('');
   const [answerTime, setAnswerTime] = useState('');
   
+  // New states for dropdown options
+  const [selectedAssistantName, setSelectedAssistantName] = useState('default');
+  const [customAssistantName, setCustomAssistantName] = useState('');
+  const [selectedAnswerTime, setSelectedAnswerTime] = useState('business');
+  const [customAnswerTime, setCustomAnswerTime] = useState('');
+  const [selectedGreetingStyle, setSelectedGreetingStyle] = useState('warm');
+  
   // Booking
   const [services, setServices] = useState<string[]>([]);
   const [appointmentDuration, setAppointmentDuration] = useState('');
@@ -140,6 +147,41 @@ const AgentManagement = () => {
   const [dailySummary, setDailySummary] = useState(false);
   const [emailConfirmations, setEmailConfirmations] = useState(false);
   const [autoReminders, setAutoReminders] = useState(false);
+
+  // Options arrays
+  const assistantNameOptions = [
+    { id: 'default', label: `Your ${businessName || '[Business Name]'} Assistant` },
+    { id: 'custom', label: 'Custom name' }
+  ];
+
+  const scheduleOptions = [
+    { id: '24/7', label: '24/7 - Always answer calls' },
+    { id: 'business', label: 'During business hours' },
+    { id: 'custom', label: 'Custom schedule' }
+  ];
+
+  const greetingOptions = [
+    {
+      id: 'warm',
+      label: 'Warm & Reassuring',
+      text: "Hello, you're through to [Business Name]. I'm here to help, how can I assist?"
+    },
+    {
+      id: 'professional',
+      label: 'Professional & Direct',
+      text: "Good [morning/afternoon], [Business Name] speaking. How may I help you today?"
+    },
+    {
+      id: 'friendly',
+      label: 'Friendly & Casual',
+      text: "Hi there! Thanks for calling [Business Name]. What can I do for you?"
+    },
+    {
+      id: 'efficient',
+      label: 'Efficient & Brief',
+      text: "[Business Name], how can I help?"
+    }
+  ];
 
   // Load data on component mount
   useEffect(() => {
@@ -336,12 +378,40 @@ const AgentManagement = () => {
         setBusinessLocation(data.primary_location || '');
         
         // AI Personality
-        setAiAssistantName(data.ai_assistant_name || '');
+        const savedAssistantName = data.ai_assistant_name || '';
+        const defaultAssistantName = `Your ${data.business_name || '[Business Name]'} Assistant`;
+        if (savedAssistantName === defaultAssistantName) {
+          setSelectedAssistantName('default');
+          setCustomAssistantName('');
+        } else {
+          setSelectedAssistantName('custom');
+          setCustomAssistantName(savedAssistantName);
+        }
+        setAiAssistantName(savedAssistantName);
+        
         setVoiceStyle(data.ai_voice_style || '');
         setSelectedVoice(data.ai_voice_style || '');
-        setGreetingStyle(data.ai_greeting_style || {});
+        
+        // Initialize greeting style
+        const savedGreeting = data.ai_greeting_style;
+        if (typeof savedGreeting === 'object' && savedGreeting && !Array.isArray(savedGreeting) && 'id' in savedGreeting) {
+          setSelectedGreetingStyle(savedGreeting.id as string);
+        } else {
+          setSelectedGreetingStyle('warm');
+        }
+        setGreetingStyle(savedGreeting || {});
+        
+        // Initialize answer time
+        const savedSchedule = data.ai_call_schedule || '';
+        if (['24/7', 'business'].includes(savedSchedule)) {
+          setSelectedAnswerTime(savedSchedule);
+          setCustomAnswerTime('');
+        } else {
+          setSelectedAnswerTime('custom');
+          setCustomAnswerTime(savedSchedule);
+        }
+        setAnswerTime(savedSchedule);
         setHandlingUnknown(data.ai_handling_unknown || '');
-        setAnswerTime(data.ai_call_schedule || '');
         
         // Booking
         setServices(isStringArray(data.services) ? data.services : []);
@@ -402,11 +472,11 @@ const AgentManagement = () => {
         business_types: allBusinessTypes as any,
         primary_location: businessLocation,
         contact_number: contactNumber,
-        ai_assistant_name: aiAssistantName,
+        ai_assistant_name: selectedAssistantName === 'custom' ? customAssistantName : aiAssistantName,
         ai_voice_style: selectedVoice,
-        ai_greeting_style: greetingStyle,
+        ai_greeting_style: greetingOptions.find(g => g.id === selectedGreetingStyle) || greetingStyle,
         ai_handling_unknown: handlingUnknown,
-        ai_call_schedule: answerTime,
+        ai_call_schedule: selectedAnswerTime === 'custom' ? customAnswerTime : selectedAnswerTime,
         services: services as any,
         appointment_duration: appointmentDuration,
         business_days: businessDays as any,
@@ -600,12 +670,42 @@ const AgentManagement = () => {
       if (error) throw error;
       
       if (data) {
-        setAiAssistantName(data.ai_assistant_name || '');
+        // Reset assistant name
+        const savedAssistantName = data.ai_assistant_name || '';
+        const defaultAssistantName = `Your ${businessName || '[Business Name]'} Assistant`;
+        if (savedAssistantName === defaultAssistantName) {
+          setSelectedAssistantName('default');
+          setCustomAssistantName('');
+        } else {
+          setSelectedAssistantName('custom');
+          setCustomAssistantName(savedAssistantName);
+        }
+        setAiAssistantName(savedAssistantName);
+        
+        // Reset voice style
         setVoiceStyle(data.ai_voice_style || '');
         setSelectedVoice(data.ai_voice_style || '');
-        setGreetingStyle(data.ai_greeting_style || {});
+        
+        // Reset greeting style
+        const savedGreeting = data.ai_greeting_style;
+        if (typeof savedGreeting === 'object' && savedGreeting && !Array.isArray(savedGreeting) && 'id' in savedGreeting) {
+          setSelectedGreetingStyle(savedGreeting.id as string);
+        } else {
+          setSelectedGreetingStyle('warm');
+        }
+        setGreetingStyle(savedGreeting || {});
+        
+        // Reset answer time
+        const savedSchedule = data.ai_call_schedule || '';
+        if (['24/7', 'business'].includes(savedSchedule)) {
+          setSelectedAnswerTime(savedSchedule);
+          setCustomAnswerTime('');
+        } else {
+          setSelectedAnswerTime('custom');
+          setCustomAnswerTime(savedSchedule);
+        }
+        setAnswerTime(savedSchedule);
         setHandlingUnknown(data.ai_handling_unknown || '');
-        setAnswerTime(data.ai_call_schedule || '');
         
         toast({
           title: "Changes Discarded",
@@ -1194,8 +1294,16 @@ const AgentManagement = () => {
                           AI assistant name
                         </label>
                         <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>Your [Business Name] Assistant</option>
+                          <select 
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                            value={selectedAssistantName}
+                            onChange={(e) => setSelectedAssistantName(e.target.value)}
+                          >
+                            {assistantNameOptions.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.label}
+                              </option>
+                            ))}
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
@@ -1213,6 +1321,15 @@ const AgentManagement = () => {
                             />
                           </svg>
                         </div>
+                        {selectedAssistantName === 'custom' && (
+                          <input
+                            type="text"
+                            value={customAssistantName}
+                            onChange={(e) => setCustomAssistantName(e.target.value)}
+                            placeholder="Enter custom assistant name"
+                            className="mt-3 w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-700 placeholder-gray-400 bg-white"
+                          />
+                        )}
                       </div>
                     </div>
 
@@ -1223,8 +1340,16 @@ const AgentManagement = () => {
                           Answering Hours
                         </label>
                         <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>During business hours</option>
+                          <select 
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                            value={selectedAnswerTime}
+                            onChange={(e) => setSelectedAnswerTime(e.target.value)}
+                          >
+                            {scheduleOptions.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.label}
+                              </option>
+                            ))}
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
@@ -1242,6 +1367,15 @@ const AgentManagement = () => {
                             />
                           </svg>
                         </div>
+                        {selectedAnswerTime === 'custom' && (
+                          <input
+                            type="text"
+                            value={customAnswerTime}
+                            onChange={(e) => setCustomAnswerTime(e.target.value)}
+                            placeholder="Enter custom schedule (e.g., Mon-Fri 9am-5pm)"
+                            className="mt-3 w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-700 placeholder-gray-400 bg-white"
+                          />
+                        )}
                       </div>
 
                       <div>
@@ -1249,10 +1383,16 @@ const AgentManagement = () => {
                           AI greeting style
                         </label>
                         <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>
-                              Warm & Reassuring: "Hello, you're through to [Business Name]. I'm here to help, how can I assist?"
-                            </option>
+                          <select 
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                            value={selectedGreetingStyle}
+                            onChange={(e) => setSelectedGreetingStyle(e.target.value)}
+                          >
+                            {greetingOptions.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.label}: "{option.text}"
+                              </option>
+                            ))}
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
