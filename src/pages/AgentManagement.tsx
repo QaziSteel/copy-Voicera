@@ -1744,7 +1744,7 @@ const AgentManagement = () => {
                               placeholder="From"
                               value={businessHours.from}
                               onChange={(e) => setBusinessHours({...businessHours, from: e.target.value})}
-                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
                             />
                             <svg
                               className="absolute right-4 top-1/2 transform -translate-y-1/2"
@@ -1775,7 +1775,7 @@ const AgentManagement = () => {
                               placeholder="To"
                               value={businessHours.to}
                               onChange={(e) => setBusinessHours({...businessHours, to: e.target.value})}
-                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
+                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
                             />
                             <svg
                               className="absolute right-4 top-1/2 transform -translate-y-1/2"
