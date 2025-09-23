@@ -163,11 +163,20 @@ const AgentManagement = () => {
     return baseOptions;
   }, [businessName, customAssistantName, selectedAssistantName]);
 
-  const scheduleOptions = [
-    { id: '24/7', label: '24/7 - Always answer calls' },
-    { id: 'business', label: 'During business hours' },
-    { id: 'custom', label: 'Custom schedule' }
-  ];
+  const scheduleOptions = React.useMemo(() => {
+    const baseOptions = [
+      { id: '24/7', label: '24/7 - Always answer calls' },
+      { id: 'business', label: 'During business hours' },
+      { id: 'custom', label: 'Custom schedule' }
+    ];
+    
+    // If there's a custom schedule, add it as an option
+    if (customAnswerTime.trim() && (selectedAnswerTime === 'custom' || selectedAnswerTime === 'custom-schedule')) {
+      baseOptions.splice(-1, 0, { id: 'custom-schedule', label: customAnswerTime });
+    }
+    
+    return baseOptions;
+  }, [customAnswerTime, selectedAnswerTime]);
 
   const greetingOptions = [
     {
@@ -416,7 +425,7 @@ const AgentManagement = () => {
           setSelectedAnswerTime(savedSchedule);
           setCustomAnswerTime('');
         } else {
-          setSelectedAnswerTime('custom');
+          setSelectedAnswerTime('custom-schedule');
           setCustomAnswerTime(savedSchedule);
         }
         setAnswerTime(savedSchedule);
@@ -485,7 +494,7 @@ const AgentManagement = () => {
         ai_voice_style: selectedVoice,
         ai_greeting_style: greetingOptions.find(g => g.id === selectedGreetingStyle) || greetingStyle,
         ai_handling_unknown: handlingUnknown,
-        ai_call_schedule: selectedAnswerTime === 'custom' ? customAnswerTime : selectedAnswerTime,
+        ai_call_schedule: selectedAnswerTime === 'custom-schedule' ? customAnswerTime : (selectedAnswerTime === 'custom' ? customAnswerTime : selectedAnswerTime),
         services: services as any,
         appointment_duration: appointmentDuration,
         business_days: businessDays as any,
@@ -710,7 +719,7 @@ const AgentManagement = () => {
           setSelectedAnswerTime(savedSchedule);
           setCustomAnswerTime('');
         } else {
-          setSelectedAnswerTime('custom');
+          setSelectedAnswerTime('custom-schedule');
           setCustomAnswerTime(savedSchedule);
         }
         setAnswerTime(savedSchedule);
@@ -1373,42 +1382,66 @@ const AgentManagement = () => {
                           Answering Hours
                         </label>
                         <div className="relative">
-                          <select 
-                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
-                            value={selectedAnswerTime}
-                            onChange={(e) => setSelectedAnswerTime(e.target.value)}
-                          >
-                            {scheduleOptions.map((option) => (
-                              <option key={option.id} value={option.id}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          <svg
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                              stroke="#141B34"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                          {selectedAnswerTime === 'custom' ? (
+                            <input
+                              type="text"
+                              value={customAnswerTime}
+                              onChange={(e) => setCustomAnswerTime(e.target.value)}
+                              placeholder="Enter custom schedule (e.g., Mon-Fri 9am-5pm)"
+                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-700 bg-white"
+                              autoFocus
+                              onBlur={() => {
+                                if (customAnswerTime.trim()) {
+                                  setSelectedAnswerTime('custom-schedule');
+                                } else {
+                                  setSelectedAnswerTime('24/7');
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && customAnswerTime.trim()) {
+                                  setSelectedAnswerTime('custom-schedule');
+                                  e.currentTarget.blur();
+                                }
+                              }}
                             />
-                          </svg>
+                          ) : (
+                            <>
+                              <select 
+                                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                                value={selectedAnswerTime === 'custom' && customAnswerTime.trim() ? 'custom-schedule' : selectedAnswerTime}
+                                onChange={(e) => {
+                                  if (e.target.value === 'custom') {
+                                    setSelectedAnswerTime('custom');
+                                    setCustomAnswerTime('');
+                                  } else {
+                                    setSelectedAnswerTime(e.target.value);
+                                  }
+                                }}
+                              >
+                                {scheduleOptions.map((option) => (
+                                  <option key={option.id} value={option.id}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <svg
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
+                                <path
+                                  d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                                  stroke="#141B34"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </>
+                          )}
                         </div>
-                        {selectedAnswerTime === 'custom' && (
-                          <input
-                            type="text"
-                            value={customAnswerTime}
-                            onChange={(e) => setCustomAnswerTime(e.target.value)}
-                            placeholder="Enter custom schedule (e.g., Mon-Fri 9am-5pm)"
-                            className="mt-3 w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-700 placeholder-gray-400 bg-white"
-                          />
-                        )}
                       </div>
 
                       <div>
