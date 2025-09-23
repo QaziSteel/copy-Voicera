@@ -1294,42 +1294,55 @@ const AgentManagement = () => {
                           AI assistant name
                         </label>
                         <div className="relative">
-                          <select 
-                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
-                            value={selectedAssistantName}
-                            onChange={(e) => setSelectedAssistantName(e.target.value)}
-                          >
-                            {assistantNameOptions.map((option) => (
-                              <option key={option.id} value={option.id}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          <svg
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                              stroke="#141B34"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                          {selectedAssistantName === 'custom' ? (
+                            <input
+                              type="text"
+                              value={customAssistantName}
+                              onChange={(e) => setCustomAssistantName(e.target.value)}
+                              placeholder="Enter custom assistant name"
+                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-700 bg-white"
+                              onBlur={() => {
+                                if (!customAssistantName.trim()) {
+                                  setSelectedAssistantName('default');
+                                }
+                              }}
                             />
-                          </svg>
+                          ) : (
+                            <>
+                              <select 
+                                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                                value={selectedAssistantName}
+                                onChange={(e) => {
+                                  setSelectedAssistantName(e.target.value);
+                                  if (e.target.value === 'custom') {
+                                    setCustomAssistantName('');
+                                  }
+                                }}
+                              >
+                                {assistantNameOptions.map((option) => (
+                                  <option key={option.id} value={option.id}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <svg
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
+                                <path
+                                  d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                                  stroke="#141B34"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </>
+                          )}
                         </div>
-                        {selectedAssistantName === 'custom' && (
-                          <input
-                            type="text"
-                            value={customAssistantName}
-                            onChange={(e) => setCustomAssistantName(e.target.value)}
-                            placeholder="Enter custom assistant name"
-                            className="mt-3 w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-700 placeholder-gray-400 bg-white"
-                          />
-                        )}
                       </div>
                     </div>
 
