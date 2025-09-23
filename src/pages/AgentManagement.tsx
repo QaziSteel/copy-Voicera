@@ -117,6 +117,8 @@ const AgentManagement = () => {
   // AI Personality  
   const [aiAssistantName, setAiAssistantName] = useState('');
   const [voiceStyle, setVoiceStyle] = useState('');
+  const [voices, setVoices] = useState<any[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState<string>('');
   const [greetingStyle, setGreetingStyle] = useState<any>({});
   const [handlingUnknown, setHandlingUnknown] = useState('');
   const [answerTime, setAnswerTime] = useState('');
@@ -143,7 +145,30 @@ const AgentManagement = () => {
   useEffect(() => {
     loadUserAgents();
     
-    // Handle OAuth callback
+  
+  // Load voices from database
+  useEffect(() => {
+    const loadVoices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('voices')
+          .select('*')
+          .order('display_name');
+        
+        if (error) {
+          console.error('Error loading voices:', error);
+        } else {
+          setVoices(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching voices:', error);
+      }
+    };
+
+    loadVoices();
+  }, []);
+
+  // Handle OAuth callback
     const urlParams = new URLSearchParams(location.search);
     const oauthStatus = urlParams.get('oauth');
     const userEmail = urlParams.get('email');
@@ -312,6 +337,7 @@ const AgentManagement = () => {
         // AI Personality
         setAiAssistantName(data.ai_assistant_name || '');
         setVoiceStyle(data.ai_voice_style || '');
+        setSelectedVoice(data.ai_voice_style || '');
         setGreetingStyle(data.ai_greeting_style || {});
         setHandlingUnknown(data.ai_handling_unknown || '');
         setAnswerTime(data.ai_call_schedule || '');
@@ -376,7 +402,7 @@ const AgentManagement = () => {
         primary_location: businessLocation,
         contact_number: contactNumber,
         ai_assistant_name: aiAssistantName,
-        ai_voice_style: voiceStyle,
+        ai_voice_style: selectedVoice,
         ai_greeting_style: greetingStyle,
         ai_handling_unknown: handlingUnknown,
         ai_call_schedule: answerTime,
@@ -575,6 +601,7 @@ const AgentManagement = () => {
       if (data) {
         setAiAssistantName(data.ai_assistant_name || '');
         setVoiceStyle(data.ai_voice_style || '');
+        setSelectedVoice(data.ai_voice_style || '');
         setGreetingStyle(data.ai_greeting_style || {});
         setHandlingUnknown(data.ai_handling_unknown || '');
         setAnswerTime(data.ai_call_schedule || '');
@@ -1131,9 +1158,17 @@ const AgentManagement = () => {
                         <label className="block text-lg font-semibold text-black mb-3">
                           AI voice style
                         </label>
-                        <div className="relative">
-                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
-                            <option>Friendly Female</option>
+                         <div className="relative">
+                          <select 
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                            value={selectedVoice}
+                            onChange={(e) => setSelectedVoice(e.target.value)}
+                          >
+                            {voices.map((voice) => (
+                              <option key={voice.id} value={voice.voice_id}>
+                                {voice.display_name}
+                              </option>
+                            ))}
                           </select>
                           <svg
                             className="absolute right-4 top-1/2 transform -translate-y-1/2"
