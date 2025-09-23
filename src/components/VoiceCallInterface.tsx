@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useVapiCall } from '@/hooks/useVapiCall';
+import { useTestCallLogs } from '@/hooks/useTestCallLogs';
 import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX, Play, Pause, Square } from 'lucide-react';
 
 interface VoiceCallInterfaceProps {
@@ -14,6 +15,8 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
   assistantId,
   testScenarios
 }) => {
+  const [currentTestCallId, setCurrentTestCallId] = useState<string | null>(null);
+  
   // Check if assistant_id exists in agentData
   const hasAssistantId = agentData?.assistant_id;
   
@@ -29,6 +32,8 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
     callMetrics,
     formatDuration
   } = useVapiCall();
+  
+  const { testCallLogs, loading: testCallLogsLoading, createTestCallLog, updateTestCallLog } = useTestCallLogs(agentData?.id || '');
 
   const handleStartCall = async () => {
     if (!hasAssistantId) {
@@ -36,36 +41,68 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       return;
     }
 
+    const handleCallStart = async (callId: string) => {
+      try {
+        const testCallLog = await createTestCallLog({
+          agent_id: agentData?.id || '',
+          project_id: agentData?.project_id || '',
+          assistant_id: agentData?.assistant_id || '',
+          call_started_at: new Date().toISOString(),
+        });
+        setCurrentTestCallId(testCallLog.id);
+      } catch (error) {
+        console.error('Error creating test call log:', error);
+      }
+    };
+
+    const handleCallEnd = async (callId: string, duration: number) => {
+      if (currentTestCallId) {
+        try {
+          await updateTestCallLog({
+            id: currentTestCallId,
+            call_ended_at: new Date().toISOString(),
+            duration_seconds: duration,
+          });
+        } catch (error) {
+          console.error('Error updating test call log:', error);
+        } finally {
+          setCurrentTestCallId(null);
+        }
+      }
+    };
+
     const config = {
-      assistantId: agentData.assistant_id
+      assistantId: agentData.assistant_id,
+      onCallStart: handleCallStart,
+      onCallEnd: handleCallEnd,
     };
     
     console.log('Using Assistant ID:', config.assistantId);
-    console.log('Final call config:', config);
     await startCall(config);
   };
 
-  // Mock data for previous calls
-  const mockPreviousCalls = [
-    {
-      id: 1,
-      phone: "+1 (555) 987-6543",
-      duration: "1:35",
-      timestamp: "01/08/2025, 15:16:07"
-    },
-    {
-      id: 2,
-      phone: "+1 (555) 123-4567",
-      duration: "2:12",
-      timestamp: "01/08/2025, 14:45:22"
-    },
-    {
-      id: 3,
-      phone: "+1 (555) 456-7890",
-      duration: "0:58",
-      timestamp: "01/08/2025, 13:28:15"
-    }
-  ];
+  const formatTestCallDuration = (durationSeconds: number | null) => {
+    if (!durationSeconds) return '0s';
+    const minutes = Math.floor(durationSeconds / 60);
+    const seconds = durationSeconds % 60;
+    return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+  };
+
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const callTime = new Date(timestamp);
+    const diffMs = now.getTime() - callTime.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} mins ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} days ago`;
+  };
 
   return (
     <div className="space-y-6">
@@ -135,31 +172,31 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
               </div>
             )}
 
-            {/* Previous Calls List */}
+            {/* Previous Test Calls List */}
             {!isCallActive && !isConnecting && (
               <div className="space-y-3">
-                {mockPreviousCalls.map((call) => (
-                  <div key={call.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <Phone className="w-4 h-4 text-white" />
+                {testCallLogsLoading ? (
+                  <div className="text-sm text-gray-500 text-center py-4">Loading test calls...</div>
+                ) : testCallLogs.length === 0 ? (
+                  <div className="text-sm text-gray-500 text-center py-4">No test calls yet</div>
+                ) : (
+                  testCallLogs.map((call) => (
+                    <div key={call.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <Phone className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">Test Call</p>
+                          <p className="text-sm text-gray-500">{formatTimeAgo(call.created_at)}</p>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          {formatTestCallDuration(call.duration_seconds)}
+                        </span>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{call.phone}</p>
-                        <p className="text-sm text-gray-500">{call.timestamp}</p>
-                      </div>
-                      <span className="text-sm text-gray-600">{call.duration}</span>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Transcript
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Replay
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>

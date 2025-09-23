@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 interface VapiCallConfig {
   assistantId?: string;
   agentData?: any;
+  onCallStart?: (callId: string) => void;
+  onCallEnd?: (callId: string, duration: number) => void;
 }
 
 interface CallMetrics {
@@ -26,6 +28,7 @@ export const useVapiCall = () => {
   
   const vapiInstance = useRef<any>(null);
   const durationInterval = useRef<NodeJS.Timeout | null>(null);
+  const callbacksRef = useRef<{ onCallStart?: (callId: string) => void; onCallEnd?: (callId: string, duration: number) => void }>({});
 
   // Initialize Vapi SDK
   const initializeVapi = useCallback(async () => {
@@ -60,6 +63,11 @@ export const useVapiCall = () => {
           duration: 0
         }));
         
+        // Call the onCallStart callback if provided
+        if (callbacksRef.current.onCallStart) {
+          callbacksRef.current.onCallStart('test-call-' + Date.now());
+        }
+        
         // Start duration counter
         durationInterval.current = setInterval(() => {
           setCallMetrics(prev => ({
@@ -73,10 +81,20 @@ export const useVapiCall = () => {
         console.log('Vapi call ended');
         setIsCallActive(false);
         setIsConnecting(false);
+        
+        const endTime = new Date();
+        const finalDuration = callMetrics.startTime ? Math.floor((endTime.getTime() - callMetrics.startTime.getTime()) / 1000) : 0;
+        
         setCallMetrics(prev => ({
           ...prev,
-          endTime: new Date()
+          endTime,
+          duration: finalDuration
         }));
+        
+        // Call the onCallEnd callback if provided
+        if (callbacksRef.current.onCallEnd) {
+          callbacksRef.current.onCallEnd('test-call-' + Date.now(), finalDuration);
+        }
         
         if (durationInterval.current) {
           clearInterval(durationInterval.current);
@@ -131,6 +149,9 @@ export const useVapiCall = () => {
       setError(null);
       setTranscript('');
       setIsConnecting(true);
+      
+      // Store callbacks for later use
+      callbacksRef.current = { onCallStart: config.onCallStart, onCallEnd: config.onCallEnd };
 
       await initializeVapi();
 

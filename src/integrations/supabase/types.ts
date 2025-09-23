@@ -432,6 +432,45 @@ export type Database = {
         }
         Relationships: []
       }
+      test_call_logs: {
+        Row: {
+          agent_id: string
+          assistant_id: string | null
+          call_ended_at: string | null
+          call_started_at: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          project_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          assistant_id?: string | null
+          call_ended_at?: string | null
+          call_started_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          project_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          assistant_id?: string | null
+          call_ended_at?: string | null
+          call_started_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          project_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
