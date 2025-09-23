@@ -79,15 +79,6 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
                   <span className="text-gray-500">{notification.description}</span>
                 </p>
                 <p className="text-gray-500 text-sm mt-2">{notification.time}</p>
-                
-                {notification.actionButton && (
-                  <button
-                    onClick={notification.actionButton.action}
-                    className="bg-black text-white px-5 py-2 rounded-lg text-xs font-semibold mt-3"
-                  >
-                    {notification.actionButton.text}
-                  </button>
-                )}
               </div>
             </div>
           ))}
