@@ -2140,7 +2140,7 @@ const AgentManagement = () => {
                       
                       {/* Daily Summary Toggle */}
                       <div className="flex-1 space-y-4">
-                        <label className="block text-lg font-semibold text-black">
+                        <label className="block text-lg font-semibold text-black truncate pr-2">
                           Do you want a daily summary of all calls and bookings?
                         </label>
                         <div className="flex items-center gap-4">
