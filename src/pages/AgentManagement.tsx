@@ -254,7 +254,10 @@ const AgentManagement = () => {
       if (data) {
         // Basic Info
         setBusinessName(data.business_name || '');
-        setBusinessType(Array.isArray(data.business_types) ? data.business_types.join(', ') : '');
+        // Extract type names from business type objects
+        const typeNames = Array.isArray(data.business_types) ? 
+          data.business_types.map((bt: any) => bt.type || bt).filter(Boolean) : [];
+        setBusinessType(typeNames.join(', '));
         setBusinessLocation(data.primary_location || '');
         
         // AI Personality
@@ -423,7 +426,10 @@ const AgentManagement = () => {
       
       if (data) {
         setBusinessName(data.business_name || '');
-        setBusinessType(Array.isArray(data.business_types) ? data.business_types.join(', ') : '');
+        // Extract type names from business type objects for discard
+        const typeNames = Array.isArray(data.business_types) ? 
+          data.business_types.map((bt: any) => bt.type || bt).filter(Boolean) : [];
+        setBusinessType(typeNames.join(', '));
         setBusinessLocation(data.primary_location || '');
         
         toast({
