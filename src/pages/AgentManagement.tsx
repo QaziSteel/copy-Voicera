@@ -1705,7 +1705,7 @@ const AgentManagement = () => {
                     {/* Second Row - Business Days & Hours */}
                     <div className="flex gap-5">
                       <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-6">
+                        <label className="block text-lg font-semibold text-black mb-3">
                           Select your business days
                         </label>
                         <div className="flex gap-3">
