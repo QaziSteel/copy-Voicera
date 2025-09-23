@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, ArrowLeft, RotateCcw } from "lucide-react";
 import { AgentToggle } from "@/components/ui/agent-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { useGoogleIntegration } from "@/hooks/useGoogleIntegration";
@@ -408,6 +408,179 @@ const AgentManagement = () => {
     setFaqs(prev => prev.filter(faq => faq.id !== id));
   }, []);
 
+  // Discard functions for each section
+  const discardBasicInfo = useCallback(async () => {
+    if (!selectedAgentId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('onboarding_responses')
+        .select('business_name, business_types, primary_location')
+        .eq('id', selectedAgentId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setBusinessName(data.business_name || '');
+        setBusinessType(Array.isArray(data.business_types) ? data.business_types.join(', ') : '');
+        setBusinessLocation(data.primary_location || '');
+        
+        toast({
+          title: "Changes Discarded",
+          description: "Business information has been reset to saved values",
+        });
+      }
+    } catch (error) {
+      console.error('Error discarding basic info:', error);
+      toast({
+        title: "Error",
+        description: "Failed to discard changes",
+        variant: "destructive",
+      });
+    }
+  }, [selectedAgentId, toast]);
+
+  const discardPersonality = useCallback(async () => {
+    if (!selectedAgentId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('onboarding_responses')
+        .select('ai_assistant_name, ai_voice_style, ai_greeting_style, ai_handling_unknown, ai_call_schedule')
+        .eq('id', selectedAgentId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setAiAssistantName(data.ai_assistant_name || '');
+        setVoiceStyle(data.ai_voice_style || '');
+        setGreetingStyle(data.ai_greeting_style || {});
+        setHandlingUnknown(data.ai_handling_unknown || '');
+        setAnswerTime(data.ai_call_schedule || '');
+        
+        toast({
+          title: "Changes Discarded",
+          description: "AI personality settings have been reset to saved values",
+        });
+      }
+    } catch (error) {
+      console.error('Error discarding personality:', error);
+      toast({
+        title: "Error",
+        description: "Failed to discard changes",
+        variant: "destructive",
+      });
+    }
+  }, [selectedAgentId, toast]);
+
+  const discardBooking = useCallback(async () => {
+    if (!selectedAgentId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('onboarding_responses')
+        .select('services, business_days, business_hours, schedule_full_action')
+        .eq('id', selectedAgentId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setServices(isStringArray(data.services) ? data.services : []);
+        setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
+        setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
+        setScheduleFullAction(data.schedule_full_action || '');
+        
+        toast({
+          title: "Changes Discarded",
+          description: "Booking settings have been reset to saved values",
+        });
+      }
+    } catch (error) {
+      console.error('Error discarding booking:', error);
+      toast({
+        title: "Error",
+        description: "Failed to discard changes",
+        variant: "destructive",
+      });
+    }
+  }, [selectedAgentId, toast]);
+
+  const discardFaqs = useCallback(async () => {
+    if (!selectedAgentId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('onboarding_responses')
+        .select('faq_data')
+        .eq('id', selectedAgentId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        const faqData = convertOnboardingFAQs(data.faq_data);
+        setFaqEnabled(faqData.enabled);
+        setFaqs(faqData.questions);
+        setNewQuestion('');
+        setNewAnswer('');
+        
+        toast({
+          title: "Changes Discarded",
+          description: "FAQ settings have been reset to saved values",
+        });
+      }
+    } catch (error) {
+      console.error('Error discarding FAQs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to discard changes",
+        variant: "destructive",
+      });
+    }
+  }, [selectedAgentId, toast]);
+
+  const discardAdvanced = useCallback(async () => {
+    if (!selectedAgentId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('onboarding_responses')
+        .select('ai_handling_unknown, wants_daily_summary, wants_email_confirmations, reminder_settings')
+        .eq('id', selectedAgentId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setHandlingUnknown(data.ai_handling_unknown || '');
+        setDailySummary(data.wants_daily_summary || false);
+        setEmailConfirmations(data.wants_email_confirmations || false);
+        
+        if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
+          const reminderData = data.reminder_settings as { wantsReminders?: boolean };
+          setAutoReminders(reminderData.wantsReminders || false);
+        } else {
+          setAutoReminders(false);
+        }
+        
+        toast({
+          title: "Changes Discarded",
+          description: "Advanced settings have been reset to saved values",
+        });
+      }
+    } catch (error) {
+      console.error('Error discarding advanced:', error);
+      toast({
+        title: "Error",
+        description: "Failed to discard changes",
+        variant: "destructive",
+      });
+    }
+  }, [selectedAgentId, toast]);
+
 
   const renderBasicInfo = () => (
     <div className="space-y-3 md:space-y-5">
@@ -424,11 +597,12 @@ const AgentManagement = () => {
           <p className="text-sm md:text-base lg:text-lg font-semibold text-gray-500">Basic information about your business that the AI agent will use.</p>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
-          <button className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-xl bg-white">
-            <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 20 20" fill="none">
-              <path d="M16.6743 1.66699V4.27715C16.6743 4.52203 16.3681 4.63289 16.2114 4.44477C14.6855 2.73991 12.468 1.66699 9.99996 1.66699C5.39758 1.66699 1.66663 5.39795 1.66663 10.0003C1.66663 14.6027 5.39758 18.3337 9.99996 18.3337C14.6023 18.3337 18.3333 14.6027 18.3333 10.0003" stroke="#141B34" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="text-sm md:text-base font-medium text-black">Refresh</span>
+          <button 
+            onClick={discardBasicInfo}
+            className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50"
+          >
+            <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="text-sm md:text-base font-medium text-black">Discard</span>
           </button>
           <button 
             onClick={saveChanges}
@@ -673,13 +847,14 @@ const AgentManagement = () => {
                     </div>
                     <p className="text-base font-semibold text-gray-500">Customize how your AI assistant communicates and engages with customers.</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl bg-white">
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                        <path d="M16.6743 1.66699V4.27715C16.6743 4.52203 16.3681 4.63289 16.2114 4.44477C14.6855 2.73991 12.468 1.66699 9.99996 1.66699C5.39758 1.66699 1.66663 5.39795 1.66663 10.0003C1.66663 14.6027 5.39758 18.3337 9.99996 18.3337C14.6023 18.3337 18.3333 14.6027 18.3333 10.0003" stroke="#141B34" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-sm font-medium text-black">Refresh</span>
-                    </button>
+                   <div className="flex items-center gap-3">
+                     <button 
+                       onClick={discardPersonality}
+                       className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50"
+                     >
+                       <RotateCcw className="w-4 h-4" />
+                       <span className="text-sm font-medium text-black">Discard</span>
+                     </button>
                     <button 
                       onClick={saveChanges}
                       className="flex items-center gap-2 px-3 py-2 bg-black text-white rounded-xl"
@@ -834,13 +1009,14 @@ const AgentManagement = () => {
                     </div>
                     <p className="text-lg font-semibold text-gray-500">Control how your calls and appointments are scheduled and managed.</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M16.6743 1.66699V4.27715C16.6743 4.52203 16.3681 4.63289 16.2114 4.44477C14.6855 2.73991 12.468 1.66699 9.99996 1.66699C5.39758 1.66699 1.66663 5.39795 1.66663 10.0003C1.66663 14.6027 5.39758 18.3337 9.99996 18.3337C14.6023 18.3337 18.3333 14.6027 18.3333 10.0003" stroke="#141B34" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-base font-medium text-black">Refresh</span>
-                    </button>
+                   <div className="flex items-center gap-3">
+                     <button 
+                       onClick={discardBooking}
+                       className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50"
+                     >
+                       <RotateCcw className="w-5 h-5" />
+                       <span className="text-base font-medium text-black">Discard</span>
+                     </button>
                     <button 
                       onClick={saveChanges}
                       className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl"
@@ -1081,13 +1257,14 @@ const AgentManagement = () => {
                     </div>
                     <p className="text-lg font-semibold text-gray-500">Manage the information your AI agent uses to answer questions accurately.</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M16.6743 1.66699V4.27715C16.6743 4.52203 16.3681 4.63289 16.2114 4.44477C14.6855 2.73991 12.468 1.66699 9.99996 1.66699C5.39758 1.66699 1.66663 5.39795 1.66663 10.0003C1.66663 14.6027 5.39758 18.3337 9.99996 18.3337C14.6023 18.3337 18.3333 14.6027 18.3333 10.0003" stroke="#141B34" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-base font-medium text-black">Refresh</span>
-                    </button>
+                   <div className="flex items-center gap-3">
+                     <button 
+                       onClick={discardFaqs}
+                       className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50"
+                     >
+                       <RotateCcw className="w-5 h-5" />
+                       <span className="text-base font-medium text-black">Discard</span>
+                     </button>
                     <button 
                       onClick={saveChanges}
                       className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl"
@@ -1215,13 +1392,14 @@ const AgentManagement = () => {
                     </div>
                     <p className="text-sm md:text-base lg:text-lg font-semibold text-gray-500">Fine-tune your AI agent's behavior, integrations, and system controls.</p>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <button className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-xl bg-white">
-                      <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 20 20" fill="none">
-                        <path d="M16.6743 1.66699V4.27715C16.6743 4.52203 16.3681 4.63289 16.2114 4.44477C14.6855 2.73991 12.468 1.66699 9.99996 1.66699C5.39758 1.66699 1.66663 5.39795 1.66663 10.0003C1.66663 14.6027 5.39758 18.3337 9.99996 18.3337C14.6023 18.3337 18.3333 14.6027 18.3333 10.0003" stroke="#141B34" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-sm md:text-base font-medium text-black">Refresh</span>
-                    </button>
+                   <div className="flex items-center gap-2 md:gap-3">
+                     <button 
+                       onClick={discardAdvanced}
+                       className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50"
+                     >
+                       <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                       <span className="text-sm md:text-base font-medium text-black">Discard</span>
+                     </button>
                     <button 
                       onClick={saveChanges}
                       className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-1.5 md:py-2 bg-black text-white rounded-xl"
