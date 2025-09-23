@@ -2090,9 +2090,9 @@ const AgentManagement = () => {
                          <div className="relative">
                           <button
                             onClick={() => setHandlingDropdownOpen(!handlingDropdownOpen)}
-                            className="flex items-center justify-between w-full p-4 pr-12 border-2 border-gray-200 rounded-xl hover:border-black transition-colors bg-white"
+                            className="flex items-center justify-between w-full px-4 py-4 border-2 border-gray-200 rounded-xl hover:border-black transition-colors bg-white"
                           >
-                            <span className={`text-lg truncate ${handlingUnknown ? 'text-black' : 'text-gray-500'}`}>
+                            <span className={`text-lg truncate pr-2 ${handlingUnknown ? 'text-black' : 'text-gray-500'}`}>
                               {handlingUnknown || "Select what the AI should do"}
                             </span>
                             <svg
