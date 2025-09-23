@@ -121,7 +121,6 @@ const AgentManagement = () => {
   const [selectedVoice, setSelectedVoice] = useState<string>('');
   const [greetingStyle, setGreetingStyle] = useState<any>({});
   const [handlingUnknown, setHandlingUnknown] = useState('');
-  const [handlingDropdownOpen, setHandlingDropdownOpen] = useState(false);
   const [answerTime, setAnswerTime] = useState('');
   
   // New states for dropdown options
@@ -2088,59 +2087,37 @@ const AgentManagement = () => {
                           How should your AI handle common questions that it can't answer?
                         </label>
                          <div className="relative">
-                          <button
-                            onClick={() => setHandlingDropdownOpen(!handlingDropdownOpen)}
-                            className="flex items-center justify-between w-full px-4 py-4 border-2 border-gray-200 rounded-xl hover:border-black transition-colors bg-white"
+                          <select 
+                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                            value={handlingUnknown}
+                            onChange={(e) => setHandlingUnknown(e.target.value)}
                           >
-                            <span className={`text-lg truncate pr-2 ${handlingUnknown ? 'text-black' : 'text-gray-500'}`}>
-                              {handlingUnknown || "Select what the AI should do"}
-                            </span>
-                            <svg
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              className={`transform transition-transform flex-shrink-0 ${handlingDropdownOpen ? "rotate-180" : ""}`}
-                            >
-                              <path
-                                d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                                stroke="#141B34"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </button>
-
-                          {/* Dropdown Options */}
-                          {handlingDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-1 border-2 border-gray-200 rounded-xl overflow-hidden bg-white z-50 shadow-lg">
-                              {[
-                                "Politely transfer the call to you (or your voicemail)",
-                                "Take a message and email it to you", 
-                                "Offer to call the customer back later"
-                              ].map((option) => (
-                                <button
-                                  key={option}
-                                  onClick={() => {
-                                    setHandlingUnknown(option);
-                                    setHandlingDropdownOpen(false);
-                                  }}
-                                  className="w-full text-left p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
-                                >
-                                  <span className="text-lg text-gray-600 whitespace-normal leading-relaxed">
-                                    {option}
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                            <option value="">Select what the AI should do</option>
+                            <option value="Politely transfer the call to you (or your voicemail)">Politely transfer the call to you (or your voicemail)</option>
+                            <option value="Take a message and email it to you">Take a message and email it to you</option>
+                            <option value="Offer to call the customer back later">Offer to call the customer back later</option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
                         </div>
                       </div>
                       
                       {/* Daily Summary Toggle */}
                       <div className="flex-1 space-y-4">
-                        <label className="block text-lg font-semibold text-black truncate pr-2">
+                        <label className="block text-lg font-semibold text-black">
                           Do you want a daily summary of all calls and bookings?
                         </label>
                         <div className="flex items-center gap-4">
