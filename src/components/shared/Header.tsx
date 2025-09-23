@@ -11,7 +11,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount, unseenCount } = useNotifications();
+  const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount } = useNotifications();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -173,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              {unseenCount > 0 && (
+              {notificationCount > 0 && (
                 <circle cx="24.5" cy="4" r="4" fill="#EF4444" />
               )}
             </svg>

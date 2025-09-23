@@ -8,7 +8,6 @@ export interface Notification {
   description: string;
   time: string;
   iconType: "success" | "info" | "warning" | "error";
-  timestamp?: number;
   actionButton?: {
     text: string;
     action: () => void;
@@ -17,12 +16,9 @@ export interface Notification {
 
 export const useNotifications = () => {
   const [showNotifications, setShowNotifications] = useState(false);
-  const { notifications, loading, error, notificationCount, unseenCount, markAsSeen } = useCallLogsNotifications();
+  const { notifications, loading, error, notificationCount } = useCallLogsNotifications();
 
-  const openNotifications = () => {
-    setShowNotifications(true);
-    markAsSeen(); // Mark all notifications as seen when opening
-  };
+  const openNotifications = () => setShowNotifications(true);
   const closeNotifications = () => setShowNotifications(false);
 
   return {
@@ -31,7 +27,6 @@ export const useNotifications = () => {
     openNotifications,
     closeNotifications,
     notificationCount,
-    unseenCount,
     loading,
     error,
   };
