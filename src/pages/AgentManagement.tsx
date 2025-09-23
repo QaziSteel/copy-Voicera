@@ -747,167 +747,18 @@ const AgentManagement = () => {
       {/* Form */}
       <div className="bg-white rounded-xl md:rounded-2xl border border-gray-200 p-3 md:p-5">
         <div className="space-y-3 md:space-y-5">
-          {/* First Row */}
-          <div className="flex flex-col md:flex-row gap-3 md:gap-5">
-            <div className="flex-1">
-              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Name</label>
-              <input 
-                type="text" 
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Types & Durations</label>
-              <div className="space-y-3">
-                {businessTypes.map((type) => {
-                  const isSelected = selectedBusinessTypes.find(item => item.type === type);
-                  
-                  return (
-                    <div
-                      key={type}
-                      className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
-                        isSelected
-                          ? "bg-gray-100 border-2 border-black"
-                          : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
-                      }`}
-                      onClick={() => handleBusinessTypeToggle(type)}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                              isSelected ? "border-black bg-black" : "border-gray-400"
-                            }`}
-                          >
-                            {isSelected && (
-                              <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                                <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            )}
-                          </div>
-                          <span className={`text-sm md:text-base ${isSelected ? "text-black" : "text-gray-600"}`}>
-                            {type}
-                          </span>
-                        </div>
-                        
-                        {isSelected && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">Duration:</span>
-                            <select
-                              value={isSelected.hours}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleDurationChange(type, 'hours', e.target.value);
-                              }}
-                              className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {hourOptions.map(hour => (
-                                <option key={hour} value={hour}>{hour}</option>
-                              ))}
-                            </select>
-                            <select
-                              value={isSelected.minutes}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleDurationChange(type, 'minutes', e.target.value);
-                              }}
-                              className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {minuteOptions.map(minute => (
-                                <option key={minute} value={minute}>{minute}</option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Custom Type Card */}
-                <div
-                  className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
-                    isCustomSelected
-                      ? "bg-gray-100 border-2 border-black"
-                      : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
-                  }`}
-                  onClick={() => handleCustomToggle()}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                          isCustomSelected ? "border-black bg-black" : "border-gray-400"
-                        }`}
-                      >
-                        {isCustomSelected && (
-                          <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                            <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                      </div>
-                      
-                      {isCustomSelected ? (
-                        <input
-                          type="text"
-                          value={customType}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            setCustomType(e.target.value);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          placeholder="Enter your business type..."
-                          className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-white"
-                        />
-                      ) : (
-                        <span className="text-sm md:text-base text-gray-600">
-                          Other (Custom type)
-                        </span>
-                      )}
-                    </div>
-                    
-                    {isCustomSelected && customType.trim() && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Duration:</span>
-                        <select
-                          value={customDuration.hours}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            setCustomDuration(prev => ({ ...prev, hours: e.target.value }));
-                          }}
-                          className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {hourOptions.map(hour => (
-                            <option key={hour} value={hour}>{hour}</option>
-                          ))}
-                        </select>
-                        <select
-                          value={customDuration.minutes}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            setCustomDuration(prev => ({ ...prev, minutes: e.target.value }));
-                          }}
-                          className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {minuteOptions.map(minute => (
-                            <option key={minute} value={minute}>{minute}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* First Row - Business Name */}
+          <div>
+            <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Name</label>
+            <input 
+              type="text" 
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500"
+            />
           </div>
 
-          {/* Second Row */}
+          {/* Second Row - Primary Location & Contact Number */}
           <div className="flex flex-col md:flex-row gap-3 md:gap-5">
             <div className="flex-1">
               <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Primary Location</label>
@@ -926,6 +777,155 @@ const AgentManagement = () => {
                 readOnly
                 className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-100 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-600 bg-gray-50 cursor-not-allowed"
               />
+            </div>
+          </div>
+
+          {/* Third Row - Business Types & Durations */}
+          <div>
+            <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Types & Durations</label>
+            <div className="space-y-3">
+              {businessTypes.map((type) => {
+                const isSelected = selectedBusinessTypes.find(item => item.type === type);
+                
+                return (
+                  <div
+                    key={type}
+                    className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
+                      isSelected
+                        ? "bg-gray-100 border-2 border-black"
+                        : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
+                    }`}
+                    onClick={() => handleBusinessTypeToggle(type)}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                            isSelected ? "border-black bg-black" : "border-gray-400"
+                          }`}
+                        >
+                          {isSelected && (
+                            <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                              <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </div>
+                        <span className={`text-sm md:text-base ${isSelected ? "text-black" : "text-gray-600"}`}>
+                          {type}
+                        </span>
+                      </div>
+                      
+                      {isSelected && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Duration:</span>
+                          <select
+                            value={isSelected.hours}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleDurationChange(type, 'hours', e.target.value);
+                            }}
+                            className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {hourOptions.map(hour => (
+                              <option key={hour} value={hour}>{hour}</option>
+                            ))}
+                          </select>
+                          <select
+                            value={isSelected.minutes}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleDurationChange(type, 'minutes', e.target.value);
+                            }}
+                            className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {minuteOptions.map(minute => (
+                              <option key={minute} value={minute}>{minute}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Custom Type Card */}
+              <div
+                className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
+                  isCustomSelected
+                    ? "bg-gray-100 border-2 border-black"
+                    : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
+                }`}
+                onClick={() => handleCustomToggle()}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                        isCustomSelected ? "border-black bg-black" : "border-gray-400"
+                      }`}
+                    >
+                      {isCustomSelected && (
+                        <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                          <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
+                    
+                    {isCustomSelected ? (
+                      <input
+                        type="text"
+                        value={customType}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setCustomType(e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Enter your business type..."
+                        className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-white"
+                      />
+                    ) : (
+                      <span className="text-sm md:text-base text-gray-600">
+                        Other (Custom type)
+                      </span>
+                    )}
+                  </div>
+                  
+                  {isCustomSelected && customType.trim() && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Duration:</span>
+                      <select
+                        value={customDuration.hours}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setCustomDuration(prev => ({ ...prev, hours: e.target.value }));
+                        }}
+                        className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {hourOptions.map(hour => (
+                          <option key={hour} value={hour}>{hour}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={customDuration.minutes}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setCustomDuration(prev => ({ ...prev, minutes: e.target.value }));
+                        }}
+                        className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {minuteOptions.map(minute => (
+                          <option key={minute} value={minute}>{minute}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
