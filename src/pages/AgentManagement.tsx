@@ -144,7 +144,7 @@ const AgentManagement = () => {
   // Load data on component mount
   useEffect(() => {
     loadUserAgents();
-    
+  }, []);
   
   // Load voices from database
   useEffect(() => {
@@ -169,6 +169,7 @@ const AgentManagement = () => {
   }, []);
 
   // Handle OAuth callback
+  useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const oauthStatus = urlParams.get('oauth');
     const userEmail = urlParams.get('email');
