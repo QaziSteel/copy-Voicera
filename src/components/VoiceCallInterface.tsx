@@ -33,7 +33,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
     formatDuration
   } = useVapiCall();
   
-  const { testCallLogs, loading: testCallLogsLoading, createTestCallLog, updateTestCallLog } = useTestCallLogs(agentData?.id || '');
+  const { testCallLogs, loading: testCallLogsLoading, createTestCallLog, updateTestCallLog, refetch: refetchTestCallLogs } = useTestCallLogs(agentData?.id || '');
 
   const handleStartCall = async () => {
     if (!hasAssistantId) {
@@ -164,7 +164,28 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                 </button>
               ) : (
                 <button
-                  onClick={endCall}
+                  onClick={async () => {
+                    // Handle the call end with immediate update
+                    if (currentTestCallId && callMetrics?.startTime) {
+                      const endTime = new Date();
+                      const durationSeconds = Math.floor((endTime.getTime() - callMetrics.startTime.getTime()) / 1000);
+                      
+                      try {
+                        await updateTestCallLog({
+                          id: currentTestCallId,
+                          call_ended_at: endTime.toISOString(),
+                          duration_seconds: durationSeconds,
+                        });
+                        // Refetch to ensure UI updates immediately
+                        refetchTestCallLogs();
+                      } catch (error) {
+                        console.error('Error updating test call log:', error);
+                      }
+                      
+                      setCurrentTestCallId(null);
+                    }
+                    endCall();
+                  }}
                   className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-colors"
                 >
                   <Square className="w-4 h-4" fill="white" />
@@ -217,7 +238,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                           <Phone className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">Test Call</p>
+                          <p className="font-medium text-gray-900">Test Call {call.id}</p>
                           <p className="text-sm text-gray-500">{formatTimeAgo(call.created_at)}</p>
                         </div>
                         <span className="text-sm text-gray-600">
