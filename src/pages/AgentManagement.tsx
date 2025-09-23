@@ -121,17 +121,6 @@ const AgentManagement = () => {
   const [handlingUnknown, setHandlingUnknown] = useState('');
   const [answerTime, setAnswerTime] = useState('');
   
-  // Voice selection states
-  const [voices, setVoices] = useState<any[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<any>(null);
-  const [isVoiceDropdownOpen, setIsVoiceDropdownOpen] = useState(false);
-  const [playingVoice, setPlayingVoice] = useState<string | null>(null);
-  const [showAudioPlayer, setShowAudioPlayer] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  
   // Booking
   const [services, setServices] = useState<string[]>([]);
   const [appointmentDuration, setAppointmentDuration] = useState('');
@@ -149,26 +138,6 @@ const AgentManagement = () => {
   const [dailySummary, setDailySummary] = useState(false);
   const [emailConfirmations, setEmailConfirmations] = useState(false);
   const [autoReminders, setAutoReminders] = useState(false);
-
-  // Load voices from database
-  useEffect(() => {
-    const fetchVoices = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('voices')
-          .select('*')
-          .order('id');
-        
-        if (error) throw error;
-        
-        setVoices(data || []);
-      } catch (error) {
-        console.error('Error fetching voices:', error);
-      }
-    };
-    
-    fetchVoices();
-  }, []);
 
   // Load data on component mount
   useEffect(() => {
@@ -347,12 +316,6 @@ const AgentManagement = () => {
         setHandlingUnknown(data.ai_handling_unknown || '');
         setAnswerTime(data.ai_call_schedule || '');
         
-        // Set selected voice based on saved voice style
-        if (data.ai_voice_style && voices.length > 0) {
-          const voice = voices.find(v => v.voice_id === data.ai_voice_style);
-          setSelectedVoice(voice || null);
-        }
-        
         // Booking
         setServices(isStringArray(data.services) ? data.services : []);
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
@@ -466,92 +429,6 @@ const AgentManagement = () => {
       });
     }
   }, [selectedAgentId, businessName, selectedBusinessTypes, customType, isCustomSelected, customDuration, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents]);
-
-  // Voice selection handlers
-  const handleSelectVoice = (voice: any) => {
-    setSelectedVoice(voice);
-    setVoiceStyle(voice.voice_id);
-    setIsVoiceDropdownOpen(false);
-  };
-
-  const handlePlayVoice = (voice: any) => {
-    if (playingVoice === voice.voice_id) {
-      // Stop current audio
-      if (currentAudio) {
-        currentAudio.pause();
-        setCurrentAudio(null);
-      }
-      setPlayingVoice(null);
-      setShowAudioPlayer(false);
-    } else {
-      // Stop any current audio
-      if (currentAudio) {
-        currentAudio.pause();
-      }
-      
-      setPlayingVoice(voice.voice_id);
-      setShowAudioPlayer(true);
-      
-      // Create new audio element
-      const audio = new Audio(`https://nhhdxwgrmcdsapbuvelx.supabase.co/storage/v1/object/public/voice-samples/${voice.storage_path}`);
-      
-      audio.addEventListener('loadedmetadata', () => {
-        setDuration(audio.duration);
-      });
-      
-      audio.addEventListener('timeupdate', () => {
-        setCurrentTime(audio.currentTime);
-      });
-      
-      audio.addEventListener('ended', () => {
-        setIsPlaying(false);
-        setPlayingVoice(null);
-        setCurrentTime(0);
-      });
-      
-      setCurrentAudio(audio);
-      audio.play();
-      setIsPlaying(true);
-    }
-  };
-
-  const handleCloseAudioPlayer = () => {
-    if (currentAudio) {
-      currentAudio.pause();
-      setCurrentAudio(null);
-    }
-    setShowAudioPlayer(false);
-    setPlayingVoice(null);
-    setIsPlaying(false);
-    setCurrentTime(0);
-  };
-
-  const handleTogglePlayback = () => {
-    if (currentAudio) {
-      if (isPlaying) {
-        currentAudio.pause();
-        setIsPlaying(false);
-      } else {
-        currentAudio.play();
-        setIsPlaying(true);
-      }
-    }
-  };
-
-  const handleSeek = (time: number) => {
-    if (currentAudio) {
-      currentAudio.currentTime = time;
-      setCurrentTime(time);
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const selectedVoiceName = selectedVoice ? selectedVoice.display_name : 'Select voice style';
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -701,14 +578,6 @@ const AgentManagement = () => {
         setGreetingStyle(data.ai_greeting_style || {});
         setHandlingUnknown(data.ai_handling_unknown || '');
         setAnswerTime(data.ai_call_schedule || '');
-        
-        // Reset selected voice based on saved data
-        if (data.ai_voice_style && voices.length > 0) {
-          const voice = voices.find(v => v.voice_id === data.ai_voice_style);
-          setSelectedVoice(voice || null);
-        } else {
-          setSelectedVoice(null);
-        }
         
         toast({
           title: "Changes Discarded",
@@ -1258,67 +1127,24 @@ const AgentManagement = () => {
                           AI voice style
                         </label>
                         <div className="relative">
-                          <button
-                            onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
-                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-left bg-white flex items-center justify-between"
+                          <select className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white">
+                            <option>Friendly Female</option>
+                          </select>
+                          <svg
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
                           >
-                            <span className={selectedVoice ? "text-gray-900" : "text-gray-500"}>
-                              {selectedVoiceName}
-                            </span>
-                            <svg
-                              className={`transition-transform ${isVoiceDropdownOpen ? 'rotate-180' : ''}`}
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                            >
-                              <path
-                                d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                                stroke="#141B34"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </button>
-                          
-                          {isVoiceDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto">
-                              {voices.map((voice) => (
-                                <div
-                                  key={voice.id}
-                                  className="flex items-center justify-between p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                                >
-                                  <button
-                                    onClick={() => handleSelectVoice(voice)}
-                                    className="flex-1 text-left"
-                                  >
-                                    <div className="text-lg font-medium text-gray-900">
-                                      {voice.display_name}
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                      {voice.gender} • {voice.style}
-                                    </div>
-                                  </button>
-                                  <button
-                                    onClick={() => handlePlayVoice(voice)}
-                                    className="ml-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
-                                  >
-                                    {playingVoice === voice.voice_id ? (
-                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                        <rect x="6" y="4" width="4" height="16" fill="#4F46E5"/>
-                                        <rect x="14" y="4" width="4" height="16" fill="#4F46E5"/>
-                                      </svg>
-                                    ) : (
-                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                        <path d="M8 5v14l11-7L8 5z" fill="#4F46E5"/>
-                                      </svg>
-                                    )}
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                            <path
+                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                              stroke="#141B34"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
                         </div>
                       </div>
                       
@@ -2032,79 +1858,8 @@ const AgentManagement = () => {
                     </div>
                   </div>
                 </div>
-                </div>
-                
-                {/* Audio Player Popup */}
-                {showAudioPlayer && playingVoice && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl p-6 w-96 mx-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-semibold">Voice Preview</h3>
-                        <button
-                          onClick={handleCloseAudioPlayer}
-                          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                      </div>
-                      
-                      <div className="text-center mb-6">
-                        <div className="text-lg font-medium text-gray-900 mb-1">
-                          {voices.find(v => v.voice_id === playingVoice)?.display_name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {voices.find(v => v.voice_id === playingVoice)?.gender} • {voices.find(v => v.voice_id === playingVoice)?.style}
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-center">
-                          <button
-                            onClick={handleTogglePlayback}
-                            className="p-4 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
-                          >
-                            {isPlaying ? (
-                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
-                                <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
-                              </svg>
-                            ) : (
-                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M8 5v14l11-7L8 5z" fill="currentColor"/>
-                              </svg>
-                            )}
-                          </button>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm text-gray-500">
-                            <span>{formatTime(currentTime)}</span>
-                            <span>{formatTime(duration)}</span>
-                          </div>
-                          <div className="relative">
-                            <div className="w-full h-2 bg-gray-200 rounded-full">
-                              <div 
-                                className="h-full bg-primary rounded-full transition-all duration-300"
-                                style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-                              />
-                            </div>
-                            <input
-                              type="range"
-                              min="0"
-                              max={duration}
-                              value={currentTime}
-                              onChange={(e) => handleSeek(parseFloat(e.target.value))}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </TabsContent>
+              </div>
+            </TabsContent>
           </Tabs>
       </main>
 
