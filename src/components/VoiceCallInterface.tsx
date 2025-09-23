@@ -178,7 +178,24 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                 {testCallLogsLoading ? (
                   <div className="text-sm text-gray-500 text-center py-4">Loading test calls...</div>
                 ) : testCallLogs.length === 0 ? (
-                  <div className="text-sm text-gray-500 text-center py-4">No test calls yet</div>
+                  <div className="text-center py-12">
+                    <svg
+                      className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21L6.16 11.37a11.045 11.045 0 005.469 5.469l1.983-4.064a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z"
+                      />
+                    </svg>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No test calls yet</h3>
+                    <p className="text-gray-500">When you test your agent, calls will appear here.</p>
+                  </div>
                 ) : (
                   testCallLogs.map((call) => (
                     <div key={call.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
