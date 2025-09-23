@@ -524,45 +524,7 @@ export type Database = {
       }
     }
     Views: {
-      google_integration_metadata: {
-        Row: {
-          agent_id: string | null
-          created_at: string | null
-          id: string | null
-          is_active: boolean | null
-          project_id: string | null
-          scopes: string[] | null
-          token_expires_at: string | null
-          updated_at: string | null
-          user_email: string | null
-          user_id: string | null
-        }
-        Insert: {
-          agent_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          project_id?: string | null
-          scopes?: string[] | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          agent_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          project_id?: string | null
-          scopes?: string[] | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-          user_email?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       can_access_booking: {
