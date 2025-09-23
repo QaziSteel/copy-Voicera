@@ -677,8 +677,8 @@ const AgentManagement = () => {
                   <option value="Coaching/Consulting">Coaching/Consulting</option>
                   <option value="Physiotherapy">Physiotherapy</option>
                   <option value="Chiropractor">Chiropractor</option>
-                  {businessType && !["Hairdressers", "Nail Salon", "Health Clinic", "Fitness Studio", "Coaching/Consulting", "Physiotherapy", "Chiropractor"].includes(businessType.split(' (')[0]) && (
-                    <option value={businessType}>{businessType}</option>
+                  {businessType && !["Hairdressers", "Nail Salon", "Health Clinic", "Fitness Studio", "Coaching/Consulting", "Physiotherapy", "Chiropractor"].includes(businessType) && (
+                    <option value={businessType}>{businessType} (Custom)</option>
                   )}
                 </select>
                 <svg className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none">
