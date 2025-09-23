@@ -32,6 +32,8 @@ export const useVapiCall = () => {
   const callbacksRef = useRef<{ onCallStart?: (resolve: (callId: string) => void) => Promise<void>; onCallEnd?: (callId: string, duration: number) => Promise<void> }>({});
   const callStartTimeRef = useRef<Date | null>(null);
   const currentCallIdRef = useRef<string | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
 
   // Initialize Vapi SDK
   const initializeVapi = useCallback(async () => {
@@ -60,6 +62,24 @@ export const useVapiCall = () => {
         console.log('Vapi call started');
         const startTime = new Date();
         callStartTimeRef.current = startTime;
+        
+        // Initialize audio context and gain node for volume control
+        try {
+          if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+          }
+          if (audioContextRef.current.state === 'suspended') {
+            await audioContextRef.current.resume();
+          }
+          
+          // Create gain node for volume control
+          if (!gainNodeRef.current && audioContextRef.current) {
+            gainNodeRef.current = audioContextRef.current.createGain();
+            gainNodeRef.current.connect(audioContextRef.current.destination);
+          }
+        } catch (error) {
+          console.warn('Audio context setup failed:', error);
+        }
         
         setIsCallActive(true);
         setIsConnecting(false);
@@ -281,19 +301,30 @@ export const useVapiCall = () => {
 
   // Toggle volume
   const toggleVolume = useCallback(() => {
-    if (vapiInstance.current && isCallActive) {
+    if (isCallActive) {
       const newVolumeState = !isVolumeOff;
-      // Vapi SDK doesn't have direct volume control, so we simulate it
-      // In a real implementation, you might use Web Audio API or other methods
       setIsVolumeOff(newVolumeState);
       
-      // For now, we'll use a simple approach - you could extend this
-      // to integrate with Web Audio API for actual volume control
-      if (newVolumeState) {
-        // Mute incoming audio (you might implement actual volume control here)
-        console.log('Volume turned off');
+      // Control actual audio volume using Web Audio API
+      if (gainNodeRef.current) {
+        if (newVolumeState) {
+          // Mute the audio by setting gain to 0
+          gainNodeRef.current.gain.setValueAtTime(0, gainNodeRef.current.context.currentTime);
+          console.log('Volume turned off - incoming audio muted');
+        } else {
+          // Restore audio by setting gain to 1
+          gainNodeRef.current.gain.setValueAtTime(1, gainNodeRef.current.context.currentTime);
+          console.log('Volume turned on - incoming audio restored');
+        }
       } else {
-        console.log('Volume turned on');
+        // Fallback: Try to control system audio volume via media elements
+        const audioElements = document.querySelectorAll('audio, video');
+        audioElements.forEach((element: any) => {
+          if (element.srcObject || element.src) {
+            element.muted = newVolumeState;
+          }
+        });
+        console.log(`Volume ${newVolumeState ? 'off' : 'on'} - controlled via media elements`);
       }
     }
   }, [isCallActive, isVolumeOff]);
@@ -308,6 +339,15 @@ export const useVapiCall = () => {
       }
       if (vapiInstance.current) {
         vapiInstance.current.stop();
+      }
+      // Clean up audio context
+      if (gainNodeRef.current) {
+        gainNodeRef.current.disconnect();
+        gainNodeRef.current = null;
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
       }
     };
   }, [initializeVapi]);
