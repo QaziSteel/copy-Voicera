@@ -32,8 +32,9 @@ export const useVapiCall = () => {
   const callbacksRef = useRef<{ onCallStart?: (resolve: (callId: string) => void) => Promise<void>; onCallEnd?: (callId: string, duration: number) => Promise<void> }>({});
   const callStartTimeRef = useRef<Date | null>(null);
   const currentCallIdRef = useRef<string | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
+  const audioElementsRef = useRef<HTMLAudioElement[]>([]);
+  const mutationObserverRef = useRef<MutationObserver | null>(null);
+  const audioDetectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize Vapi SDK
   const initializeVapi = useCallback(async () => {
@@ -63,23 +64,8 @@ export const useVapiCall = () => {
         const startTime = new Date();
         callStartTimeRef.current = startTime;
         
-        // Initialize audio context and gain node for volume control
-        try {
-          if (!audioContextRef.current) {
-            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-          }
-          if (audioContextRef.current.state === 'suspended') {
-            await audioContextRef.current.resume();
-          }
-          
-          // Create gain node for volume control
-          if (!gainNodeRef.current && audioContextRef.current) {
-            gainNodeRef.current = audioContextRef.current.createGain();
-            gainNodeRef.current.connect(audioContextRef.current.destination);
-          }
-        } catch (error) {
-          console.warn('Audio context setup failed:', error);
-        }
+        // Start detecting audio elements for volume control
+        startAudioElementDetection();
         
         setIsCallActive(true);
         setIsConnecting(false);
@@ -117,6 +103,9 @@ export const useVapiCall = () => {
         console.log('Vapi call ended');
         setIsCallActive(false);
         setIsConnecting(false);
+        
+        // Stop audio element detection
+        stopAudioElementDetection();
         
         const endTime = new Date();
         const finalDuration = callStartTimeRef.current ? Math.floor((endTime.getTime() - callStartTimeRef.current.getTime()) / 1000) : 0;
@@ -299,36 +288,92 @@ export const useVapiCall = () => {
     }
   }, [isCallActive, isMuted]);
 
+  // Audio element detection for volume control
+  const startAudioElementDetection = useCallback(() => {
+    // Set up MutationObserver to detect new audio elements
+    mutationObserverRef.current = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof HTMLAudioElement) {
+            console.log('Detected new audio element:', node);
+            audioElementsRef.current.push(node);
+          }
+        });
+      });
+    });
+
+    // Start observing
+    mutationObserverRef.current.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    // Periodic checking for existing audio elements (fallback)
+    let attempts = 0;
+    const maxAttempts = 30; // 3 seconds with 100ms intervals
+    
+    audioDetectionIntervalRef.current = setInterval(() => {
+      attempts++;
+      const audioElements = Array.from(document.querySelectorAll('audio')) as HTMLAudioElement[];
+      
+      // Add any new audio elements we haven't seen before
+      audioElements.forEach((element) => {
+        if (!audioElementsRef.current.includes(element) && (element.src || element.srcObject)) {
+          console.log('Found audio element via periodic check:', element);
+          audioElementsRef.current.push(element);
+        }
+      });
+
+      // Stop checking after max attempts or if we found audio elements
+      if (attempts >= maxAttempts || audioElementsRef.current.length > 0) {
+        if (audioDetectionIntervalRef.current) {
+          clearInterval(audioDetectionIntervalRef.current);
+          audioDetectionIntervalRef.current = null;
+        }
+      }
+    }, 100);
+  }, []);
+
+  const stopAudioElementDetection = useCallback(() => {
+    if (mutationObserverRef.current) {
+      mutationObserverRef.current.disconnect();
+      mutationObserverRef.current = null;
+    }
+    if (audioDetectionIntervalRef.current) {
+      clearInterval(audioDetectionIntervalRef.current);
+      audioDetectionIntervalRef.current = null;
+    }
+    audioElementsRef.current = [];
+  }, []);
   // Toggle volume
   const toggleVolume = useCallback(() => {
     if (isCallActive) {
       const newVolumeState = !isVolumeOff;
       setIsVolumeOff(newVolumeState);
       
-      // Control actual audio volume using Web Audio API
-      if (gainNodeRef.current) {
-        if (newVolumeState) {
-          // Mute the audio by setting gain to 0
-          gainNodeRef.current.gain.setValueAtTime(0, gainNodeRef.current.context.currentTime);
-          console.log('Volume turned off - incoming audio muted');
-        } else {
-          // Restore audio by setting gain to 1
-          gainNodeRef.current.gain.setValueAtTime(1, gainNodeRef.current.context.currentTime);
-          console.log('Volume turned on - incoming audio restored');
+      // Control detected audio elements directly
+      let controlledElements = 0;
+      audioElementsRef.current.forEach((element) => {
+        if (element && !element.paused) {
+          element.muted = newVolumeState;
+          controlledElements++;
         }
+      });
+
+      if (controlledElements > 0) {
+        console.log(`Volume ${newVolumeState ? 'muted' : 'unmuted'} - controlled ${controlledElements} audio elements`);
       } else {
-        // Fallback: Try to control system audio volume via media elements
-        const audioElements = document.querySelectorAll('audio, video');
+        // Fallback: Try to find and control any audio elements in DOM
+        const audioElements = document.querySelectorAll('audio');
         audioElements.forEach((element: any) => {
           if (element.srcObject || element.src) {
             element.muted = newVolumeState;
           }
         });
-        console.log(`Volume ${newVolumeState ? 'off' : 'on'} - controlled via media elements`);
+        console.log(`Volume ${newVolumeState ? 'muted' : 'unmuted'} - used fallback method for ${audioElements.length} elements`);
       }
     }
   }, [isCallActive, isVolumeOff]);
-
   // Initialize Vapi on mount
   useEffect(() => {
     initializeVapi();
@@ -340,15 +385,8 @@ export const useVapiCall = () => {
       if (vapiInstance.current) {
         vapiInstance.current.stop();
       }
-      // Clean up audio context
-      if (gainNodeRef.current) {
-        gainNodeRef.current.disconnect();
-        gainNodeRef.current = null;
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
+      // Clean up audio detection
+      stopAudioElementDetection();
     };
   }, [initializeVapi]);
 
