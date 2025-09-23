@@ -156,7 +156,7 @@ const AgentManagement = () => {
     ];
     
     // If there's a custom name, add it as an option
-    if (customAssistantName.trim() && selectedAssistantName === 'custom') {
+    if (customAssistantName.trim() && (selectedAssistantName === 'custom' || selectedAssistantName === 'custom-value')) {
       baseOptions.splice(-1, 0, { id: 'custom-value', label: customAssistantName });
     }
     
