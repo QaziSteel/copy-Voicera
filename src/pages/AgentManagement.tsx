@@ -1303,7 +1303,7 @@ const AgentManagement = () => {
                           AI assistant name
                         </label>
                         <div className="relative">
-                          {selectedAssistantName === 'custom' && customAssistantName === '' ? (
+                          {selectedAssistantName === 'custom' ? (
                             <input
                               type="text"
                               value={customAssistantName}
