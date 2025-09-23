@@ -142,6 +142,7 @@ const AgentManagement = () => {
   // FAQs
   const [faqEnabled, setFaqEnabled] = useState(false);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [selectedFaqIds, setSelectedFaqIds] = useState<Set<string>>(new Set());
   const [newQuestion, setNewQuestion] = useState('');
   const [newAnswer, setNewAnswer] = useState('');
   
@@ -1895,8 +1896,37 @@ const AgentManagement = () => {
                     <div className="space-y-3">
                       {faqs.map((faq) => (
                         <div key={faq.id} className="flex items-start gap-5">
-                          {/* Checkbox Placeholder */}
-                          <div className="w-6 h-6 border-2 border-gray-200 rounded-sm mt-1 flex-shrink-0"></div>
+                          {/* Functional Checkbox */}
+                          <button
+                            onClick={() => {
+                              setSelectedFaqIds(prev => {
+                                const newSet = new Set(prev);
+                                if (newSet.has(faq.id)) {
+                                  newSet.delete(faq.id);
+                                } else {
+                                  newSet.add(faq.id);
+                                }
+                                return newSet;
+                              });
+                            }}
+                            className={`w-6 h-6 border-2 rounded-sm mt-1 flex-shrink-0 flex items-center justify-center transition-colors ${
+                              selectedFaqIds.has(faq.id)
+                                ? 'border-black bg-black'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            {selectedFaqIds.has(faq.id) && (
+                              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                                <path
+                                  d="M1 5L4.5 8.5L11 1.5"
+                                  stroke="white"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
+                          </button>
                           
                           {/* FAQ Content */}
                           <div className="flex-1">
@@ -1907,6 +1937,32 @@ const AgentManagement = () => {
                               {faq.answer}
                             </p>
                           </div>
+                          
+                          {/* Remove Button - Only show when selected */}
+                          {selectedFaqIds.has(faq.id) && (
+                            <button
+                              onClick={() => {
+                                removeFaq(faq.id);
+                                setSelectedFaqIds(prev => {
+                                  const newSet = new Set(prev);
+                                  newSet.delete(faq.id);
+                                  return newSet;
+                                });
+                              }}
+                              className="text-gray-400 hover:text-red-500 transition-colors mt-1"
+                              title="Remove FAQ"
+                            >
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path 
+                                  d="M18 6L6 18M6 6l12 12" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2" 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
