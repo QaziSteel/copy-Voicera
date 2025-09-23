@@ -254,10 +254,18 @@ const AgentManagement = () => {
       if (data) {
         // Basic Info
         setBusinessName(data.business_name || '');
-        // Extract type names from business type objects
-        const typeNames = Array.isArray(data.business_types) ? 
-          data.business_types.map((bt: any) => bt.type || bt).filter(Boolean) : [];
-        setBusinessType(typeNames.join(', '));
+        // Extract type names with duration from business type objects
+        const formatBusinessType = (bt: any) => {
+          if (typeof bt === 'string') return bt;
+          const type = bt.type || '';
+          const hours = parseInt(bt.hours || '0');
+          const minutes = parseInt(bt.minutes || '0');
+          const duration = `${hours} hr ${minutes} min`;
+          return `${type} (${duration})`;
+        };
+        const formattedTypes = Array.isArray(data.business_types) ? 
+          data.business_types.map(formatBusinessType).filter(Boolean) : [];
+        setBusinessType(formattedTypes.join(', '));
         setBusinessLocation(data.primary_location || '');
         
         // AI Personality
@@ -426,10 +434,18 @@ const AgentManagement = () => {
       
       if (data) {
         setBusinessName(data.business_name || '');
-        // Extract type names from business type objects for discard
-        const typeNames = Array.isArray(data.business_types) ? 
-          data.business_types.map((bt: any) => bt.type || bt).filter(Boolean) : [];
-        setBusinessType(typeNames.join(', '));
+        // Extract type names with duration from business type objects for discard
+        const formatBusinessType = (bt: any) => {
+          if (typeof bt === 'string') return bt;
+          const type = bt.type || '';
+          const hours = parseInt(bt.hours || '0');
+          const minutes = parseInt(bt.minutes || '0');
+          const duration = `${hours} hr ${minutes} min`;
+          return `${type} (${duration})`;
+        };
+        const formattedTypes = Array.isArray(data.business_types) ? 
+          data.business_types.map(formatBusinessType).filter(Boolean) : [];
+        setBusinessType(formattedTypes.join(', '));
         setBusinessLocation(data.primary_location || '');
         
         toast({
