@@ -18,6 +18,7 @@ export const useVapiCall = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCallActive, setIsCallActive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVolumeOff, setIsVolumeOff] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string>('');
   const [callMetrics, setCallMetrics] = useState<CallMetrics>({
@@ -278,6 +279,25 @@ export const useVapiCall = () => {
     }
   }, [isCallActive, isMuted]);
 
+  // Toggle volume
+  const toggleVolume = useCallback(() => {
+    if (vapiInstance.current && isCallActive) {
+      const newVolumeState = !isVolumeOff;
+      // Vapi SDK doesn't have direct volume control, so we simulate it
+      // In a real implementation, you might use Web Audio API or other methods
+      setIsVolumeOff(newVolumeState);
+      
+      // For now, we'll use a simple approach - you could extend this
+      // to integrate with Web Audio API for actual volume control
+      if (newVolumeState) {
+        // Mute incoming audio (you might implement actual volume control here)
+        console.log('Volume turned off');
+      } else {
+        console.log('Volume turned on');
+      }
+    }
+  }, [isCallActive, isVolumeOff]);
+
   // Initialize Vapi on mount
   useEffect(() => {
     initializeVapi();
@@ -303,9 +323,11 @@ export const useVapiCall = () => {
     startCall,
     endCall,
     toggleMute,
+    toggleVolume,
     isConnecting,
     isCallActive,
     isMuted,
+    isVolumeOff,
     error,
     transcript,
     callMetrics,

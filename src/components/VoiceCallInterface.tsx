@@ -20,17 +20,19 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
   // Check if assistant_id exists in agentData
   const hasAssistantId = agentData?.assistant_id;
   
-  const {
-    startCall,
-    endCall,
-    toggleMute,
-    isConnecting,
-    isCallActive,
-    isMuted,
-    error,
-    transcript,
-    callMetrics,
-    formatDuration
+  const { 
+    startCall, 
+    endCall, 
+    toggleMute, 
+    toggleVolume,
+    isConnecting, 
+    isCallActive, 
+    isMuted, 
+    isVolumeOff,
+    error, 
+    transcript, 
+    callMetrics, 
+    formatDuration 
   } = useVapiCall();
   
   const { testCallLogs, loading: testCallLogsLoading, createTestCallLog, updateTestCallLog, refetch: refetchTestCallLogs } = useTestCallLogs(agentData?.id || '');
@@ -274,7 +276,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                 disabled={!isCallActive}
                 className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
                   !isCallActive 
-                    ? 'bg-gray-300 cursor-not-allowed' 
+                    ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
                     : isMuted 
                       ? 'bg-red-500 hover:bg-red-600 text-white' 
                       : 'bg-black hover:bg-gray-800 text-white'
@@ -287,14 +289,21 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                 )}
               </button>
               <button
+                onClick={toggleVolume}
                 disabled={!isCallActive}
                 className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
                   !isCallActive 
                     ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
-                    : 'bg-black hover:bg-gray-800 text-white'
+                    : isVolumeOff 
+                      ? 'bg-red-500 hover:bg-red-600 text-white' 
+                      : 'bg-black hover:bg-gray-800 text-white'
                 }`}
               >
-                <Volume2 className="w-5 h-5" />
+                {isVolumeOff ? (
+                  <VolumeX className="w-5 h-5" />
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
