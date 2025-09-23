@@ -132,6 +132,8 @@ const AgentManagement = () => {
   
   // Booking
   const [services, setServices] = useState<string[]>([]);
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+  const [customService, setCustomService] = useState('');
   const [appointmentDuration, setAppointmentDuration] = useState('');
   const [businessDays, setBusinessDays] = useState<string[]>([]);
   const [businessHours, setBusinessHours] = useState({ from: '8:00am', to: '05:00pm' });
@@ -1535,20 +1537,165 @@ const AgentManagement = () => {
                         <label className="block text-lg font-semibold text-black mb-3">
                           What can customers book?
                         </label>
-                        <div className="w-full px-4 py-4 border-2 border-gray-100 rounded-xl bg-gray-50">
-                          {services.length > 0 ? (
+                        
+                        {/* Selected Services Tags */}
+                        {services.length > 0 && (
+                          <div className="mb-3">
                             <div className="flex flex-wrap gap-2">
                               {services.map((service, index) => (
-                                <span 
+                                <div 
                                   key={index}
-                                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                                 >
-                                  {service}
-                                </span>
+                                  <span>{service}</span>
+                                  {services.length > 1 && (
+                                    <button
+                                      onClick={() => {
+                                        setServices(services.filter((_, i) => i !== index));
+                                      }}
+                                      className="ml-1 hover:text-blue-900 transition-colors"
+                                      title="Remove service"
+                                    >
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                      </svg>
+                                    </button>
+                                  )}
+                                </div>
                               ))}
                             </div>
-                          ) : (
-                            <span className="text-lg text-gray-500">No services configured</span>
+                          </div>
+                        )}
+                        
+                        {/* Services Dropdown */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+                            className="flex items-center justify-between w-full p-4 border-2 border-gray-200 rounded-xl hover:border-black transition-colors bg-white"
+                          >
+                            <span className="text-lg text-gray-600">
+                              Add services customers can book
+                            </span>
+                            <svg
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className={`transform transition-transform ${servicesDropdownOpen ? "rotate-180" : ""}`}
+                            >
+                              <path
+                                d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
+                                stroke="#141B34"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+
+                          {/* Dropdown Options */}
+                          {servicesDropdownOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-1 border-2 border-gray-200 rounded-xl overflow-hidden bg-white z-50 shadow-lg">
+                              {["Appointment", "Consultation", "Service", "Class", "Other"].map((serviceOption) => (
+                                <div key={serviceOption}>
+                                  {serviceOption === "Other" ? (
+                                    <div className="flex items-center gap-3 p-3 px-4 border-t border-gray-100">
+                                      <button
+                                        onClick={() => {
+                                          if (services.includes(serviceOption)) {
+                                            setServices(services.filter(s => s !== serviceOption));
+                                          } else {
+                                            setServices([...services, serviceOption]);
+                                          }
+                                        }}
+                                        className="flex items-center gap-2.5"
+                                      >
+                                        <div
+                                          className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                                            services.includes(serviceOption)
+                                              ? "border-black bg-black"
+                                              : "border-gray-400"
+                                          }`}
+                                        >
+                                          {services.includes(serviceOption) && (
+                                            <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                                              <path
+                                                d="M1 3L3 5L7 1"
+                                                stroke="white"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                              />
+                                            </svg>
+                                          )}
+                                        </div>
+                                        <span className="text-lg text-gray-600">{serviceOption}</span>
+                                      </button>
+                                      <input
+                                        type="text"
+                                        value={customService}
+                                        onChange={(e) => setCustomService(e.target.value)}
+                                        onKeyPress={(e) => {
+                                          if (e.key === 'Enter' && customService.trim()) {
+                                            if (!services.includes(customService.trim())) {
+                                              setServices([...services, customService.trim()]);
+                                            }
+                                            setCustomService('');
+                                          }
+                                        }}
+                                        placeholder="Enter custom service"
+                                        className="flex-1 p-3 border-2 border-gray-200 rounded-xl text-base placeholder-gray-400 focus:outline-none focus:border-black transition-colors"
+                                      />
+                                      {customService.trim() && (
+                                        <button
+                                          onClick={() => {
+                                            if (!services.includes(customService.trim())) {
+                                              setServices([...services, customService.trim()]);
+                                            }
+                                            setCustomService('');
+                                          }}
+                                          className="px-3 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition-colors"
+                                        >
+                                          Add
+                                        </button>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => {
+                                        if (services.includes(serviceOption)) {
+                                          setServices(services.filter(s => s !== serviceOption));
+                                        } else {
+                                          setServices([...services, serviceOption]);
+                                        }
+                                      }}
+                                      className="w-full flex items-center gap-2.5 p-3 px-4 hover:bg-gray-50 transition-colors"
+                                    >
+                                      <div
+                                        className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                                          services.includes(serviceOption)
+                                            ? "border-black bg-black"
+                                            : "border-gray-400"
+                                        }`}
+                                      >
+                                        {services.includes(serviceOption) && (
+                                          <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                                            <path
+                                              d="M1 3L3 5L7 1"
+                                              stroke="white"
+                                              strokeWidth="1.5"
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                            />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <span className="text-lg text-gray-600">{serviceOption}</span>
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       </div>
