@@ -18,6 +18,25 @@ import { useToast } from "@/hooks/use-toast";
 import { useGoogleIntegration } from "@/hooks/useGoogleIntegration";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingData } from "@/lib/onboarding";
+
+const businessTypes = [
+  "Hairdressers",
+  "Nail Salon", 
+  "Health Clinic",
+  "Fitness Studio",
+  "Coaching/Consulting",
+  "Physiotherapy",
+  "Chiropractor",
+];
+
+const hourOptions = ["00 hr", "01 hr", "02 hr", "03 hr", "04 hr"];
+const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
+
+interface SelectedBusinessType {
+  type: string;
+  hours: string;
+  minutes: string;
+}
 import { useNotifications } from "@/hooks/useNotifications";
 import NotificationPopup from "@/components/NotificationPopup";
 import { Header } from "@/components/shared/Header";
@@ -89,7 +108,10 @@ const AgentManagement = () => {
   
   // Basic Info
   const [businessName, setBusinessName] = useState('');
-  const [businessType, setBusinessType] = useState('');
+  const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<SelectedBusinessType[]>([]);
+  const [customType, setCustomType] = useState("");
+  const [isCustomSelected, setIsCustomSelected] = useState(false);
+  const [customDuration, setCustomDuration] = useState({ hours: "01 hr", minutes: "00 min" });
   const [businessLocation, setBusinessLocation] = useState('');
   
   // AI Personality  
@@ -254,18 +276,37 @@ const AgentManagement = () => {
       if (data) {
         // Basic Info
         setBusinessName(data.business_name || '');
-        // Extract type names with duration from business type objects
-        const formatBusinessType = (bt: any) => {
-          if (typeof bt === 'string') return bt;
-          const type = bt.type || '';
-          const hours = parseInt(bt.hours || '0');
-          const minutes = parseInt(bt.minutes || '0');
-          const duration = `${hours} hr ${minutes} min`;
-          return `${type} (${duration})`;
-        };
-        const formattedTypes = Array.isArray(data.business_types) ? 
-          data.business_types.map(formatBusinessType).filter(Boolean) : [];
-        setBusinessType(formattedTypes.join(', '));
+        // Load business types array
+        const businessTypesData = Array.isArray(data.business_types) ? data.business_types : [];
+        const loadedBusinessTypes: SelectedBusinessType[] = [];
+        let loadedCustomType = "";
+        let loadedCustomSelected = false;
+        let loadedCustomDuration = { hours: "01 hr", minutes: "00 min" };
+
+        businessTypesData.forEach((bt: any) => {
+          if (typeof bt === 'object' && bt.type) {
+            const isCustom = !businessTypes.includes(bt.type);
+            if (isCustom) {
+              loadedCustomType = bt.type;
+              loadedCustomSelected = true;
+              loadedCustomDuration = { 
+                hours: bt.hours || "01 hr", 
+                minutes: bt.minutes || "00 min" 
+              };
+            } else {
+              loadedBusinessTypes.push({
+                type: bt.type,
+                hours: bt.hours || "01 hr",
+                minutes: bt.minutes || "00 min"
+              });
+            }
+          }
+        });
+
+        setSelectedBusinessTypes(loadedBusinessTypes);
+        setCustomType(loadedCustomType);
+        setIsCustomSelected(loadedCustomSelected);
+        setCustomDuration(loadedCustomDuration);
         setBusinessLocation(data.primary_location || '');
         
         // AI Personality
@@ -318,10 +359,20 @@ const AgentManagement = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
+      // Prepare business types array
+      const allBusinessTypes = [...selectedBusinessTypes];
+      if (isCustomSelected && customType.trim()) {
+        allBusinessTypes.push({
+          type: customType.trim(),
+          hours: customDuration.hours,
+          minutes: customDuration.minutes
+        });
+      }
+
       const agentData = {
         user_id: user.id,
         business_name: businessName,
-        business_type: businessType,
+        business_types: allBusinessTypes as any,
         primary_location: businessLocation,
         contact_number: contactNumber,
         ai_assistant_name: aiAssistantName,
@@ -377,7 +428,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, businessType, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customType, isCustomSelected, customDuration, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -419,6 +470,33 @@ const AgentManagement = () => {
     setFaqs(prev => prev.filter(faq => faq.id !== id));
   }, []);
 
+  // Business type handlers
+  const handleBusinessTypeToggle = useCallback((type: string) => {
+    setSelectedBusinessTypes((prev) => {
+      const exists = prev.find(item => item.type === type);
+      if (exists) {
+        return prev.filter(item => item.type !== type);
+      } else {
+        return [...prev, { type, hours: "01 hr", minutes: "00 min" }];
+      }
+    });
+  }, []);
+
+  const handleCustomToggle = useCallback(() => {
+    setIsCustomSelected(!isCustomSelected);
+    if (!isCustomSelected) {
+      setCustomType("");
+    }
+  }, [isCustomSelected]);
+
+  const handleDurationChange = useCallback((type: string, field: 'hours' | 'minutes', value: string) => {
+    setSelectedBusinessTypes((prev) =>
+      prev.map(item =>
+        item.type === type ? { ...item, [field]: value } : item
+      )
+    );
+  }, []);
+
   // Discard functions for each section
   const discardBasicInfo = useCallback(async () => {
     if (!selectedAgentId) return;
@@ -434,18 +512,37 @@ const AgentManagement = () => {
       
       if (data) {
         setBusinessName(data.business_name || '');
-        // Extract type names with duration from business type objects for discard
-        const formatBusinessType = (bt: any) => {
-          if (typeof bt === 'string') return bt;
-          const type = bt.type || '';
-          const hours = parseInt(bt.hours || '0');
-          const minutes = parseInt(bt.minutes || '0');
-          const duration = `${hours} hr ${minutes} min`;
-          return `${type} (${duration})`;
-        };
-        const formattedTypes = Array.isArray(data.business_types) ? 
-          data.business_types.map(formatBusinessType).filter(Boolean) : [];
-        setBusinessType(formattedTypes.join(', '));
+        // Reset business types to saved values
+        const businessTypesData = Array.isArray(data.business_types) ? data.business_types : [];
+        const resetBusinessTypes: SelectedBusinessType[] = [];
+        let resetCustomType = "";
+        let resetCustomSelected = false;
+        let resetCustomDuration = { hours: "01 hr", minutes: "00 min" };
+
+        businessTypesData.forEach((bt: any) => {
+          if (typeof bt === 'object' && bt.type) {
+            const isCustom = !businessTypes.includes(bt.type);
+            if (isCustom) {
+              resetCustomType = bt.type;
+              resetCustomSelected = true;
+              resetCustomDuration = { 
+                hours: bt.hours || "01 hr", 
+                minutes: bt.minutes || "00 min" 
+              };
+            } else {
+              resetBusinessTypes.push({
+                type: bt.type,
+                hours: bt.hours || "01 hr",
+                minutes: bt.minutes || "00 min"
+              });
+            }
+          }
+        });
+
+        setSelectedBusinessTypes(resetBusinessTypes);
+        setCustomType(resetCustomType);
+        setIsCustomSelected(resetCustomSelected);
+        setCustomDuration(resetCustomDuration);
         setBusinessLocation(data.primary_location || '');
         
         toast({
@@ -662,28 +759,150 @@ const AgentManagement = () => {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Type</label>
-              <div className="relative">
-                <select 
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500 appearance-none bg-white"
+              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Types & Durations</label>
+              <div className="space-y-3">
+                {businessTypes.map((type) => {
+                  const isSelected = selectedBusinessTypes.find(item => item.type === type);
+                  
+                  return (
+                    <div
+                      key={type}
+                      className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
+                        isSelected
+                          ? "bg-gray-100 border-2 border-black"
+                          : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
+                      }`}
+                      onClick={() => handleBusinessTypeToggle(type)}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                              isSelected ? "border-black bg-black" : "border-gray-400"
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                                <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                          </div>
+                          <span className={`text-sm md:text-base ${isSelected ? "text-black" : "text-gray-600"}`}>
+                            {type}
+                          </span>
+                        </div>
+                        
+                        {isSelected && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Duration:</span>
+                            <select
+                              value={isSelected.hours}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleDurationChange(type, 'hours', e.target.value);
+                              }}
+                              className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {hourOptions.map(hour => (
+                                <option key={hour} value={hour}>{hour}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={isSelected.minutes}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleDurationChange(type, 'minutes', e.target.value);
+                              }}
+                              className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {minuteOptions.map(minute => (
+                                <option key={minute} value={minute}>{minute}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Custom Type Card */}
+                <div
+                  className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
+                    isCustomSelected
+                      ? "bg-gray-100 border-2 border-black"
+                      : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
+                  }`}
+                  onClick={() => handleCustomToggle()}
                 >
-                  <option value="">Select business type</option>
-                  <option value="Hairdressers">Hairdressers</option>
-                  <option value="Nail Salon">Nail Salon</option>
-                  <option value="Health Clinic">Health Clinic</option>
-                  <option value="Fitness Studio">Fitness Studio</option>
-                  <option value="Coaching/Consulting">Coaching/Consulting</option>
-                  <option value="Physiotherapy">Physiotherapy</option>
-                  <option value="Chiropractor">Chiropractor</option>
-                  {businessType && !["Hairdressers", "Nail Salon", "Health Clinic", "Fitness Studio", "Coaching/Consulting", "Physiotherapy", "Chiropractor"].includes(businessType) && (
-                    <option value={businessType}>{businessType} (Custom)</option>
-                  )}
-                </select>
-                <svg className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" stroke="#141B34" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                          isCustomSelected ? "border-black bg-black" : "border-gray-400"
+                        }`}
+                      >
+                        {isCustomSelected && (
+                          <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                            <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </div>
+                      
+                      {isCustomSelected ? (
+                        <input
+                          type="text"
+                          value={customType}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setCustomType(e.target.value);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          placeholder="Enter your business type..."
+                          className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-white"
+                        />
+                      ) : (
+                        <span className="text-sm md:text-base text-gray-600">
+                          Other (Custom type)
+                        </span>
+                      )}
+                    </div>
+                    
+                    {isCustomSelected && customType.trim() && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Duration:</span>
+                        <select
+                          value={customDuration.hours}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setCustomDuration(prev => ({ ...prev, hours: e.target.value }));
+                          }}
+                          className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {hourOptions.map(hour => (
+                            <option key={hour} value={hour}>{hour}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={customDuration.minutes}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setCustomDuration(prev => ({ ...prev, minutes: e.target.value }));
+                          }}
+                          className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {minuteOptions.map(minute => (
+                            <option key={minute} value={minute}>{minute}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
