@@ -149,10 +149,19 @@ const AgentManagement = () => {
   const [autoReminders, setAutoReminders] = useState(false);
 
   // Options arrays
-  const assistantNameOptions = [
-    { id: 'default', label: `Your ${businessName || '[Business Name]'} Assistant` },
-    { id: 'custom', label: 'Custom name' }
-  ];
+  const assistantNameOptions = React.useMemo(() => {
+    const baseOptions = [
+      { id: 'default', label: `Your ${businessName || '[Business Name]'} Assistant` },
+      { id: 'custom', label: 'Custom name' }
+    ];
+    
+    // If there's a custom name, add it as an option
+    if (customAssistantName.trim() && selectedAssistantName === 'custom') {
+      baseOptions.splice(-1, 0, { id: 'custom-value', label: customAssistantName });
+    }
+    
+    return baseOptions;
+  }, [businessName, customAssistantName, selectedAssistantName]);
 
   const scheduleOptions = [
     { id: '24/7', label: '24/7 - Always answer calls' },
@@ -384,7 +393,7 @@ const AgentManagement = () => {
           setSelectedAssistantName('default');
           setCustomAssistantName('');
         } else {
-          setSelectedAssistantName('custom');
+          setSelectedAssistantName('custom-value');
           setCustomAssistantName(savedAssistantName);
         }
         setAiAssistantName(savedAssistantName);
@@ -472,7 +481,7 @@ const AgentManagement = () => {
         business_types: allBusinessTypes as any,
         primary_location: businessLocation,
         contact_number: contactNumber,
-        ai_assistant_name: selectedAssistantName === 'custom' ? customAssistantName : aiAssistantName,
+        ai_assistant_name: selectedAssistantName === 'custom-value' ? customAssistantName : (selectedAssistantName === 'default' ? `Your ${businessName} Assistant` : aiAssistantName),
         ai_voice_style: selectedVoice,
         ai_greeting_style: greetingOptions.find(g => g.id === selectedGreetingStyle) || greetingStyle,
         ai_handling_unknown: handlingUnknown,
@@ -677,7 +686,7 @@ const AgentManagement = () => {
           setSelectedAssistantName('default');
           setCustomAssistantName('');
         } else {
-          setSelectedAssistantName('custom');
+          setSelectedAssistantName('custom-value');
           setCustomAssistantName(savedAssistantName);
         }
         setAiAssistantName(savedAssistantName);
@@ -1294,16 +1303,25 @@ const AgentManagement = () => {
                           AI assistant name
                         </label>
                         <div className="relative">
-                          {selectedAssistantName === 'custom' ? (
+                          {selectedAssistantName === 'custom' && customAssistantName === '' ? (
                             <input
                               type="text"
                               value={customAssistantName}
                               onChange={(e) => setCustomAssistantName(e.target.value)}
                               placeholder="Enter custom assistant name"
                               className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-700 bg-white"
+                              autoFocus
                               onBlur={() => {
-                                if (!customAssistantName.trim()) {
+                                if (customAssistantName.trim()) {
+                                  setSelectedAssistantName('custom-value');
+                                } else {
                                   setSelectedAssistantName('default');
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && customAssistantName.trim()) {
+                                  setSelectedAssistantName('custom-value');
+                                  e.currentTarget.blur();
                                 }
                               }}
                             />
@@ -1311,11 +1329,13 @@ const AgentManagement = () => {
                             <>
                               <select 
                                 className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
-                                value={selectedAssistantName}
+                                value={selectedAssistantName === 'custom' && customAssistantName.trim() ? 'custom-value' : selectedAssistantName}
                                 onChange={(e) => {
-                                  setSelectedAssistantName(e.target.value);
                                   if (e.target.value === 'custom') {
+                                    setSelectedAssistantName('custom');
                                     setCustomAssistantName('');
+                                  } else {
+                                    setSelectedAssistantName(e.target.value);
                                   }
                                 }}
                               >
