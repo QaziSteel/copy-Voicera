@@ -69,58 +69,20 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
       const phoneNumberIds = phoneNumbers.map(pn => pn.id);
       const phoneNumberStrings = phoneNumbers.map(pn => pn.phone_number);
 
-      // Build base query for call logs with booking information
-      let query = supabase
-        .from('call_logs')
-        .select(`
-          *,
-          bookings!call_logs_call_log_id_fkey (
-            id,
-            customer_name,
-            service_type,
-            appointment_date,
-            appointment_time
-          )
-        `);
-
-      // Create project filter - call logs must belong to project phone numbers
-      const projectFilter = `phone_number_id.in.(${phoneNumberIds.join(',')}),phone_number.in.(${phoneNumberStrings.map(pn => `"${pn}"`).join(',')})`;
-      
-      // Add search filter if provided, combined with project filter
-      if (searchTerm) {
-        query = query.or(`and(${projectFilter},or(phone_number.ilike.%${searchTerm}%,customer_number.ilike.%${searchTerm}%))`);
-      } else {
-        query = query.or(projectFilter);
-      }
-
-      // Add date filter
-      if (dateFilter?.from) {
-        query = query.gte('started_at', dateFilter.from.toISOString());
-      }
-      if (dateFilter?.to) {
-        query = query.lte('started_at', dateFilter.to.toISOString());
-      }
-
-      // Order by most recent first
-      query = query.order('started_at', { ascending: false });
-
-      const { data, error: callLogsError } = await query;
+      // Use database function to get call logs with booking information
+      const { data, error: callLogsError } = await supabase.rpc('get_call_logs_with_bookings', {
+        phone_number_ids: phoneNumberIds,
+        phone_numbers: phoneNumberStrings,
+        search_term: searchTerm || null,
+        date_from: dateFilter?.from?.toISOString() || null,
+        date_to: dateFilter?.to?.toISOString() || null
+      });
 
       if (callLogsError) {
         throw callLogsError;
       }
 
-      // Transform the data to flatten booking information
-      const transformedData = (data || []).map((callLog: any) => ({
-        ...callLog,
-        booking_id: callLog.bookings?.[0]?.id || null,
-        booking_customer_name: callLog.bookings?.[0]?.customer_name || null,
-        booking_service_type: callLog.bookings?.[0]?.service_type || null,
-        booking_appointment_date: callLog.bookings?.[0]?.appointment_date || null,
-        booking_appointment_time: callLog.bookings?.[0]?.appointment_time || null,
-      }));
-
-      setCallLogs(transformedData);
+      setCallLogs(data || []);
     } catch (err) {
       console.error('Error fetching call logs:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch call logs');

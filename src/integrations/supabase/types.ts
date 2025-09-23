@@ -514,6 +514,36 @@ export type Database = {
         Args: { booking_id: string }
         Returns: string
       }
+      get_call_logs_with_bookings: {
+        Args: {
+          date_from?: string
+          date_to?: string
+          phone_number_ids?: string[]
+          phone_numbers?: string[]
+          search_term?: string
+        }
+        Returns: {
+          booking_appointment_date: string
+          booking_appointment_time: string
+          booking_customer_name: string
+          booking_id: string
+          booking_service_type: string
+          cost: number
+          created_at: string
+          customer_number: string
+          ended_at: string
+          ended_reason: string
+          id: string
+          phone_number: string
+          phone_number_id: string
+          recording_file_path: string
+          started_at: string
+          total_call_time: number
+          transcript_file_path: string
+          type: string
+          updated_at: string
+        }[]
+      }
       get_google_integration_tokens: {
         Args: { _integration_id: string; _requesting_user_id: string }
         Returns: {
