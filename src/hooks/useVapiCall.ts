@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 interface VapiCallConfig {
   assistantId?: string;
   agentData?: any;
-  onCallStart?: (callId: string) => void;
-  onCallEnd?: (callId: string, duration: number) => void;
+  onCallStart?: (resolve: (callId: string) => void) => Promise<void>;
+  onCallEnd?: (callId: string, duration: number) => Promise<void>;
 }
 
 interface CallMetrics {
@@ -28,7 +28,9 @@ export const useVapiCall = () => {
   
   const vapiInstance = useRef<any>(null);
   const durationInterval = useRef<NodeJS.Timeout | null>(null);
-  const callbacksRef = useRef<{ onCallStart?: (callId: string) => void; onCallEnd?: (callId: string, duration: number) => void }>({});
+  const callbacksRef = useRef<{ onCallStart?: (resolve: (callId: string) => void) => Promise<void>; onCallEnd?: (callId: string, duration: number) => Promise<void> }>({});
+  const callStartTimeRef = useRef<Date | null>(null);
+  const currentCallIdRef = useRef<string | null>(null);
 
   // Initialize Vapi SDK
   const initializeVapi = useCallback(async () => {
@@ -53,37 +55,53 @@ export const useVapiCall = () => {
       vapiInstance.current = new Vapi.default(publicKey);
 
       // Set up event listeners
-      vapiInstance.current.on('call-start', () => {
+      vapiInstance.current.on('call-start', async () => {
         console.log('Vapi call started');
+        const startTime = new Date();
+        callStartTimeRef.current = startTime;
+        
         setIsCallActive(true);
         setIsConnecting(false);
         setCallMetrics(prev => ({
           ...prev,
-          startTime: new Date(),
+          startTime,
           duration: 0
         }));
         
-        // Call the onCallStart callback if provided
+        // Call the onCallStart callback if provided and wait for it to complete
         if (callbacksRef.current.onCallStart) {
-          callbacksRef.current.onCallStart('test-call-' + Date.now());
+          try {
+            await callbacksRef.current.onCallStart((callId) => {
+              currentCallIdRef.current = callId;
+              console.log('Call started with ID:', callId);
+            });
+          } catch (error) {
+            console.error('Error in onCallStart callback:', error);
+          }
         }
         
         // Start duration counter
         durationInterval.current = setInterval(() => {
-          setCallMetrics(prev => ({
-            ...prev,
-            duration: prev.startTime ? Math.floor((Date.now() - prev.startTime.getTime()) / 1000) : 0
-          }));
+          if (callStartTimeRef.current) {
+            const duration = Math.floor((Date.now() - callStartTimeRef.current.getTime()) / 1000);
+            setCallMetrics(prev => ({
+              ...prev,
+              duration
+            }));
+          }
         }, 1000);
       });
 
-      vapiInstance.current.on('call-end', () => {
+      vapiInstance.current.on('call-end', async () => {
         console.log('Vapi call ended');
         setIsCallActive(false);
         setIsConnecting(false);
         
         const endTime = new Date();
-        const finalDuration = callMetrics.startTime ? Math.floor((endTime.getTime() - callMetrics.startTime.getTime()) / 1000) : 0;
+        const finalDuration = callStartTimeRef.current ? Math.floor((endTime.getTime() - callStartTimeRef.current.getTime()) / 1000) : 0;
+        
+        console.log('Call end - Duration:', finalDuration, 'seconds');
+        console.log('Call end - Call ID:', currentCallIdRef.current);
         
         setCallMetrics(prev => ({
           ...prev,
@@ -92,9 +110,21 @@ export const useVapiCall = () => {
         }));
         
         // Call the onCallEnd callback if provided
-        if (callbacksRef.current.onCallEnd) {
-          callbacksRef.current.onCallEnd('test-call-' + Date.now(), finalDuration);
+        if (callbacksRef.current.onCallEnd && currentCallIdRef.current) {
+          try {
+            console.log('Calling onCallEnd with:', currentCallIdRef.current, finalDuration);
+            await callbacksRef.current.onCallEnd(currentCallIdRef.current, finalDuration);
+            console.log('onCallEnd completed successfully');
+          } catch (error) {
+            console.error('Error in onCallEnd callback:', error);
+          }
+        } else {
+          console.warn('onCallEnd callback not called - callback exists:', !!callbacksRef.current.onCallEnd, 'callId exists:', !!currentCallIdRef.current);
         }
+        
+        // Reset refs
+        callStartTimeRef.current = null;
+        currentCallIdRef.current = null;
         
         if (durationInterval.current) {
           clearInterval(durationInterval.current);

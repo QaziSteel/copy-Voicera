@@ -41,33 +41,46 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       return;
     }
 
-    const handleCallStart = async (callId: string) => {
+    const handleCallStart = async (resolve: (callId: string) => void) => {
       try {
+        console.log('Creating test call log...');
         const testCallLog = await createTestCallLog({
           agent_id: agentData?.id || '',
           project_id: agentData?.project_id || '',
           assistant_id: agentData?.assistant_id || '',
           call_started_at: new Date().toISOString(),
         });
+        console.log('Test call log created:', testCallLog.id);
         setCurrentTestCallId(testCallLog.id);
+        resolve(testCallLog.id);
       } catch (error) {
         console.error('Error creating test call log:', error);
+        resolve(`fallback-${Date.now()}`);
       }
     };
 
     const handleCallEnd = async (callId: string, duration: number) => {
-      if (currentTestCallId) {
+      console.log('handleCallEnd called with:', { callId, duration, currentTestCallId });
+      
+      // Use the passed callId if it matches our current test call ID, otherwise use currentTestCallId
+      const testCallIdToUpdate = callId === currentTestCallId ? callId : currentTestCallId;
+      
+      if (testCallIdToUpdate) {
         try {
-          await updateTestCallLog({
-            id: currentTestCallId,
+          console.log('Updating test call log:', testCallIdToUpdate);
+          const result = await updateTestCallLog({
+            id: testCallIdToUpdate,
             call_ended_at: new Date().toISOString(),
             duration_seconds: duration,
           });
+          console.log('Test call log updated successfully:', result);
         } catch (error) {
           console.error('Error updating test call log:', error);
         } finally {
           setCurrentTestCallId(null);
         }
+      } else {
+        console.warn('No test call ID to update');
       }
     };
 
