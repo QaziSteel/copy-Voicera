@@ -16,6 +16,12 @@ export interface CallLogRecord {
   transcript_file_path: string | null;
   created_at: string;
   updated_at: string;
+  // Booking information
+  booking_id: string | null;
+  booking_customer_name: string | null;
+  booking_service_type: string | null;
+  booking_appointment_date: string | null;
+  booking_appointment_time: string | null;
 }
 
 export interface UseCallLogsResult {
@@ -63,10 +69,19 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
       const phoneNumberIds = phoneNumbers.map(pn => pn.id);
       const phoneNumberStrings = phoneNumbers.map(pn => pn.phone_number);
 
-      // Build base query for call logs
+      // Build base query for call logs with booking information
       let query = supabase
         .from('call_logs')
-        .select('*');
+        .select(`
+          *,
+          bookings!call_logs_call_log_id_fkey (
+            id,
+            customer_name,
+            service_type,
+            appointment_date,
+            appointment_time
+          )
+        `);
 
       // Create project filter - call logs must belong to project phone numbers
       const projectFilter = `phone_number_id.in.(${phoneNumberIds.join(',')}),phone_number.in.(${phoneNumberStrings.map(pn => `"${pn}"`).join(',')})`;
@@ -95,7 +110,17 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
         throw callLogsError;
       }
 
-      setCallLogs(data || []);
+      // Transform the data to flatten booking information
+      const transformedData = (data || []).map((callLog: any) => ({
+        ...callLog,
+        booking_id: callLog.bookings?.[0]?.id || null,
+        booking_customer_name: callLog.bookings?.[0]?.customer_name || null,
+        booking_service_type: callLog.bookings?.[0]?.service_type || null,
+        booking_appointment_date: callLog.bookings?.[0]?.appointment_date || null,
+        booking_appointment_time: callLog.bookings?.[0]?.appointment_time || null,
+      }));
+
+      setCallLogs(transformedData);
     } catch (err) {
       console.error('Error fetching call logs:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch call logs');

@@ -509,6 +509,31 @@ const CallLogs: React.FC = () => {
                       </button>
                     </div>
                   </div>
+
+                  {/* Booking information */}
+                  {call.booking_id && (
+                    <div className="mt-4 p-3 rounded-lg bg-green-50 border border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-green-800">
+                            Booking: {call.booking_customer_name}
+                            {call.booking_service_type && ` - ${call.booking_service_type}`}
+                          </span>
+                        </div>
+                        <div className="text-sm text-green-700">
+                          {call.booking_appointment_date && call.booking_appointment_time && (
+                            <>
+                              {new Date(call.booking_appointment_date).toLocaleDateString()} at{' '}
+                              {new Date(`2000-01-01T${call.booking_appointment_time}`).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
 
