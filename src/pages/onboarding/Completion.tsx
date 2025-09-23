@@ -44,7 +44,7 @@ export default function Completion() {
       let googleIntegration = null;
       if (onboardingData?.id) {
         const { data: integration } = await supabase
-          .from('google_integrations')
+          .from('google_integration_metadata')
           .select('*')
           .eq('agent_id', onboardingData.id)
           .eq('is_active', true)
@@ -180,7 +180,7 @@ export default function Completion() {
       let googleIntegration = null;
       if (onboardingData?.id) {
         const { data: integration } = await supabase
-          .from('google_integrations')
+          .from('google_integration_metadata')
           .select('*')
           .eq('agent_id', onboardingData.id)
           .eq('is_active', true)
