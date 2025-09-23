@@ -1450,12 +1450,12 @@ const AgentManagement = () => {
                         </label>
                         <div className="relative">
                           <select 
-                            className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
+                            className="w-full px-4 py-4 pr-12 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white truncate"
                             value={selectedGreetingStyle}
                             onChange={(e) => setSelectedGreetingStyle(e.target.value)}
                           >
                             {greetingOptions.map((option) => (
-                              <option key={option.id} value={option.id}>
+                              <option key={option.id} value={option.id} className="whitespace-normal py-2">
                                 {option.label}: "{option.text}"
                               </option>
                             ))}
