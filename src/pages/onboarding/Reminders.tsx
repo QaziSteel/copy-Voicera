@@ -54,7 +54,8 @@ export default function Reminders() {
           .from('google_integrations')
           .update({ agent_id: savedAgentId })
           .eq('user_id', user.id)
-          .is('agent_id', null);
+          .is('agent_id', null)
+          .eq('is_active', true);
         
         if (updateError) {
           console.error('Error updating Google integration:', updateError);
