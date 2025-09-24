@@ -14,6 +14,13 @@ export default function CalendarIntegration() {
   // Use the Google integration hook to check for existing integration
   const { integration, loading, initiateOAuth } = useGoogleIntegration(null, true);
 
+  // Reset connecting state when integration is detected
+  React.useEffect(() => {
+    if (integration) {
+      setIsConnecting(false);
+    }
+  }, [integration]);
+
   const handlePrevious = () => {
     navigate("/onboarding/contact-number");
   };
