@@ -315,53 +315,22 @@ serve(async (req) => {
     <p>✓ Google Calendar Connected Successfully</p>
     <p>You can close this window.</p>
     <script>
-        // Send success message to parent window
-        function sendMessage() {
-            try {
-                window.opener?.postMessage({
-                    type: 'OAUTH_SUCCESS',
-                    email: '${userInfo.email}',
-                    ${finalAgentId ? `agentId: '${finalAgentId}'` : `projectId: '${finalProjectId}'`}
-                }, '*');
-            } catch (e) {
-                console.error('Failed to send message:', e);
-            }
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_SUCCESS',
+                email: '${userInfo.email}',
+                ${finalAgentId ? `agentId: '${finalAgentId}'` : `projectId: '${finalProjectId}'`}
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
         }
-        
-        // Try multiple methods to close the window
-        function closeWindow() {
-            try {
-                // Method 1: Direct close
-                window.close();
-            } catch (e1) {
-                try {
-                    // Method 2: Focus parent and close
-                    if (window.opener) {
-                        window.opener.focus();
-                    }
-                    window.close();
-                } catch (e2) {
-                    try {
-                        // Method 3: Use parent to close
-                        window.opener?.postMessage({ type: 'CLOSE_POPUP' }, '*');
-                    } catch (e3) {
-                        console.log('Cannot auto-close window - manual close required');
-                    }
-                }
-            }
-        }
-        
-        // Send message immediately
-        sendMessage();
-        
-        // Try to close immediately
-        closeWindow();
-        
-        // Also try after a short delay
         setTimeout(() => {
-            sendMessage();
-            closeWindow();
-        }, 500);
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
     </script>
 </body>
 </html>`;

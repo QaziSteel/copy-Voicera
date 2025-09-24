@@ -50,7 +50,7 @@ export default function CalendarIntegration() {
       onPrevious={handlePrevious}
       showPrevious={true}
       leftAligned={true}
-      nextDisabled={!integration && !isConnecting}
+      nextDisabled={!integration}
     >
       <div className="flex flex-col gap-8 w-full">
         {/* Header */}
