@@ -12,6 +12,7 @@ export default function CalendarIntegration() {
   const { currentProject } = useProject();
   const { user } = useAuth();
   const [isConnecting, setIsConnecting] = React.useState(false);
+  const [hasClickedConnect, setHasClickedConnect] = React.useState(false);
   
   // Use the Google integration hook to check for existing integration
   const { integration, loading, initiateOAuth } = useGoogleIntegration(null, true);
@@ -34,6 +35,7 @@ export default function CalendarIntegration() {
   const handleConnectGoogle = async () => {
     if (!currentProject || !user) return;
     
+    setHasClickedConnect(true);
     setIsConnecting(true);
     try {
       // Include both project ID and user ID in state for onboarding flow
@@ -50,7 +52,7 @@ export default function CalendarIntegration() {
       onPrevious={handlePrevious}
       showPrevious={true}
       leftAligned={true}
-      nextDisabled={!integration}
+      nextDisabled={!integration && !hasClickedConnect}
     >
       <div className="flex flex-col gap-8 w-full">
         {/* Header */}
