@@ -165,11 +165,17 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       
       if (event.data.type === 'OAUTH_SUCCESS') {
         window.removeEventListener('message', handleMessage);
-        oauthWindow.close();
         // Mark as connected in this session
         if (onboardingMode) {
           sessionStorage.setItem('googleCalendarConnected', 'true');
         }
+        // Force close the popup
+        try {
+          oauthWindow.close();
+        } catch (e) {
+          console.log('Cannot close popup programmatically');
+        }
+        // Refresh integration status immediately
         fetchIntegration();
         toast({
           title: "Success",
@@ -177,12 +183,23 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
         });
       } else if (event.data.type === 'OAUTH_ERROR') {
         window.removeEventListener('message', handleMessage);
-        oauthWindow.close();
+        try {
+          oauthWindow.close();
+        } catch (e) {
+          console.log('Cannot close popup programmatically');
+        }
         toast({
           title: "OAuth Error",
           description: event.data.error || "Failed to connect Google Calendar",
           variant: "destructive",
         });
+      } else if (event.data.type === 'CLOSE_POPUP') {
+        // Handle close request from popup
+        try {
+          oauthWindow.close();
+        } catch (e) {
+          console.log('Cannot close popup programmatically');
+        }
       }
     };
 
@@ -193,10 +210,10 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       if (oauthWindow.closed) {
         clearInterval(checkClosed);
         window.removeEventListener('message', handleMessage);
-        // Refresh integration status when window closes (in case postMessage didn't work)
+        // Check integration status when window closes (manual close or auto-close)
         setTimeout(() => {
           fetchIntegration();
-        }, 1000);
+        }, 500);
       }
     }, 1000);
   };
@@ -204,6 +221,21 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
   useEffect(() => {
     // Always fetch integration status on mount, regardless of mode
     fetchIntegration();
+
+    // Add window focus listener to re-check integration status
+    // This helps when popup is manually closed after successful OAuth
+    const handleWindowFocus = () => {
+      // Small delay to allow any background processes to complete
+      setTimeout(() => {
+        fetchIntegration();
+      }, 200);
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+    };
   }, [onboardingMode]);
 
   return {
