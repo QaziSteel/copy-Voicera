@@ -21,11 +21,16 @@ serve(async (req) => {
 
     console.log('OAuth callback received:', { code: !!code, state, error });
 
-    // Parse state to get agentId and flow
-    const [agentId, flow] = state?.split('|') || [state, 'agent-management'];
+    // Parse state to get identifier and flow
+    const [identifier, flow] = state?.split('|') || [state, 'agent-management'];
     const isOnboardingFlow = flow === 'onboarding';
+    
+    // For onboarding flow, identifier is project_id
+    // For agent flow, identifier is agent_id
+    const projectId = isOnboardingFlow ? identifier : null;
+    const agentId = !isOnboardingFlow ? identifier : null;
 
-    console.log('Parsed state:', { agentId, flow, isOnboardingFlow });
+    console.log('Parsed state:', { identifier, flow, isOnboardingFlow, projectId, agentId });
 
     // Handle OAuth errors
     if (error) {
@@ -68,8 +73,8 @@ serve(async (req) => {
       return Response.redirect(redirectUrl, 302);
     }
 
-    if (!code || !agentId) {
-      console.error('Missing required parameters:', { code: !!code, agentId: !!agentId });
+    if (!code || (!agentId && !projectId)) {
+      console.error('Missing required parameters:', { code: !!code, agentId: !!agentId, projectId: !!projectId });
       if (isOnboardingFlow) {
         const htmlResponse = `<!DOCTYPE html>
 <html>
@@ -167,16 +172,15 @@ serve(async (req) => {
     // Calculate token expiry time
     const expiresAt = new Date(Date.now() + (tokenData.expires_in * 1000));
 
-    // Find the project_id and user_id for this agent
-    const { data: agentData, error: agentError } = await supabase
-      .from('onboarding_responses')
-      .select('project_id, user_id')
-      .eq('id', agentId)
-      .single();
-
-    if (agentError || !agentData) {
-      console.error('Error fetching agent data:', agentError);
-      if (isOnboardingFlow) {
+    let finalProjectId, finalUserId, finalAgentId;
+    
+    if (isOnboardingFlow) {
+      // For onboarding flow: use project_id from state, get user from request headers
+      // We need to extract user from JWT token since we're in onboarding mode
+      const authHeader = req.headers.get('authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.error('Missing or invalid authorization header for onboarding flow');
+        
         const htmlResponse = `<!DOCTYPE html>
 <html>
 <head>
@@ -184,13 +188,13 @@ serve(async (req) => {
     <title>OAuth Error</title>
 </head>
 <body>
-    <p>❌ Agent not found</p>
+    <p>❌ Authentication required</p>
     <p>You can close this window.</p>
     <script>
         try {
             window.opener?.postMessage({
                 type: 'OAUTH_ERROR',
-                error: 'Agent not found'
+                error: 'Authentication required'
             }, '*');
         } catch (e) {
             console.error('Failed to send message:', e);
@@ -210,13 +214,19 @@ serve(async (req) => {
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=agent_not_found`;
-      return Response.redirect(redirectUrl, 302);
-    }
-
-    if (!agentData.project_id || !agentData.user_id) {
-      console.error('Missing project_id or user_id for agent:', agentId);
-      if (isOnboardingFlow) {
+      
+      // For now, we'll get the current user from supabase auth
+      // In onboarding flow, we don't have an agent yet, so we create orphaned record
+      const supabaseAnon = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+        auth: { persistSession: false }
+      });
+      
+      // Get current user (this will work because the frontend passes auth in request)
+      const { data: { user }, error: userError } = await supabaseAnon.auth.getUser(authHeader.replace('Bearer ', ''));
+      
+      if (userError || !user) {
+        console.error('Error getting user from token:', userError);
+        
         const htmlResponse = `<!DOCTYPE html>
 <html>
 <head>
@@ -224,13 +234,13 @@ serve(async (req) => {
     <title>OAuth Error</title>
 </head>
 <body>
-    <p>❌ Project or user not found</p>
+    <p>❌ User authentication failed</p>
     <p>You can close this window.</p>
     <script>
         try {
             window.opener?.postMessage({
                 type: 'OAUTH_ERROR',
-                error: 'Project or user not found'
+                error: 'User authentication failed'
             }, '*');
         } catch (e) {
             console.error('Failed to send message:', e);
@@ -250,15 +260,41 @@ serve(async (req) => {
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=project_not_found`;
-      return Response.redirect(redirectUrl, 302);
+      
+      finalProjectId = projectId;
+      finalUserId = user.id;
+      finalAgentId = null; // Create orphaned record
+      
+    } else {
+      // For agent management flow: get project_id and user_id from agent record
+      const { data: agentData, error: agentError } = await supabase
+        .from('onboarding_responses')
+        .select('project_id, user_id')
+        .eq('id', agentId)
+        .single();
+
+      if (agentError || !agentData) {
+        console.error('Error fetching agent data:', agentError);
+        const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=agent_not_found`;
+        return Response.redirect(redirectUrl, 302);
+      }
+
+      if (!agentData.project_id || !agentData.user_id) {
+        console.error('Missing project_id or user_id for agent:', agentId);
+        const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=project_not_found`;
+        return Response.redirect(redirectUrl, 302);
+      }
+      
+      finalProjectId = agentData.project_id;
+      finalUserId = agentData.user_id;
+      finalAgentId = agentId;
     }
 
     // Check for existing integration with same user_id and user_email to reuse refresh token
     const { data: existingIntegration } = await supabase
       .from('google_integrations')
       .select('refresh_token')
-      .eq('user_id', agentData.user_id)
+      .eq('user_id', finalUserId)
       .eq('user_email', userInfo.email)
       .eq('is_active', true)
       .limit(1)
@@ -274,21 +310,29 @@ serve(async (req) => {
       hasExisting: !!existingIntegration 
     });
 
+    // Prepare integration data
+    const integrationData = {
+      user_id: finalUserId,
+      project_id: finalProjectId,
+      agent_id: finalAgentId,
+      access_token: tokenData.access_token,
+      refresh_token: refreshTokenToUse,
+      token_expires_at: expiresAt.toISOString(),
+      scopes: tokenData.scope?.split(' ') || [],
+      user_email: userInfo.email,
+      is_active: true,
+    };
+
+    // For onboarding flow, add created_without_agent timestamp
+    if (isOnboardingFlow) {
+      integrationData.created_without_agent = new Date().toISOString();
+    }
+
     // Store or update the Google integration
     const { error: integrationError } = await supabase
       .from('google_integrations')
-      .upsert({
-        user_id: agentData.user_id,
-        project_id: agentData.project_id,
-        agent_id: agentId,
-        access_token: tokenData.access_token,
-        refresh_token: refreshTokenToUse,
-        token_expires_at: expiresAt.toISOString(),
-        scopes: tokenData.scope?.split(' ') || [],
-        user_email: userInfo.email,
-        is_active: true,
-      }, {
-        onConflict: 'agent_id'
+      .upsert(integrationData, {
+        onConflict: finalAgentId ? 'agent_id' : undefined // Only use conflict resolution if we have agent_id
       });
 
     if (integrationError) {
@@ -331,7 +375,7 @@ serve(async (req) => {
       return Response.redirect(redirectUrl, 302);
     }
 
-    console.log('Google integration stored successfully for project:', agentData.project_id);
+    console.log('Google integration stored successfully for project:', finalProjectId);
 
     // Handle response based on flow type
     if (isOnboardingFlow) {
@@ -350,7 +394,7 @@ serve(async (req) => {
             window.opener?.postMessage({
                 type: 'OAUTH_SUCCESS',
                 email: '${userInfo.email}',
-                agentId: '${agentId}'
+                ${finalAgentId ? `agentId: '${finalAgentId}'` : `projectId: '${finalProjectId}'`}
             }, '*');
         } catch (e) {
             console.error('Failed to send message:', e);
@@ -373,7 +417,7 @@ serve(async (req) => {
       });
     } else {
       // For agent management flow, redirect as before
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=success&email=${encodeURIComponent(userInfo.email)}&popup=true`;
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${finalAgentId}&oauth=success&email=${encodeURIComponent(userInfo.email)}&popup=true`;
       return Response.redirect(redirectUrl, 302);
     }
 
@@ -419,7 +463,7 @@ serve(async (req) => {
       });
     }
     
-    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId || 'unknown'}&oauth=error&error=unexpected_error`;
+    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${finalAgentId || 'unknown'}&oauth=error&error=unexpected_error`;
     return Response.redirect(redirectUrl, 302);
   }
 });

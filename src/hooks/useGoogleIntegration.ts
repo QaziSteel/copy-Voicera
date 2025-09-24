@@ -19,16 +19,40 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
   const { toast } = useToast();
 
   const fetchIntegration = async () => {
-    if (!agentId) return;
-    
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('google_integrations')
-        .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
-        .eq('agent_id', agentId)
-        .eq('is_active', true)
-        .maybeSingle();
+      let data = null;
+      let error = null;
+
+      if (onboardingMode) {
+        // For onboarding mode, look for orphaned records (agent_id = NULL) for current user/project
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          const response = await supabase
+            .from('google_integrations')
+            .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
+            .eq('user_id', userData.user.id)
+            .is('agent_id', null)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          data = response.data;
+          error = response.error;
+        }
+      } else if (agentId) {
+        // For regular mode, look for agent-specific records
+        const response = await supabase
+          .from('google_integrations')
+          .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
+          .eq('agent_id', agentId)
+          .eq('is_active', true)
+          .maybeSingle();
+        
+        data = response.data;
+        error = response.error;
+      }
 
       if (error) {
         console.error('Error fetching Google integration:', error);
@@ -90,7 +114,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
     }
   };
 
-  const initiateOAuth = (agentId: string) => {
+  const initiateOAuth = (identifierAndFlow: string) => {
     const googleClientId = '526952712398-7277grt2mlsumid92h9d4fiu52kecqvf.apps.googleusercontent.com'; // Your actual Google Client ID
     const redirectUri = 'https://nhhdxwgrmcdsapbuvelx.supabase.co/functions/v1/google-oauth-callback';
     const scopes = [
@@ -100,9 +124,6 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       'https://www.googleapis.com/auth/calendar'
     ].join(' ');
 
-    // Determine flow type based on onboardingMode
-    const flow = onboardingMode ? 'onboarding' : 'agent-management';
-
     const oauthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     oauthUrl.searchParams.set('client_id', googleClientId);
     oauthUrl.searchParams.set('redirect_uri', redirectUri);
@@ -110,7 +131,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
     oauthUrl.searchParams.set('scope', scopes);
     oauthUrl.searchParams.set('access_type', 'offline');
     oauthUrl.searchParams.set('prompt', 'consent');
-    oauthUrl.searchParams.set('state', `${agentId}|${flow}`);
+    oauthUrl.searchParams.set('state', identifierAndFlow);
 
     // Open OAuth URL in a new window (not popup to avoid popup blockers)
     const oauthWindow = window.open(
@@ -172,10 +193,9 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
   };
 
   useEffect(() => {
-    if (!onboardingMode) {
-      fetchIntegration();
-    }
-  }, [agentId, onboardingMode]);
+    // Always fetch integration status on mount, regardless of mode
+    fetchIntegration();
+  }, [onboardingMode]);
 
   return {
     integration,

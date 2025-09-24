@@ -3,17 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useGoogleIntegration } from '@/hooks/useGoogleIntegration';
+import { useProject } from '@/contexts/ProjectContext';
 
 export default function CalendarIntegration() {
   const navigate = useNavigate();
+  const { currentProject } = useProject();
+  const [isConnecting, setIsConnecting] = React.useState(false);
   
-  // Check if calendar integration has been acknowledged (cache refresh)
-  const [isAcknowledged, setIsAcknowledged] = React.useState<boolean>(
-    () => {
-      const stored = sessionStorage.getItem("calendarIntegration");
-      return stored === "true";
-    }
-  );
+  // Use the Google integration hook to check for existing integration
+  const { integration, loading, initiateOAuth } = useGoogleIntegration(null, true);
 
   const handlePrevious = () => {
     navigate("/onboarding/contact-number");
@@ -23,9 +22,17 @@ export default function CalendarIntegration() {
     navigate("/onboarding/personality-intro");
   };
 
-  const handleConnectGoogle = () => {
-    setIsAcknowledged(true);
-    sessionStorage.setItem("calendarIntegration", "true");
+  const handleConnectGoogle = async () => {
+    if (!currentProject) return;
+    
+    setIsConnecting(true);
+    try {
+      // Use project ID for onboarding flow (creates orphaned record)
+      initiateOAuth(`${currentProject.id}|onboarding`);
+    } catch (error) {
+      console.error('Error initiating OAuth:', error);
+      setIsConnecting(false);
+    }
   };
 
   return (
@@ -34,7 +41,7 @@ export default function CalendarIntegration() {
       onPrevious={handlePrevious}
       showPrevious={true}
       leftAligned={true}
-      nextDisabled={!isAcknowledged}
+      nextDisabled={!integration}
     >
       <div className="flex flex-col gap-8 w-full">
         {/* Header */}
@@ -43,7 +50,7 @@ export default function CalendarIntegration() {
             Connect Your Calendar
           </h2>
           <p className="text-base italic text-[#737373] leading-6 max-w-2xl">
-            Calendar integration is required. Sync your calendar so Voicera can manage bookings, calls, and availability automatically.
+            Connect your Google Calendar to enable automatic booking management and availability sync.
           </p>
         </div>
 
@@ -74,29 +81,34 @@ export default function CalendarIntegration() {
                     Google Calendar
                   </h3>
                   
-                  {isAcknowledged ? (
+                  {loading ? (
+                    <p className="text-sm text-[#6B7280]">
+                      Checking connection status...
+                    </p>
+                  ) : integration ? (
                     <div className="space-y-2">
                       <p className="text-sm text-green-600 font-medium">
-                        ✓ Ready for calendar integration
+                        ✓ Connected to {integration.user_email}
                       </p>
                       <p className="text-xs text-[#6B7280]">
-                        Will be connected when you complete onboarding
+                        Calendar integration ready
                       </p>
                     </div>
                   ) : (
                     <p className="text-sm text-[#6B7280]">
-                      Sync your availability and appointments
+                      Connect to sync your availability and appointments
                     </p>
                   )}
                 </div>
 
                 {/* Action Button */}
-                {!isAcknowledged && (
+                {!integration && (
                   <Button
                     onClick={handleConnectGoogle}
-                    className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg"
+                    disabled={isConnecting || loading || !currentProject}
+                    className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg disabled:opacity-50"
                   >
-                    Connect Google Calendar
+                    {isConnecting ? 'Connecting...' : 'Connect Google Calendar'}
                   </Button>
                 )}
               </div>
