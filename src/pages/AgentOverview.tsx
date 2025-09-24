@@ -69,8 +69,57 @@ const AgentOverview = () => {
     navigate(`/agent-management?agentId=${agentId}`);
   };
 
-  const handleCreateAgent = () => {
-    navigate('/onboarding/business-intro');
+  const handleCreateAgent = async () => {
+    try {
+      // Clear all onboarding-related sessionStorage data
+      const keysToRemove = [
+        'businessName', 'businessTypes', 'primaryLocation', 'contactNumber', 
+        'purchasedNumberDetails', 'aiVoiceStyle', 'aiGreetingStyle', 'aiAssistantName', 
+        'aiHandlingUnknown', 'aiCallSchedule', 'services', 'businessDays', 'businessHours', 
+        'scheduleFullAction', 'wantsDailySummary', 'wantsEmailConfirmations', 'reminderSettings', 
+        'faqQuestions', 'faqAnswers', 'calendarIntegration', 'calendar_integration_required'
+      ];
+
+      // Remove static keys
+      keysToRemove.forEach(key => sessionStorage.removeItem(key));
+
+      // Remove dynamic keys by pattern
+      const allSessionKeys = Object.keys(sessionStorage);
+      const dynamicPatterns = [
+        /^onboardingId/,
+        /^purchasedContactNumber_/,
+        /^contactNumberPurchased_/,
+        /^contactNumbersWebhookCalled_/,
+        /^cachedContactNumbers_/
+      ];
+
+      allSessionKeys.forEach(key => {
+        if (dynamicPatterns.some(pattern => pattern.test(key))) {
+          sessionStorage.removeItem(key);
+        }
+      });
+
+      // Deactivate ALL existing active Google integrations for this user
+      if (user?.id) {
+        const { error } = await supabase
+          .from('google_integrations')
+          .update({ is_active: false })
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        if (error) {
+          console.error('Error deactivating Google integrations:', error);
+          // Don't block navigation on this error, just log it
+        }
+      }
+
+      // Navigate to onboarding start
+      navigate('/onboarding/business-intro');
+    } catch (error) {
+      console.error('Error during fresh start setup:', error);
+      // Still navigate even if cleanup fails
+      navigate('/onboarding/business-intro');
+    }
   };
 
   const renderSkeletonCards = () => (
