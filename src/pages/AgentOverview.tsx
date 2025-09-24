@@ -70,8 +70,8 @@ const AgentOverview = () => {
     navigate(`/agent-management?agentId=${agentId}`);
   };
 
-  const handleCreateAgent = () => {
-    clearOnboardingSession();
+  const handleCreateAgent = async () => {
+    await clearOnboardingSession();
     navigate('/onboarding/business-intro');
   };
 

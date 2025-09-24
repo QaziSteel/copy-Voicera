@@ -25,22 +25,27 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       let error = null;
 
       if (onboardingMode) {
-        // For onboarding mode, look for orphaned records (agent_id = NULL) for current user/project
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          const response = await supabase
-            .from('google_integrations')
-            .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
-            .eq('user_id', userData.user.id)
-            .is('agent_id', null)
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          
-          data = response.data;
-          error = response.error;
+        // In onboarding mode, only show integration if it was connected in this session
+        const connectedInSession = sessionStorage.getItem('googleCalendarConnected');
+        if (connectedInSession === 'true') {
+          // Look for orphaned records (agent_id = NULL) for current user/project
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData.user) {
+            const response = await supabase
+              .from('google_integrations')
+              .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
+              .eq('user_id', userData.user.id)
+              .is('agent_id', null)
+              .eq('is_active', true)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            
+            data = response.data;
+            error = response.error;
+          }
         }
+        // If not connected in this session, don't show any existing integration
       } else if (agentId) {
         // For regular mode, look for agent-specific records
         const response = await supabase
@@ -161,6 +166,10 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       if (event.data.type === 'OAUTH_SUCCESS') {
         window.removeEventListener('message', handleMessage);
         oauthWindow.close();
+        // Mark as connected in this session
+        if (onboardingMode) {
+          sessionStorage.setItem('googleCalendarConnected', 'true');
+        }
         fetchIntegration();
         toast({
           title: "Success",

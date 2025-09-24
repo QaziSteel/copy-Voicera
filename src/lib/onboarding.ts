@@ -272,7 +272,7 @@ export const hasCompletedOnboarding = async (projectId?: string): Promise<boolea
 };
 
 // Clear all onboarding session data for fresh start
-export function clearOnboardingSession() {
+export async function clearOnboardingSession() {
   // Fixed session storage keys
   const fixedKeys = [
     'businessName', 'businessTypes', 'primaryLocation', 'contactNumber',
@@ -280,7 +280,7 @@ export function clearOnboardingSession() {
     'services', 'businessDays', 'businessHours', 'scheduleFullAction',
     'wantsDailySummary', 'wantsEmailConfirmations', 'reminderSettings',
     'faqQuestions', 'faqAnswers', 'calendarIntegration', 'calendar_integration_required',
-    'purchasedNumberDetails'
+    'purchasedNumberDetails', 'googleCalendarConnected'
   ];
 
   // Clear fixed keys
@@ -306,4 +306,19 @@ export function clearOnboardingSession() {
 
   // Clear the onboarding ID itself
   sessionStorage.removeItem('onboardingId');
+
+  // Deactivate orphaned Google integrations for the current user
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData.user) {
+      await supabase
+        .from('google_integrations')
+        .update({ is_active: false })
+        .eq('user_id', userData.user.id)
+        .is('agent_id', null)
+        .eq('is_active', true);
+    }
+  } catch (error) {
+    console.error('Error deactivating orphaned Google integrations:', error);
+  }
 }
