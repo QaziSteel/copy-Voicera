@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
-import { collectOnboardingDataFromSession, saveOnboardingResponse } from "@/lib/onboarding";
-import { useGoogleIntegration } from "@/hooks/useGoogleIntegration";
 import { toast } from "sonner";
 
 export default function Reminders() {
@@ -10,11 +8,7 @@ export default function Reminders() {
   const [reminderTiming, setReminderTiming] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
-  const [agentId, setAgentId] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const { initiateOAuth, integration } = useGoogleIntegration(agentId, true);
 
   const timingOptions = ["1 hour before", "24 hours before", "Both"];
 
@@ -26,100 +20,22 @@ export default function Reminders() {
     setIsSubmitting(true);
     
     try {
-      // Save reminder settings to sessionStorage first
+      // Save reminder settings to sessionStorage
       const reminderData = {
         wantsReminders,
         timing: wantsReminders ? reminderTiming : null,
       };
       sessionStorage.setItem("reminderSettings", JSON.stringify(reminderData));
       
-      // Collect all onboarding data and save to database
-      const onboardingData = collectOnboardingDataFromSession();
-      const { data, error } = await saveOnboardingResponse(onboardingData);
+      toast.success("Reminder settings saved!");
       
-      if (error) {
-        toast.error("Failed to save onboarding data: " + error.message);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Get the agent ID from the saved response
-      const savedAgentId = data?.id;
-      if (!savedAgentId) {
-        toast.error("Failed to get agent ID");
-        setIsSubmitting(false);
-        return;
-      }
-
-      setAgentId(savedAgentId);
-
-      // Always show calendar popup and navigate to completion
-      setIsConnectingCalendar(true);
-      toast.success("Onboarding saved! Connecting Google Calendar...");
-      
-      // Trigger OAuth popup
-      initiateOAuth(savedAgentId);
-      
-      // Listen for OAuth completion
-      const handleMessage = (event: MessageEvent) => {
-        console.log('Received message:', event.data, 'from origin:', event.origin);
-        
-        // Accept messages from Supabase function domain or same origin
-        const allowedOrigins = [
-          window.location.origin,
-          'https://nhhdxwgrmcdsapbuvelx.supabase.co'
-        ];
-        
-        if (!allowedOrigins.includes(event.origin)) {
-          console.log('Message rejected - invalid origin:', event.origin);
-          return;
-        }
-        
-        // Validate message structure
-        if (!event.data || typeof event.data !== 'object') {
-          console.log('Message rejected - invalid data structure');
-          return;
-        }
-        
-        if (event.data.type === 'OAUTH_SUCCESS') {
-          window.removeEventListener('message', handleMessage);
-          setIsConnectingCalendar(false);
-          setIsSubmitting(false);
-          
-          // Save calendar integration flag to session storage
-          sessionStorage.setItem("calendar_integration_required", "true");
-          
-          toast.success(`Google Calendar connected for ${event.data.email}`);
-          navigate("/onboarding/completion");
-        } else if (event.data.type === 'OAUTH_ERROR') {
-          window.removeEventListener('message', handleMessage);
-          setIsConnectingCalendar(false);
-          setIsSubmitting(false);
-          toast.error(`Calendar connection failed: ${event.data.error || 'Unknown error'}`);
-          
-          // Still proceed to completion
-          navigate("/onboarding/completion");
-        }
-      };
-
-      window.addEventListener('message', handleMessage);
-      
-      // Fallback timeout - always navigate to completion
-      setTimeout(() => {
-        window.removeEventListener('message', handleMessage);
-        if (isConnectingCalendar) {
-          setIsConnectingCalendar(false);
-          setIsSubmitting(false);
-          toast.info("Calendar connection is taking longer than expected. Proceeding with setup...");
-        }
-        // Always navigate to completion
-        navigate("/onboarding/completion");
-      }, 30000); // 30 second timeout
+      // Navigate to next step - calendar integration
+      navigate("/onboarding/calendar-integration");
     } catch (error) {
-      toast.error("Failed to save onboarding data");
-      console.error("Error saving onboarding data:", error);
+      toast.error("Failed to save reminder settings");
+      console.error("Error saving reminder settings:", error);
+    } finally {
       setIsSubmitting(false);
-      setIsConnectingCalendar(false);
     }
   };
 
@@ -135,11 +51,10 @@ export default function Reminders() {
     setShowDropdown(false);
   };
 
-  const isNextDisabled = (wantsReminders && !reminderTiming) || isSubmitting || isConnectingCalendar;
+  const isNextDisabled = (wantsReminders && !reminderTiming) || isSubmitting;
   const getButtonText = () => {
-    if (isConnectingCalendar) return "Connecting Calendar...";
     if (isSubmitting) return "Saving...";
-    return wantsReminders ? "Submit" : "Next";
+    return "Next";
   };
 
   return (
