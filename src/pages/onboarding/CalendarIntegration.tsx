@@ -5,10 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGoogleIntegration } from '@/hooks/useGoogleIntegration';
 import { useProject } from '@/contexts/ProjectContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CalendarIntegration() {
   const navigate = useNavigate();
   const { currentProject } = useProject();
+  const { user } = useAuth();
   const [isConnecting, setIsConnecting] = React.useState(false);
   
   // Use the Google integration hook to check for existing integration
@@ -30,12 +32,12 @@ export default function CalendarIntegration() {
   };
 
   const handleConnectGoogle = async () => {
-    if (!currentProject) return;
+    if (!currentProject || !user) return;
     
     setIsConnecting(true);
     try {
-      // Use project ID for onboarding flow (creates orphaned record)
-      initiateOAuth(`${currentProject.id}|onboarding`);
+      // Include both project ID and user ID in state for onboarding flow
+      initiateOAuth(`${currentProject.id}:${user.id}|onboarding`);
     } catch (error) {
       console.error('Error initiating OAuth:', error);
       setIsConnecting(false);
@@ -112,7 +114,7 @@ export default function CalendarIntegration() {
                 {!integration && (
                   <Button
                     onClick={handleConnectGoogle}
-                    disabled={isConnecting || loading || !currentProject}
+                    disabled={isConnecting || loading || !currentProject || !user}
                     className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white rounded-lg disabled:opacity-50"
                   >
                     {isConnecting ? 'Connecting...' : 'Connect Google Calendar'}

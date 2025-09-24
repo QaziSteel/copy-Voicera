@@ -25,12 +25,22 @@ serve(async (req) => {
     const [identifier, flow] = state?.split('|') || [state, 'agent-management'];
     const isOnboardingFlow = flow === 'onboarding';
     
-    // For onboarding flow, identifier is project_id
+    // For onboarding flow, identifier contains "projectId:userId"
     // For agent flow, identifier is agent_id
-    const projectId = isOnboardingFlow ? identifier : null;
-    const agentId = !isOnboardingFlow ? identifier : null;
+    let projectId, userId, agentId;
+    
+    if (isOnboardingFlow) {
+      const [extractedProjectId, extractedUserId] = identifier?.split(':') || [];
+      projectId = extractedProjectId;
+      userId = extractedUserId;
+      agentId = null;
+    } else {
+      projectId = null;
+      userId = null;
+      agentId = identifier;
+    }
 
-    console.log('Parsed state:', { identifier, flow, isOnboardingFlow, projectId, agentId });
+    console.log('Parsed state:', { identifier, flow, isOnboardingFlow, projectId, userId, agentId });
 
     // Handle OAuth errors
     if (error) {
@@ -73,8 +83,8 @@ serve(async (req) => {
       return Response.redirect(redirectUrl, 302);
     }
 
-    if (!code || (!agentId && !projectId)) {
-      console.error('Missing required parameters:', { code: !!code, agentId: !!agentId, projectId: !!projectId });
+    if (!code || (!agentId && !projectId) || (isOnboardingFlow && !userId)) {
+      console.error('Missing required parameters:', { code: !!code, agentId: !!agentId, projectId: !!projectId, userId: !!userId });
       if (isOnboardingFlow) {
         const htmlResponse = `<!DOCTYPE html>
 <html>
@@ -175,94 +185,9 @@ serve(async (req) => {
     let finalProjectId, finalUserId, finalAgentId;
     
     if (isOnboardingFlow) {
-      // For onboarding flow: use project_id from state, get user from request headers
-      // We need to extract user from JWT token since we're in onboarding mode
-      const authHeader = req.headers.get('authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        console.error('Missing or invalid authorization header for onboarding flow');
-        
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Authentication required</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'Authentication required'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-        
-        return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
-        });
-      }
-      
-      // For now, we'll get the current user from supabase auth
-      // In onboarding flow, we don't have an agent yet, so we create orphaned record
-      const supabaseAnon = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-        auth: { persistSession: false }
-      });
-      
-      // Get current user (this will work because the frontend passes auth in request)
-      const { data: { user }, error: userError } = await supabaseAnon.auth.getUser(authHeader.replace('Bearer ', ''));
-      
-      if (userError || !user) {
-        console.error('Error getting user from token:', userError);
-        
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ User authentication failed</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'User authentication failed'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-        
-        return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
-        });
-      }
-      
+      // For onboarding flow: use project_id and user_id from state
       finalProjectId = projectId;
-      finalUserId = user.id;
+      finalUserId = userId;
       finalAgentId = null; // Create orphaned record
       
     } else {
