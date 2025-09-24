@@ -29,8 +29,8 @@ export default function Reminders() {
       
       toast.success("Reminder settings saved!");
       
-      // Navigate to next step - calendar integration
-      navigate("/onboarding/calendar-integration");
+      // Navigate to completion page where webhook process continues
+      navigate("/onboarding/completion");
     } catch (error) {
       toast.error("Failed to save reminder settings");
       console.error("Error saving reminder settings:", error);
