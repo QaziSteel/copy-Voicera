@@ -270,3 +270,40 @@ export const hasCompletedOnboarding = async (projectId?: string): Promise<boolea
     return false;
   }
 };
+
+// Clear all onboarding session data for fresh start
+export function clearOnboardingSession() {
+  // Fixed session storage keys
+  const fixedKeys = [
+    'businessName', 'businessTypes', 'primaryLocation', 'contactNumber',
+    'aiVoiceStyle', 'aiGreetingStyle', 'aiAssistantName', 'aiHandlingUnknown', 'aiCallSchedule',
+    'services', 'businessDays', 'businessHours', 'scheduleFullAction',
+    'wantsDailySummary', 'wantsEmailConfirmations', 'reminderSettings',
+    'faqQuestions', 'faqAnswers', 'calendarIntegration', 'calendar_integration_required',
+    'purchasedNumberDetails'
+  ];
+
+  // Clear fixed keys
+  fixedKeys.forEach(key => {
+    sessionStorage.removeItem(key);
+  });
+
+  // Get current onboarding ID for dynamic keys
+  const onboardingId = sessionStorage.getItem('onboardingId');
+  if (onboardingId) {
+    // Clear dynamic keys that include onboarding ID
+    const dynamicKeys = [
+      `purchasedContactNumber_${onboardingId}`,
+      `contactNumberPurchased_${onboardingId}`,
+      `cachedContactNumbers_${onboardingId}`,
+      `contactNumbersWebhookCalled_${onboardingId}`
+    ];
+    
+    dynamicKeys.forEach(key => {
+      sessionStorage.removeItem(key);
+    });
+  }
+
+  // Clear the onboarding ID itself
+  sessionStorage.removeItem('onboardingId');
+}

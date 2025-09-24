@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
+import { clearOnboardingSession } from '@/lib/onboarding';
 
 interface Agent {
   id: string;
@@ -70,6 +71,7 @@ const AgentOverview = () => {
   };
 
   const handleCreateAgent = () => {
+    clearOnboardingSession();
     navigate('/onboarding/business-intro');
   };
 
