@@ -134,6 +134,7 @@ export type Database = {
           access_token: string
           agent_id: string | null
           created_at: string
+          created_without_agent: string | null
           id: string
           is_active: boolean
           project_id: string
@@ -148,6 +149,7 @@ export type Database = {
           access_token: string
           agent_id?: string | null
           created_at?: string
+          created_without_agent?: string | null
           id?: string
           is_active?: boolean
           project_id: string
@@ -162,6 +164,7 @@ export type Database = {
           access_token?: string
           agent_id?: string | null
           created_at?: string
+          created_without_agent?: string | null
           id?: string
           is_active?: boolean
           project_id?: string
@@ -538,6 +541,10 @@ export type Database = {
       can_view_customer_data: {
         Args: { _booking_id: string; _user_id: string }
         Returns: boolean
+      }
+      cleanup_orphaned_google_integrations: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_booking_customer_info: {
         Args: {
