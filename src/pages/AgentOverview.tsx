@@ -7,7 +7,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Agent {
   id: string;
@@ -27,6 +37,9 @@ const AgentOverview = () => {
   const { toast } = useToast();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadAgents();
@@ -122,6 +135,75 @@ const AgentOverview = () => {
     }
   };
 
+  const handleDeleteAgent = (agent: Agent) => {
+    setAgentToDelete(agent);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteAgent = async () => {
+    if (!agentToDelete || deleting) return;
+
+    try {
+      setDeleting(true);
+
+      // Delete related Google integrations first
+      const { error: googleError } = await supabase
+        .from('google_integrations')
+        .delete()
+        .eq('agent_id', agentToDelete.id);
+
+      if (googleError) {
+        console.error('Error deleting Google integrations:', googleError);
+      }
+
+      // Delete related test call logs
+      const { error: testCallError } = await supabase
+        .from('test_call_logs')
+        .delete()
+        .eq('agent_id', agentToDelete.id);
+
+      if (testCallError) {
+        console.error('Error deleting test call logs:', testCallError);
+      }
+
+      // Delete the agent
+      const { error: agentError } = await supabase
+        .from('onboarding_responses')
+        .delete()
+        .eq('id', agentToDelete.id);
+
+      if (agentError) {
+        console.error('Error deleting agent:', agentError);
+        toast({
+          title: "Error",
+          description: "Failed to delete agent",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setAgents(agents.filter(agent => agent.id !== agentToDelete.id));
+      
+      toast({
+        title: "Success",
+        description: "Agent deleted successfully",
+      });
+
+    } catch (error) {
+      console.error('Error deleting agent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete agent",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteConfirmOpen(false);
+      setAgentToDelete(null);
+    }
+  };
+
   const renderSkeletonCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[1, 2, 3].map((i) => (
@@ -208,25 +290,36 @@ const AgentOverview = () => {
                       </h3>
                       <p className="text-sm text-gray-500">{agent.business_name}</p>
                     </div>
-                    {(() => {
-                      const status = agent.current_status === 'live' ? 'live' : 'offline';
-                      
-                      if (status === 'live') {
-                        return (
-                          <div className="flex items-center gap-2 ring-2 ring-green-500 bg-green-50 px-3 py-1 rounded-full">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm font-medium text-green-700">Live</span>
-                          </div>
-                        );
-                      } else {
-                        return (
-                          <div className="flex items-center gap-2 ring-2 ring-red-500 bg-red-50 px-3 py-1 rounded-full">
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                            <span className="text-sm font-medium text-red-600">Offline</span>
-                          </div>
-                        );
-                      }
-                    })()}
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const status = agent.current_status === 'live' ? 'live' : 'offline';
+                        
+                        if (status === 'live') {
+                          return (
+                            <div className="flex items-center gap-2 ring-2 ring-green-500 bg-green-50 px-3 py-1 rounded-full">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-sm font-medium text-green-700">Live</span>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="flex items-center gap-2 ring-2 ring-red-500 bg-red-50 px-3 py-1 rounded-full">
+                              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                              <span className="text-sm font-medium text-red-600">Offline</span>
+                            </div>
+                          );
+                        }
+                      })()}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50"
+                        onClick={() => handleDeleteAgent(agent)}
+                        disabled={deleting}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-2 mb-6">
@@ -267,6 +360,30 @@ const AgentOverview = () => {
           </div>
         )}
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Agent</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{agentToDelete?.ai_assistant_name || 'this agent'}"? 
+              This action cannot be undone and will permanently delete all associated data including 
+              call logs, integrations, and settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteAgent}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? 'Deleting...' : 'Delete Agent'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
