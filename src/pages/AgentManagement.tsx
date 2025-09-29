@@ -85,6 +85,9 @@ const isFAQData = (value: any): value is { enabled: boolean; questions: FAQ[] } 
   Array.isArray(value.questions);
 
 const AgentManagement = () => {
+  // Webhook URL for agent updates - configure this with your endpoint
+  const AGENT_UPDATE_WEBHOOK_URL = "YOUR_WEBHOOK_URL_HERE"; // Replace with your webhook URL
+  
   // Force rebuild - removed isTestMode references
   const navigate = useNavigate();
   const location = useLocation();
@@ -499,7 +502,6 @@ const AgentManagement = () => {
         ai_handling_unknown: handlingUnknown,
         ai_call_schedule: selectedAnswerTime === 'custom-schedule' ? customAnswerTime : (selectedAnswerTime === 'custom' ? customAnswerTime : selectedAnswerTime),
         services: services as any,
-        appointment_duration: appointmentDuration,
         business_days: businessDays as any,
         business_hours: businessHours as any,
         schedule_full_action: scheduleFullAction,
@@ -508,6 +510,9 @@ const AgentManagement = () => {
         wants_email_confirmations: emailConfirmations,
         reminder_settings: { wantsReminders: autoReminders } as any,
       };
+
+      let agentIdForWebhook = selectedAgentId;
+      let isNewAgent = false;
 
       if (selectedAgentId) {
         // Update existing agent
@@ -529,8 +534,10 @@ const AgentManagement = () => {
         
         // Update state with new agent
         if (data) {
+          agentIdForWebhook = data.id;
           setSelectedAgentId(data.id);
           await loadUserAgents(); // Refresh the agents list
+          isNewAgent = true;
         }
       }
 
@@ -538,6 +545,114 @@ const AgentManagement = () => {
         title: "Success",
         description: "Agent settings saved successfully",
       });
+
+      // Send webhook after successful save
+      try {
+        // Fetch complete agent data including assistant_id
+        const { data: completeAgentData, error: fetchError } = await supabase
+          .from('onboarding_responses')
+          .select('*')
+          .eq('id', agentIdForWebhook)
+          .single();
+
+        if (fetchError) {
+          console.error('Error fetching complete agent data for webhook:', fetchError);
+          return;
+        }
+
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        // Fetch Google Calendar integration if exists
+        let googleIntegration = null;
+        if (agentIdForWebhook) {
+          const { data: integration } = await supabase
+            .from('google_integrations')
+            .select('id, project_id, user_id, agent_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
+            .eq('agent_id', agentIdForWebhook)
+            .eq('is_active', true)
+            .maybeSingle();
+          
+          googleIntegration = integration;
+        }
+
+        // Construct webhook payload with all data
+        const webhookPayload = {
+          event: isNewAgent ? "agent_created" : "agent_updated",
+          user_id: user.id,
+          user_email: user.email,
+          profile: profile,
+          agent_id: agentIdForWebhook,
+          assistant_id: completeAgentData.assistant_id,
+          project_id: completeAgentData.project_id || currentProject?.id,
+          onboarding_data: {
+            // Basic Info
+            business_name: completeAgentData.business_name,
+            business_types: completeAgentData.business_types,
+            primary_location: completeAgentData.primary_location,
+            contact_number: completeAgentData.contact_number,
+            
+            // AI Personality
+            ai_assistant_name: completeAgentData.ai_assistant_name,
+            ai_voice_style: completeAgentData.ai_voice_style,
+            ai_greeting_style: completeAgentData.ai_greeting_style,
+            ai_handling_unknown: completeAgentData.ai_handling_unknown,
+            ai_call_schedule: completeAgentData.ai_call_schedule,
+            
+            // Booking
+            services: completeAgentData.services,
+            business_days: completeAgentData.business_days,
+            business_hours: completeAgentData.business_hours,
+            schedule_full_action: completeAgentData.schedule_full_action,
+            
+            // FAQs
+            faq_data: completeAgentData.faq_data,
+            
+            // Advanced
+            wants_daily_summary: completeAgentData.wants_daily_summary,
+            wants_email_confirmations: completeAgentData.wants_email_confirmations,
+            reminder_settings: completeAgentData.reminder_settings,
+            
+            // Additional metadata
+            current_status: completeAgentData.current_status,
+            created_at: completeAgentData.created_at,
+            updated_at: completeAgentData.updated_at,
+          },
+          google_calendar_integration: googleIntegration ? {
+            email: googleIntegration.user_email,
+            is_active: googleIntegration.is_active,
+            scopes: googleIntegration.scopes,
+            integrated_at: googleIntegration.created_at
+          } : null,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('Sending webhook to:', AGENT_UPDATE_WEBHOOK_URL);
+        console.log('Webhook payload:', webhookPayload);
+
+        // Call webhook
+        const response = await fetch(AGENT_UPDATE_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookPayload),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Webhook failed with status: ${response.status}`);
+        }
+
+        console.log('Webhook sent successfully');
+      } catch (webhookError) {
+        console.error('Error sending webhook:', webhookError);
+        // Don't show error toast for webhook failures, just log it
+        // The save was successful, webhook is additional functionality
+      }
     } catch (error) {
       console.error('Error saving agent settings:', error);
       toast({
@@ -546,7 +661,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customType, isCustomSelected, customDuration, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customType, isCustomSelected, customDuration, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
