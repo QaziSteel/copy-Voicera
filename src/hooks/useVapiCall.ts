@@ -6,6 +6,7 @@ interface VapiCallConfig {
   agentData?: any;
   onCallStart?: (resolve: (callId: string) => void) => Promise<void>;
   onCallEnd?: (callId: string, duration: number) => Promise<void>;
+  onVapiCallStart?: (vapiCallId: string, testCallId: string) => Promise<void>;
 }
 
 interface CallMetrics {
@@ -29,7 +30,11 @@ export const useVapiCall = () => {
   
   const vapiInstance = useRef<any>(null);
   const durationInterval = useRef<NodeJS.Timeout | null>(null);
-  const callbacksRef = useRef<{ onCallStart?: (resolve: (callId: string) => void) => Promise<void>; onCallEnd?: (callId: string, duration: number) => Promise<void> }>({});
+  const callbacksRef = useRef<{ 
+    onCallStart?: (resolve: (callId: string) => void) => Promise<void>; 
+    onCallEnd?: (callId: string, duration: number) => Promise<void>;
+    onVapiCallStart?: (vapiCallId: string, testCallId: string) => Promise<void>;
+  }>({});
   const callStartTimeRef = useRef<Date | null>(null);
   const currentCallIdRef = useRef<string | null>(null);
   const audioElementsRef = useRef<HTMLAudioElement[]>([]);
@@ -59,8 +64,8 @@ export const useVapiCall = () => {
       vapiInstance.current = new Vapi.default(publicKey);
 
       // Set up event listeners
-      vapiInstance.current.on('call-start', async () => {
-        console.log('Vapi call started');
+      vapiInstance.current.on('call-start', async (callData: any) => {
+        console.log('Vapi call started with data:', callData);
         const startTime = new Date();
         callStartTimeRef.current = startTime;
         
@@ -80,7 +85,16 @@ export const useVapiCall = () => {
           try {
             await callbacksRef.current.onCallStart((callId) => {
               currentCallIdRef.current = callId;
-              console.log('Call started with ID:', callId);
+              console.log('Call started with test call ID:', callId);
+              
+              // Capture the actual Vapi call ID and update the test call log
+              const vapiCallId = callData?.call?.id || callData?.id;
+              if (vapiCallId && callbacksRef.current.onVapiCallStart) {
+                console.log('Captured Vapi call ID:', vapiCallId);
+                callbacksRef.current.onVapiCallStart(vapiCallId, callId).catch(error => {
+                  console.error('Error updating test call log with Vapi call ID:', error);
+                });
+              }
             });
           } catch (error) {
             console.error('Error in onCallStart callback:', error);
@@ -191,7 +205,11 @@ export const useVapiCall = () => {
       setIsConnecting(true);
       
       // Store callbacks for later use
-      callbacksRef.current = { onCallStart: config.onCallStart, onCallEnd: config.onCallEnd };
+      callbacksRef.current = { 
+        onCallStart: config.onCallStart, 
+        onCallEnd: config.onCallEnd,
+        onVapiCallStart: config.onVapiCallStart
+      };
 
       await initializeVapi();
 

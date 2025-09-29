@@ -11,6 +11,9 @@ export interface TestCallLog {
   call_started_at: string | null;
   call_ended_at: string | null;
   duration_seconds: number | null;
+  vapi_call_id: string | null;
+  recording_url: string | null;
+  transcript_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +29,9 @@ export interface UpdateTestCallLogParams {
   id: string;
   call_ended_at?: string;
   duration_seconds?: number;
+  vapi_call_id?: string;
+  recording_url?: string;
+  transcript_url?: string;
 }
 
 export const useTestCallLogs = (agentId: string) => {
@@ -86,12 +92,17 @@ export const useTestCallLogs = (agentId: string) => {
   }, [user]);
 
   const updateTestCallLog = useCallback(async (params: UpdateTestCallLogParams) => {
+    const updateData: any = {};
+    
+    if (params.call_ended_at !== undefined) updateData.call_ended_at = params.call_ended_at;
+    if (params.duration_seconds !== undefined) updateData.duration_seconds = params.duration_seconds;
+    if (params.vapi_call_id !== undefined) updateData.vapi_call_id = params.vapi_call_id;
+    if (params.recording_url !== undefined) updateData.recording_url = params.recording_url;
+    if (params.transcript_url !== undefined) updateData.transcript_url = params.transcript_url;
+
     const { data, error } = await supabase
       .from('test_call_logs')
-      .update({
-        call_ended_at: params.call_ended_at,
-        duration_seconds: params.duration_seconds,
-      })
+      .update(updateData)
       .eq('id', params.id)
       .select()
       .single();

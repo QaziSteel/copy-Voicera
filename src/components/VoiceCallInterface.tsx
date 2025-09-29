@@ -86,10 +86,24 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
       }
     };
 
+    const handleVapiCallStart = async (vapiCallId: string, testCallId: string) => {
+      console.log('Updating test call log with Vapi call ID:', { vapiCallId, testCallId });
+      try {
+        await updateTestCallLog({
+          id: testCallId,
+          vapi_call_id: vapiCallId,
+        });
+        console.log('Test call log updated with Vapi call ID successfully');
+      } catch (error) {
+        console.error('Error updating test call log with Vapi call ID:', error);
+      }
+    };
+
     const config = {
       assistantId: agentData.assistant_id,
       onCallStart: handleCallStart,
       onCallEnd: handleCallEnd,
+      onVapiCallStart: handleVapiCallStart,
     };
     
     console.log('Using Assistant ID:', config.assistantId);

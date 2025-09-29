@@ -445,8 +445,11 @@ export type Database = {
           duration_seconds: number | null
           id: string
           project_id: string
+          recording_url: string | null
+          transcript_url: string | null
           updated_at: string
           user_id: string
+          vapi_call_id: string | null
         }
         Insert: {
           agent_id: string
@@ -457,8 +460,11 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           project_id: string
+          recording_url?: string | null
+          transcript_url?: string | null
           updated_at?: string
           user_id: string
+          vapi_call_id?: string | null
         }
         Update: {
           agent_id?: string
@@ -469,8 +475,11 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           project_id?: string
+          recording_url?: string | null
+          transcript_url?: string | null
           updated_at?: string
           user_id?: string
+          vapi_call_id?: string | null
         }
         Relationships: []
       }
