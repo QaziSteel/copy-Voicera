@@ -37,6 +37,7 @@ export const useVapiCall = () => {
   }>({});
   const callStartTimeRef = useRef<Date | null>(null);
   const currentCallIdRef = useRef<string | null>(null);
+  const vapiCallIdRef = useRef<string | null>(null);
   const audioElementsRef = useRef<HTMLAudioElement[]>([]);
   const mutationObserverRef = useRef<MutationObserver | null>(null);
   const audioDetectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -87,13 +88,15 @@ export const useVapiCall = () => {
               currentCallIdRef.current = callId;
               console.log('Call started with test call ID:', callId);
               
-              // Capture the actual Vapi call ID and update the test call log
-              const vapiCallId = call.id;
-              console.log('Captured Vapi call ID:', vapiCallId);
+              // Use the Vapi call ID that was captured from start() and stored in ref
+              const vapiCallId = vapiCallIdRef.current;
+              console.log('Using Vapi call ID from ref:', vapiCallId);
               if (vapiCallId && callbacksRef.current.onVapiCallStart) {
                 callbacksRef.current.onVapiCallStart(vapiCallId, callId).catch(error => {
                   console.error('Error updating test call log with Vapi call ID:', error);
                 });
+              } else if (!vapiCallId) {
+                console.warn('No Vapi call ID available in ref');
               }
             });
           } catch (error) {
@@ -260,7 +263,18 @@ export const useVapiCall = () => {
       }
 
       console.log('Vapi start payload:', callConfig);
-      await vapiInstance.current.start(callConfig);
+      const call = await vapiInstance.current.start(callConfig);
+      console.log("Call object from start():", call);
+      console.log("Vapi Call ID:", call?.id);
+      
+      // Capture and store the Vapi call ID immediately
+      const vapiCallId = call?.id;
+      if (vapiCallId) {
+        vapiCallIdRef.current = vapiCallId;
+        console.log('Captured and stored Vapi call ID from start():', vapiCallId);
+      } else {
+        console.warn('No Vapi call ID returned from start()');
+      }
 
     } catch (err: any) {
       console.error('Failed to start call:', err);
