@@ -30,11 +30,35 @@ export const BusinessType: React.FC = () => {
 
   // Load saved data on component mount
   useEffect(() => {
-    const savedBusinessTypes = sessionStorage.getItem("selectedBusinessTypes");
+    const savedBusinessTypes = sessionStorage.getItem("businessTypes");
     if (savedBusinessTypes) {
       try {
         const parsedTypes = JSON.parse(savedBusinessTypes);
-        setSelectedBusinessTypes(parsedTypes);
+        
+        // Separate preset business types from custom ones
+        const presetTypes: SelectedBusinessType[] = [];
+        let customEntry: SelectedBusinessType | null = null;
+        
+        parsedTypes.forEach((item: SelectedBusinessType) => {
+          if (businessTypes.includes(item.type)) {
+            presetTypes.push(item);
+          } else {
+            customEntry = item;
+          }
+        });
+        
+        // Set preset selections
+        setSelectedBusinessTypes(presetTypes);
+        
+        // Set custom entry if exists
+        if (customEntry) {
+          setIsCustomSelected(true);
+          setCustomType(customEntry.type);
+          setCustomDuration({
+            hours: customEntry.hours,
+            minutes: customEntry.minutes
+          });
+        }
       } catch (error) {
         console.error("Error parsing saved business types:", error);
       }
