@@ -18,26 +18,37 @@ export default function Services() {
 
   // Load saved data on component mount
   useEffect(() => {
-    const savedServices = sessionStorage.getItem("selectedServices");
+    const savedServices = sessionStorage.getItem("services");
     if (savedServices) {
       try {
         const parsedServices = JSON.parse(savedServices);
-        setSelectedServices(parsedServices);
-      } catch (error) {
-        console.error("Error parsing saved services:", error);
-      }
-    }
-    
-    const savedCustomServices = sessionStorage.getItem("customServices");
-    if (savedCustomServices) {
-      try {
-        const parsedCustomServices = JSON.parse(savedCustomServices);
-        // Set the first custom service if it exists
-        if (parsedCustomServices.length > 0) {
-          setCustomService(parsedCustomServices[0]);
+        
+        // Separate preset services from custom ones
+        const presetServices: string[] = [];
+        let customServiceFound = "";
+        
+        parsedServices.forEach((service: string) => {
+          if (serviceOptions.includes(service)) {
+            presetServices.push(service);
+          } else {
+            // This is a custom service
+            customServiceFound = service;
+          }
+        });
+        
+        // Set preset selections
+        setSelectedServices(presetServices);
+        
+        // Set custom service if exists
+        if (customServiceFound) {
+          setCustomService(customServiceFound);
+          // Also select "Other" option if custom service exists
+          if (!presetServices.includes("Other")) {
+            setSelectedServices(prev => [...prev, "Other"]);
+          }
         }
       } catch (error) {
-        console.error("Error parsing saved custom services:", error);
+        console.error("Error parsing saved services:", error);
       }
     }
   }, []);
