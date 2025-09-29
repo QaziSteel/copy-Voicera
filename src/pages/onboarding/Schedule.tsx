@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
@@ -6,6 +6,14 @@ export default function Schedule() {
   const [selectedOption, setSelectedOption] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedSchedule = sessionStorage.getItem("scheduleFullAction");
+    if (savedSchedule) {
+      setSelectedOption(savedSchedule);
+    }
+  }, []);
 
   const options = [
     "Offer the next available slot",

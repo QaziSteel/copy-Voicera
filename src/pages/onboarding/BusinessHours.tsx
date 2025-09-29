@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 import {
@@ -13,6 +13,20 @@ export default function BusinessHours() {
   const [fromTime, setFromTime] = useState("");
   const [toTime, setToTime] = useState("");
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedHours = sessionStorage.getItem("businessHours");
+    if (savedHours) {
+      try {
+        const parsedHours = JSON.parse(savedHours);
+        if (parsedHours.from || parsedHours.fromTime) setFromTime(parsedHours.from || parsedHours.fromTime);
+        if (parsedHours.to || parsedHours.toTime) setToTime(parsedHours.to || parsedHours.toTime);
+      } catch (error) {
+        console.error("Error parsing saved business hours:", error);
+      }
+    }
+  }, []);
 
   // Generate time options for 24-hour format
   const timeOptions = Array.from({ length: 24 }, (_, i) => {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
@@ -27,6 +27,19 @@ export const BusinessType: React.FC = () => {
   const [isCustomSelected, setIsCustomSelected] = useState(false);
   const [customDuration, setCustomDuration] = useState({ hours: "01 hr", minutes: "00 min" });
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedBusinessTypes = sessionStorage.getItem("selectedBusinessTypes");
+    if (savedBusinessTypes) {
+      try {
+        const parsedTypes = JSON.parse(savedBusinessTypes);
+        setSelectedBusinessTypes(parsedTypes);
+      } catch (error) {
+        console.error("Error parsing saved business types:", error);
+      }
+    }
+  }, []);
 
   const handlePrevious = () => {
     navigate("/onboarding/business-name");

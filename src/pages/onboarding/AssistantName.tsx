@@ -10,10 +10,21 @@ export default function AssistantName() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get business name from previous steps
+    // Get business name and saved assistant name from session storage on mount
     const savedBusinessName = sessionStorage.getItem("businessName");
     if (savedBusinessName) {
       setBusinessName(savedBusinessName);
+    }
+    
+    const savedAssistantName = sessionStorage.getItem("aiAssistantName");
+    if (savedAssistantName) {
+      // Determine which option was selected based on saved name
+      if (savedAssistantName.includes(savedBusinessName + " Assistant") || savedAssistantName.startsWith("Your ")) {
+        setSelectedOption("business");
+      } else {
+        setSelectedOption("custom");
+        setCustomName(savedAssistantName);
+      }
     }
   }, []);
 

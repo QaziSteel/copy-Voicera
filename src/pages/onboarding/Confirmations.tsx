@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
 export default function Confirmations() {
   const [wantsEmailConfirmations, setWantsEmailConfirmations] = useState(true);
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedConfirmations = sessionStorage.getItem("wantsEmailConfirmations");
+    if (savedConfirmations) {
+      setWantsEmailConfirmations(savedConfirmations === "true");
+    }
+  }, []);
 
   const handlePrevious = () => {
     navigate("/onboarding/summaries");

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
@@ -15,6 +15,32 @@ export default function Services() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [customService, setCustomService] = useState("");
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedServices = sessionStorage.getItem("selectedServices");
+    if (savedServices) {
+      try {
+        const parsedServices = JSON.parse(savedServices);
+        setSelectedServices(parsedServices);
+      } catch (error) {
+        console.error("Error parsing saved services:", error);
+      }
+    }
+    
+    const savedCustomServices = sessionStorage.getItem("customServices");
+    if (savedCustomServices) {
+      try {
+        const parsedCustomServices = JSON.parse(savedCustomServices);
+        // Set the first custom service if it exists
+        if (parsedCustomServices.length > 0) {
+          setCustomService(parsedCustomServices[0]);
+        }
+      } catch (error) {
+        console.error("Error parsing saved custom services:", error);
+      }
+    }
+  }, []);
 
   const handlePrevious = () => {
     navigate("/onboarding/booking-intro");

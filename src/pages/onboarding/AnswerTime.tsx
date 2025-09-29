@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
@@ -14,6 +14,21 @@ export default function AnswerTime() {
   const [customSchedule, setCustomSchedule] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedSchedule = sessionStorage.getItem("aiCallSchedule");
+    if (savedSchedule) {
+      const scheduleOption = scheduleOptions.find(opt => opt.name === savedSchedule);
+      if (scheduleOption) {
+        setSelectedSchedule(scheduleOption.id);
+      } else {
+        // Handle custom schedule
+        setSelectedSchedule("custom");
+        setCustomSchedule(savedSchedule);
+      }
+    }
+  }, []);
 
   const validateTimeFormat = (input: string) => {
     const timeRangeRegex = /^\d{1,2}:\d{2}(am|pm)\s*-\s*\d{1,2}:\d{2}(am|pm)$/i;

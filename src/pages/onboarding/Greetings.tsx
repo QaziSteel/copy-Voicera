@@ -31,10 +31,20 @@ export const Greetings = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get business name from previous steps
+    // Get business name and saved greeting selection from session storage
     const savedBusinessName = sessionStorage.getItem("businessName");
     if (savedBusinessName) {
       setBusinessName(savedBusinessName);
+    }
+    
+    const savedGreeting = sessionStorage.getItem("aiGreetingStyle");
+    if (savedGreeting) {
+      try {
+        const parsedGreeting = JSON.parse(savedGreeting);
+        setSelectedGreeting(parsedGreeting.id);
+      } catch (error) {
+        console.error("Error parsing saved greeting:", error);
+      }
     }
   }, []);
 

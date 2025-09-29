@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
@@ -15,6 +15,19 @@ const daysOfWeek = [
 export default function BusinessDays() {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedDays = sessionStorage.getItem("businessDays");
+    if (savedDays) {
+      try {
+        const parsedDays = JSON.parse(savedDays);
+        setSelectedDays(parsedDays);
+      } catch (error) {
+        console.error("Error parsing saved business days:", error);
+      }
+    }
+  }, []);
 
   const handlePrevious = () => {
     navigate("/onboarding/services");

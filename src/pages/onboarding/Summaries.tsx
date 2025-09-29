@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
 export default function Summaries() {
   const [wantsDailySummary, setWantsDailySummary] = useState(true);
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedSummary = sessionStorage.getItem("wantsDailySummary");
+    if (savedSummary) {
+      setWantsDailySummary(savedSummary === "true");
+    }
+  }, []);
 
   const handlePrevious = () => {
     navigate("/onboarding/question-handling");

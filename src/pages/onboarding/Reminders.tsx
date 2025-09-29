@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 import { collectOnboardingDataFromSession, saveOnboardingResponse } from "@/lib/onboarding";
@@ -11,6 +11,24 @@ export default function Reminders() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedReminders = sessionStorage.getItem("reminderSettings");
+    if (savedReminders) {
+      try {
+        const parsedReminders = JSON.parse(savedReminders);
+        if (typeof parsedReminders.wantsReminders === "boolean") {
+          setWantsReminders(parsedReminders.wantsReminders);
+        }
+        if (parsedReminders.timing) {
+          setReminderTiming(parsedReminders.timing);
+        }
+      } catch (error) {
+        console.error("Error parsing saved reminders:", error);
+      }
+    }
+  }, []);
 
   const timingOptions = ["1 hour before", "24 hours before", "Both"];
 

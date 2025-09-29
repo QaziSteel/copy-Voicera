@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
@@ -10,6 +10,39 @@ export default function FAQQuestions() {
   );
   const [customFAQs, setCustomFAQs] = useState<string[]>([]);
   const navigate = useNavigate();
+
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedFAQQuestions = sessionStorage.getItem("faqQuestions");
+    const savedFAQAnswers = sessionStorage.getItem("faqAnswers");
+    
+    if (savedFAQQuestions && savedFAQAnswers) {
+      try {
+        const parsedQuestions = JSON.parse(savedFAQQuestions);
+        const parsedAnswers = JSON.parse(savedFAQAnswers);
+        
+        setSelectedFAQs(parsedQuestions);
+        
+        // Build answers object
+        const answersObj: { [key: string]: string } = {};
+        parsedQuestions.forEach((question: string, index: number) => {
+          if (parsedAnswers[index]) {
+            answersObj[question] = parsedAnswers[index];
+          }
+        });
+        setCustomAnswers(answersObj);
+        
+        // Add custom FAQs that aren't in predefined list
+        const customQuestions = parsedQuestions.filter(
+          (q: string) => !predefinedFAQs.includes(q)
+        );
+        setCustomFAQs(customQuestions);
+        
+      } catch (error) {
+        console.error("Error parsing saved FAQs:", error);
+      }
+    }
+  }, []);
 
   const predefinedFAQs = [
     "What are your prices?",

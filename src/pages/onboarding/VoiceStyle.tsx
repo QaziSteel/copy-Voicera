@@ -23,8 +23,13 @@ export const VoiceStyle: React.FC = () => {
   const [selectedVoiceForPlayer, setSelectedVoiceForPlayer] = useState<Voice | null>(null);
   const audioPlayer = useAudioPlayer();
 
-  // Fetch voices from Supabase
+  // Load saved voice selection and fetch voices from Supabase on component mount
   useEffect(() => {
+    const savedVoice = sessionStorage.getItem("aiVoiceStyle");
+    if (savedVoice) {
+      setSelectedVoice(savedVoice);
+    }
+
     const fetchVoices = async () => {
       const { data, error } = await supabase
         .from('voices')
