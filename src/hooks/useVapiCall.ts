@@ -64,8 +64,8 @@ export const useVapiCall = () => {
       vapiInstance.current = new Vapi.default(publicKey);
 
       // Set up event listeners
-      vapiInstance.current.on('call-start', async (callData: any) => {
-        console.log('Vapi call started with data:', callData);
+      vapiInstance.current.on('call-start', async (call: any) => {
+        console.log('Vapi call started with call object:', call);
         const startTime = new Date();
         callStartTimeRef.current = startTime;
         
@@ -88,9 +88,9 @@ export const useVapiCall = () => {
               console.log('Call started with test call ID:', callId);
               
               // Capture the actual Vapi call ID and update the test call log
-              const vapiCallId = callData?.call?.id || callData?.id;
+              const vapiCallId = call.id;
+              console.log('Captured Vapi call ID:', vapiCallId);
               if (vapiCallId && callbacksRef.current.onVapiCallStart) {
-                console.log('Captured Vapi call ID:', vapiCallId);
                 callbacksRef.current.onVapiCallStart(vapiCallId, callId).catch(error => {
                   console.error('Error updating test call log with Vapi call ID:', error);
                 });
