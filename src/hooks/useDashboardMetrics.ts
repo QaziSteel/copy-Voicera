@@ -46,12 +46,16 @@ export const useDashboardMetrics = (dateFilter?: { from?: Date; to?: Date }, fil
     // Calculate metrics from call logs
     const totalCalls = callLogs.length;
     
-    // For now, treat all calls as information inquiries as requested
-    const informationInquiries = totalCalls;
+    // Successful bookings: calls that have a booking_id
+    const successfulBookings = callLogs.filter(call => call.booking_id !== null).length;
+    const totalBookings = successfulBookings;
     
-    // Bookings will be 0 for now as requested
-    const totalBookings = 0;
-    const successfulBookings = 0;
+    // Information inquiries: calls without bookings that weren't dropped/missed
+    const informationInquiries = callLogs.filter(call => 
+      call.booking_id === null && 
+      call.total_call_time && 
+      call.total_call_time >= 10
+    ).length;
     
     // Calculate dropped/missed calls (calls with very short duration or specific end reasons)
     const droppedMissed = callLogs.filter(call => 
