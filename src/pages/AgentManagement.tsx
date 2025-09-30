@@ -514,14 +514,19 @@ const AgentManagement = () => {
       let agentIdForWebhook = selectedAgentId;
       let isNewAgent = false;
 
+      let completeAgentData = null;
+
       if (selectedAgentId) {
-        // Update existing agent
-        const { error } = await supabase
+        // Update existing agent and return updated data
+        const { data, error } = await supabase
           .from('onboarding_responses')
           .update(agentData)
-          .eq('id', selectedAgentId);
+          .eq('id', selectedAgentId)
+          .select()
+          .single();
 
         if (error) throw error;
+        completeAgentData = data;
       } else {
         // Create new agent
         const { data, error } = await supabase
@@ -536,6 +541,7 @@ const AgentManagement = () => {
         if (data) {
           agentIdForWebhook = data.id;
           setSelectedAgentId(data.id);
+          completeAgentData = data;
           await loadUserAgents(); // Refresh the agents list
           isNewAgent = true;
         }
@@ -548,15 +554,8 @@ const AgentManagement = () => {
 
       // Send webhook after successful save
       try {
-        // Fetch complete agent data including assistant_id
-        const { data: completeAgentData, error: fetchError } = await supabase
-          .from('onboarding_responses')
-          .select('*')
-          .eq('id', agentIdForWebhook)
-          .single();
-
-        if (fetchError) {
-          console.error('Error fetching complete agent data for webhook:', fetchError);
+        if (!completeAgentData) {
+          console.error('No agent data available for webhook');
           return;
         }
 
