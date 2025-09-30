@@ -12,8 +12,8 @@ export interface TestCallLog {
   call_ended_at: string | null;
   duration_seconds: number | null;
   vapi_call_id: string | null;
-  recording_url: string | null;
-  transcript_url: string | null;
+  recording_file_path: string | null;
+  transcript_file_path: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,8 +30,8 @@ export interface UpdateTestCallLogParams {
   call_ended_at?: string;
   duration_seconds?: number;
   vapi_call_id?: string;
-  recording_url?: string;
-  transcript_url?: string;
+  recording_file_path?: string;
+  transcript_file_path?: string;
 }
 
 export const useTestCallLogs = (agentId: string) => {
@@ -59,7 +59,14 @@ export const useTestCallLogs = (agentId: string) => {
         return;
       }
 
-      setTestCallLogs(data || []);
+      // Map database response to our interface (handles column name changes)
+      const mappedData = (data || []).map((log: any) => ({
+        ...log,
+        recording_file_path: log.recording_file_path || log.recording_url || null,
+        transcript_file_path: log.transcript_file_path || log.transcript_url || null,
+      })) as TestCallLog[];
+
+      setTestCallLogs(mappedData);
     } catch (err) {
       console.error('Error in fetchTestCallLogs:', err);
       setError('Failed to fetch test call logs');
@@ -97,8 +104,8 @@ export const useTestCallLogs = (agentId: string) => {
     if (params.call_ended_at !== undefined) updateData.call_ended_at = params.call_ended_at;
     if (params.duration_seconds !== undefined) updateData.duration_seconds = params.duration_seconds;
     if (params.vapi_call_id !== undefined) updateData.vapi_call_id = params.vapi_call_id;
-    if (params.recording_url !== undefined) updateData.recording_url = params.recording_url;
-    if (params.transcript_url !== undefined) updateData.transcript_url = params.transcript_url;
+    if (params.recording_file_path !== undefined) updateData.recording_file_path = params.recording_file_path;
+    if (params.transcript_file_path !== undefined) updateData.transcript_file_path = params.transcript_file_path;
 
     const { data, error } = await supabase
       .from('test_call_logs')
