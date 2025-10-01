@@ -62,9 +62,40 @@ export const BusinessServices: React.FC = () => {
   };
 
   const handleNext = () => {
-    if (selectedServices.length > 0) {
-      sessionStorage.setItem("businessServices", JSON.stringify(selectedServices));
-      navigate("/onboarding/business-location");
+    // Save all selected services including custom ones
+    const allSelectedServices = [
+      ...selectedServices,
+      ...Object.entries(customServiceInputs).flatMap(([businessType, inputs]) =>
+        inputs
+          .filter(input => input.trim() !== '')
+          .map(input => {
+            const existingService = selectedServices.find(
+              s => s.businessType === businessType && s.service === input.trim()
+            );
+            return existingService || {
+              businessType,
+              service: input.trim(),
+              hours: "01 hr",
+              minutes: "00 min"
+            };
+          })
+      )
+    ];
+
+    if (allSelectedServices.length > 0) {
+      // Save for backward compatibility
+      sessionStorage.setItem("businessServices", JSON.stringify(allSelectedServices));
+      
+      // Save in format expected by onboarding system
+      const servicesForOnboarding = allSelectedServices.map(s => ({
+        businessType: s.businessType,
+        type: s.service,
+        hours: s.hours,
+        minutes: s.minutes
+      }));
+      sessionStorage.setItem("services", JSON.stringify(servicesForOnboarding));
+      
+      navigate("/onboarding/booking-intro");
     }
   };
 

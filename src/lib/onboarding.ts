@@ -2,11 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface OnboardingData {
   businessName?: string;
-  businessTypes?: Array<{
-    type: string;
-    hours: string;
-    minutes: string;
-  }>;
+  businessTypes?: string[];
   primaryLocation?: string;
   contactNumber?: string;
   purchasedNumberDetails?: {
@@ -30,7 +26,12 @@ export interface OnboardingData {
   aiAssistantName?: string;
   aiHandlingUnknown?: string;
   aiCallSchedule?: string;
-  services?: string[];
+  services?: Array<{
+    businessType: string;
+    type: string;
+    hours: string;
+    minutes: string;
+  }>;
   businessDays?: string[];
   businessHours?: {
     from: string;
