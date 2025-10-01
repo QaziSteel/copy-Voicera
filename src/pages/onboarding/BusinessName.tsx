@@ -54,7 +54,7 @@ export const BusinessName: React.FC = () => {
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
             placeholder="Enter your business name"
-            className="w-full p-4 md:p-3 sm:p-2.5 text-lg md:text-base sm:text-sm font-semibold text-foreground border-2 border-border rounded-xl md:rounded-lg sm:rounded-lg placeholder-muted-foreground focus:outline-none focus:border-foreground transition-colors bg-background"
+            className="w-full p-4 md:p-3 sm:p-2.5 text-lg md:text-base sm:text-sm font-semibold text-muted-foreground border-2 border-border rounded-xl md:rounded-lg sm:rounded-lg placeholder-muted-foreground focus:outline-none focus:border-foreground transition-colors bg-background"
           />
         </div>
       </div>
