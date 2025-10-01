@@ -286,7 +286,7 @@ export const BusinessServices: React.FC = () => {
                         {/* Service Name or Input */}
                         {!showCustomInput[businessType] ? (
                           <span className="text-lg leading-6 text-[#6B7280]">
-                            Other Custom
+                            Other (Custom Service)
                           </span>
                         ) : (
                           <div className="w-64" onClick={(e) => e.stopPropagation()}>
