@@ -78,7 +78,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
 
   const {
     signUp,
-    sendMagicLink
+    sendMagicLink,
+    checkEmailExists
   } = useAuth();
   const {
     toast
@@ -87,6 +88,19 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const sendVerificationEmail = async (email: string, fullName: string) => {
     setLoading(true);
     try {
+      // Check if email already exists
+      const emailExists = await checkEmailExists(email);
+      
+      if (emailExists) {
+        toast({
+          title: "Email Already Registered",
+          description: "This email is already registered. Please use the login form instead.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return false;
+      }
+
       const { error } = await sendMagicLink(email, fullName);
       
       if (error) {
