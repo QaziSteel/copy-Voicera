@@ -92,10 +92,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       const emailExists = await checkEmailExists(email);
       
       if (emailExists) {
-        toast({
-          title: "Email Already Registered",
-          description: "This email is already registered. Please use the login form instead.",
-          variant: "destructive"
+        step1Form.setError("email", {
+          type: "manual",
+          message: "The account is already registered"
         });
         setLoading(false);
         return false;
