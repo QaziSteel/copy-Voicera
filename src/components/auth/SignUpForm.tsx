@@ -58,7 +58,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const [fullNameForSignup, setFullNameForSignup] = useState('');
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState('');
-  const [emailExistsError, setEmailExistsError] = useState(false);
+  
 
   const step1Form = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
@@ -78,8 +78,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
 
   const {
     signUp,
-    sendMagicLink,
-    checkEmailExists
+    sendMagicLink
   } = useAuth();
   const {
     toast
@@ -116,18 +115,6 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   };
 
   const onStep1Submit = async (data: Step1FormData) => {
-    setLoading(true);
-    setEmailExistsError(false);
-    
-    // Check if email already exists
-    const emailExists = await checkEmailExists(data.email);
-    
-    if (emailExists) {
-      setEmailExistsError(true);
-      setLoading(false);
-      return;
-    }
-    
     setEmailForSignup(data.email);
     setFullNameForSignup(data.fullName);
     const success = await sendVerificationEmail(data.email, data.fullName);
@@ -212,18 +199,9 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
                     type="email" 
                     placeholder="Enter your business email" 
                     {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setEmailExistsError(false);
-                    }}
                   />
                 </FormControl>
                 <FormMessage />
-                {emailExistsError && (
-                  <p className="text-sm text-destructive mt-2">
-                    This email is already registered.
-                  </p>
-                )}
               </FormItem>
             )}
           />
