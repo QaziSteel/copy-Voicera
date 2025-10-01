@@ -32,7 +32,7 @@ import { Greetings } from "./pages/onboarding/Greetings";
 import AssistantName from "./pages/onboarding/AssistantName";
 import AnswerTime from "./pages/onboarding/AnswerTime";
 import BookingIntro from "./pages/onboarding/BookingIntro";
-import Services from "./pages/onboarding/Services";
+
 import BusinessDays from "./pages/onboarding/BusinessDays";
 import BusinessHours from "./pages/onboarding/BusinessHours";
 
@@ -125,11 +125,6 @@ const App = () => (
             <Route path="/onboarding/booking-intro" element={
               <ProtectedRoute>
                 <BookingIntro />
-              </ProtectedRoute>
-            } />
-            <Route path="/onboarding/services" element={
-              <ProtectedRoute>
-                <Services />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-days" element={

@@ -9,7 +9,7 @@ export default function BookingIntro() {
   };
 
   const handleNext = () => {
-    navigate("/onboarding/services");
+    navigate("/onboarding/business-days");
   };
 
   return (

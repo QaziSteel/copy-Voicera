@@ -30,7 +30,7 @@ export default function BusinessDays() {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/services");
+    navigate("/onboarding/booking-intro");
   };
 
   const handleNext = () => {
