@@ -12,20 +12,11 @@ const businessTypes = [
   "Chiropractor",
 ];
 
-const hourOptions = ["00 hr", "01 hr", "02 hr", "03 hr", "04 hr"];
-const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
-
-interface SelectedBusinessType {
-  type: string;
-  hours: string;
-  minutes: string;
-}
 
 export const BusinessType: React.FC = () => {
-  const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<SelectedBusinessType[]>([]);
+  const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<string[]>([]);
   const [customType, setCustomType] = useState("");
   const [isCustomSelected, setIsCustomSelected] = useState(false);
-  const [customDuration, setCustomDuration] = useState({ hours: "01 hr", minutes: "00 min" });
   const navigate = useNavigate();
 
   // Load saved data on component mount
@@ -33,17 +24,17 @@ export const BusinessType: React.FC = () => {
     const savedBusinessTypes = sessionStorage.getItem("businessTypes");
     if (savedBusinessTypes) {
       try {
-        const parsedTypes = JSON.parse(savedBusinessTypes);
+        const parsedTypes: string[] = JSON.parse(savedBusinessTypes);
         
         // Separate preset business types from custom ones
-        const presetTypes: SelectedBusinessType[] = [];
-        let customEntry: SelectedBusinessType | null = null;
+        const presetTypes: string[] = [];
+        let customEntry: string | null = null;
         
-        parsedTypes.forEach((item: SelectedBusinessType) => {
-          if (businessTypes.includes(item.type)) {
-            presetTypes.push(item);
+        parsedTypes.forEach((type: string) => {
+          if (businessTypes.includes(type)) {
+            presetTypes.push(type);
           } else {
-            customEntry = item;
+            customEntry = type;
           }
         });
         
@@ -53,11 +44,7 @@ export const BusinessType: React.FC = () => {
         // Set custom entry if exists
         if (customEntry) {
           setIsCustomSelected(true);
-          setCustomType(customEntry.type);
-          setCustomDuration({
-            hours: customEntry.hours,
-            minutes: customEntry.minutes
-          });
+          setCustomType(customEntry);
         }
       } catch (error) {
         console.error("Error parsing saved business types:", error);
@@ -72,11 +59,7 @@ export const BusinessType: React.FC = () => {
   const handleNext = () => {
     const allBusinessTypes = [...selectedBusinessTypes];
     if (isCustomSelected && customType.trim()) {
-      allBusinessTypes.push({
-        type: customType.trim(),
-        hours: customDuration.hours,
-        minutes: customDuration.minutes
-      });
+      allBusinessTypes.push(customType.trim());
     }
     
     if (allBusinessTypes.length > 0) {
@@ -87,11 +70,10 @@ export const BusinessType: React.FC = () => {
 
   const handleBusinessTypeToggle = (type: string) => {
     setSelectedBusinessTypes((prev) => {
-      const exists = prev.find(item => item.type === type);
-      if (exists) {
-        return prev.filter(item => item.type !== type);
+      if (prev.includes(type)) {
+        return prev.filter(item => item !== type);
       } else {
-        return [...prev, { type, hours: "01 hr", minutes: "00 min" }];
+        return [...prev, type];
       }
     });
   };
@@ -101,14 +83,6 @@ export const BusinessType: React.FC = () => {
     if (!isCustomSelected) {
       setCustomType("");
     }
-  };
-
-  const handleDurationChange = (type: string, field: 'hours' | 'minutes', value: string) => {
-    setSelectedBusinessTypes((prev) =>
-      prev.map(item =>
-        item.type === type ? { ...item, [field]: value } : item
-      )
-    );
   };
 
   const isNextDisabled = selectedBusinessTypes.length === 0 && !(isCustomSelected && customType.trim());
@@ -125,17 +99,17 @@ export const BusinessType: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col gap-3 md:gap-2 sm:gap-1.5 w-full">
           <h2 className="text-xl md:text-lg sm:text-base font-bold text-foreground">
-            Select services and timings
+            Select your business type
           </h2>
           <p className="text-base md:text-sm sm:text-xs italic text-muted-foreground leading-6 md:leading-5 sm:leading-4">
-            Choose your services and set the appointment duration for each.
+            Choose the type(s) that best describe your business.
           </p>
         </div>
 
         {/* Business Type Cards */}
         <div className="flex flex-col gap-4 w-full">
           {businessTypes.map((type) => {
-            const isSelected = selectedBusinessTypes.find(item => item.type === type);
+            const isSelected = selectedBusinessTypes.includes(type);
             
             return (
               <div
@@ -181,39 +155,6 @@ export const BusinessType: React.FC = () => {
                       {type}
                     </span>
                   </div>
-                  
-                  {/* Duration Selectors - Only show when selected */}
-                  {isSelected && (
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-[#6B7280]">Duration:</span>
-                      <select
-                        value={isSelected.hours}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleDurationChange(type, 'hours', e.target.value);
-                        }}
-                        className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {hourOptions.map(hour => (
-                          <option key={hour} value={hour}>{hour}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={isSelected.minutes}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleDurationChange(type, 'minutes', e.target.value);
-                        }}
-                        className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {minuteOptions.map(minute => (
-                          <option key={minute} value={minute}>{minute}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
                 </div>
               </div>
             );
@@ -274,39 +215,6 @@ export const BusinessType: React.FC = () => {
                   </span>
                 )}
               </div>
-              
-              {/* Duration Selectors for Custom Type - Only show when selected and has text */}
-              {isCustomSelected && customType.trim() && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-[#6B7280]">Duration:</span>
-                  <select
-                    value={customDuration.hours}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      setCustomDuration(prev => ({ ...prev, hours: e.target.value }));
-                    }}
-                    className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {hourOptions.map(hour => (
-                      <option key={hour} value={hour}>{hour}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={customDuration.minutes}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      setCustomDuration(prev => ({ ...prev, minutes: e.target.value }));
-                    }}
-                    className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {minuteOptions.map(minute => (
-                      <option key={minute} value={minute}>{minute}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </div>
           </div>
         </div>
