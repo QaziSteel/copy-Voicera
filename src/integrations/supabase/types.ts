@@ -131,7 +131,6 @@ export type Database = {
       }
       google_integrations: {
         Row: {
-          access_token: string
           agent_id: string | null
           created_at: string
           created_without_agent: string | null
@@ -140,7 +139,6 @@ export type Database = {
           id: string
           is_active: boolean
           project_id: string
-          refresh_token: string
           scopes: string[]
           token_expires_at: string
           updated_at: string
@@ -148,7 +146,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          access_token: string
           agent_id?: string | null
           created_at?: string
           created_without_agent?: string | null
@@ -157,7 +154,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           project_id: string
-          refresh_token: string
           scopes: string[]
           token_expires_at: string
           updated_at?: string
@@ -165,7 +161,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          access_token?: string
           agent_id?: string | null
           created_at?: string
           created_without_agent?: string | null
@@ -174,7 +169,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           project_id?: string
-          refresh_token?: string
           scopes?: string[]
           token_expires_at?: string
           updated_at?: string
@@ -562,11 +556,19 @@ export type Database = {
         Returns: undefined
       }
       decrypt_oauth_token: {
-        Args: { _encrypted_token: string; _user_id: string }
+        Args:
+          | {
+              _encrypted_token: string
+              _encryption_key: string
+              _user_id: string
+            }
+          | { _encrypted_token: string; _user_id: string }
         Returns: string
       }
       encrypt_oauth_token: {
-        Args: { _token: string; _user_id: string }
+        Args:
+          | { _encryption_key: string; _token: string; _user_id: string }
+          | { _token: string; _user_id: string }
         Returns: string
       }
       get_booking_customer_info: {
@@ -614,7 +616,13 @@ export type Database = {
         }[]
       }
       get_google_integration_tokens: {
-        Args: { _integration_id: string; _requesting_user_id: string }
+        Args:
+          | {
+              _encryption_key: string
+              _integration_id: string
+              _requesting_user_id: string
+            }
+          | { _integration_id: string; _requesting_user_id: string }
         Returns: {
           access_token: string
           refresh_token: string
@@ -680,6 +688,42 @@ export type Database = {
       project_owns_phone_number: {
         Args: { _phone_number: string; _user_id: string }
         Returns: boolean
+      }
+      store_google_tokens: {
+        Args:
+          | {
+              _access_token: string
+              _encryption_key: string
+              _expires_at: string
+              _integration_id: string
+              _refresh_token: string
+              _requesting_user_id: string
+            }
+          | {
+              _access_token: string
+              _expires_at: string
+              _integration_id: string
+              _refresh_token: string
+              _requesting_user_id: string
+            }
+        Returns: undefined
+      }
+      update_encrypted_access_token: {
+        Args:
+          | {
+              _access_token: string
+              _encryption_key: string
+              _expires_at: string
+              _integration_id: string
+              _requesting_user_id: string
+            }
+          | {
+              _access_token: string
+              _expires_at: string
+              _integration_id: string
+              _requesting_user_id: string
+            }
+        Returns: undefined
       }
       user_can_see_customer_data: {
         Args: { _project_id: string; _user_id: string }

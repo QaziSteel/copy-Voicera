@@ -235,7 +235,8 @@ serve(async (req) => {
         const { data: existingTokens } = await supabase
           .rpc('get_google_integration_tokens', {
             _integration_id: existingIntegration.id,
-            _requesting_user_id: existingIntegration.user_id
+            _requesting_user_id: existingIntegration.user_id,
+            _encryption_key: supabaseServiceKey
           })
           .single();
         
@@ -326,7 +327,8 @@ serve(async (req) => {
         _access_token: tokenData.access_token,
         _refresh_token: refreshTokenToUse,
         _expires_at: expiresAt.toISOString(),
-        _requesting_user_id: finalUserId
+        _requesting_user_id: finalUserId,
+        _encryption_key: supabaseServiceKey
       });
 
     if (tokenStoreError) {

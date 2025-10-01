@@ -87,7 +87,8 @@ serve(async (req) => {
     const { data: tokenData, error: tokenError } = await supabase
       .rpc('get_google_integration_tokens', {
         _integration_id: integration.id,
-        _requesting_user_id: integration.user_id
+        _requesting_user_id: integration.user_id,
+        _encryption_key: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       })
       .single();
 
@@ -147,7 +148,8 @@ serve(async (req) => {
           _integration_id: integration.id,
           _access_token: accessToken,
           _expires_at: tokenExpiresAt,
-          _requesting_user_id: integration.user_id
+          _requesting_user_id: integration.user_id,
+          _encryption_key: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         });
 
       if (updateError) {
