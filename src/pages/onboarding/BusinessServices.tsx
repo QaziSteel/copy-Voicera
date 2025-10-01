@@ -268,21 +268,15 @@ export const BusinessServices: React.FC = () => {
                     return (
                       <div
                         key={index}
-                        className={`flex flex-col p-4 rounded-xl transition-colors cursor-pointer ${
+                        className={`flex flex-col p-4 rounded-xl transition-colors ${
                           isSelected
                             ? "bg-[#F3F4F6] border-2 border-black"
                             : "bg-[#F3F4F6] border-2 border-transparent hover:border-gray-300"
                         }`}
-                        onClick={(e) => {
-                          if (!isSelected) {
-                            // Focus the input when card is clicked and not selected
-                            const input = (e.currentTarget as HTMLElement).querySelector('input');
-                            input?.focus();
-                          }
-                        }}
                       >
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-3 flex-1">
+                        {/* Checkbox and Label Row */}
+                        <div className="flex items-center justify-between w-full mb-3">
+                          <div className="flex items-center gap-3">
                             {/* Checkbox */}
                             <div
                               className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center cursor-pointer ${
@@ -314,15 +308,12 @@ export const BusinessServices: React.FC = () => {
                               )}
                             </div>
                             
-                            {/* Service Input */}
-                            <div className="w-64" onClick={(e) => e.stopPropagation()}>
-                              <Input
-                                placeholder="Enter your service..."
-                                value={customInput}
-                                onChange={(e) => handleCustomInputChange(businessType, index, e.target.value)}
-                                className="text-lg"
-                              />
-                            </div>
+                            {/* Label */}
+                            <span className={`text-lg leading-6 ${
+                              isSelected ? "text-black" : "text-[#6B7280]"
+                            }`}>
+                              Other (Custom Service)
+                            </span>
                           </div>
                           
                           {/* Duration Selectors - Show when custom input has text */}
@@ -335,7 +326,7 @@ export const BusinessServices: React.FC = () => {
                                   e.stopPropagation();
                                   handleDurationChange(businessType, customInput.trim(), 'hours', e.target.value);
                                 }}
-                                className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                                className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground z-10"
                               >
                                 {hourOptions.map(hour => (
                                   <option key={hour} value={hour}>{hour}</option>
@@ -347,7 +338,7 @@ export const BusinessServices: React.FC = () => {
                                   e.stopPropagation();
                                   handleDurationChange(businessType, customInput.trim(), 'minutes', e.target.value);
                                 }}
-                                className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                                className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground z-10"
                               >
                                 {minuteOptions.map(minute => (
                                   <option key={minute} value={minute}>{minute}</option>
@@ -355,6 +346,16 @@ export const BusinessServices: React.FC = () => {
                               </select>
                             </div>
                           )}
+                        </div>
+                        
+                        {/* Input Field Row */}
+                        <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            placeholder="Enter your service..."
+                            value={customInput}
+                            onChange={(e) => handleCustomInputChange(businessType, index, e.target.value)}
+                            className="text-lg w-full"
+                          />
                         </div>
                       </div>
                     );

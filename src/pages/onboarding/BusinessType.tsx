@@ -186,79 +186,66 @@ export const BusinessType: React.FC = () => {
             return (
               <div
                 key={index}
-                className={`flex flex-col p-4 rounded-xl transition-colors cursor-pointer ${
+                className={`flex flex-col p-4 rounded-xl transition-colors ${
                   isSelected
                     ? "bg-[#F3F4F6] border-2 border-black"
                     : "bg-[#F3F4F6] border-2 border-transparent hover:border-gray-300"
                 }`}
-                onClick={(e) => {
-                  if (!isSelected) {
-                    // Focus the input when card is clicked and not selected
-                    const input = (e.currentTarget as HTMLElement).querySelector('input');
-                    input?.focus();
-                  }
-                }}
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-3 flex-1">
-                    {/* Checkbox */}
-                    <div
-                      className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center cursor-pointer ${
-                        isSelected ? "border-black bg-black" : "border-[#6B7280]"
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isSelected) {
-                          handleCustomTypeRemove(index);
-                        }
-                      }}
-                    >
-                      {isSelected && (
-                        <svg
-                          width="8"
-                          height="6"
-                          viewBox="0 0 8 6"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M1 3L3 5L7 1"
-                            stroke="white"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                    
-                    {/* Custom Input or Label */}
-                    {isSelected ? (
-                      <input
-                        type="text"
-                        value={customType}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleCustomTypeChange(index, e.target.value);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="Enter your business type..."
-                        className="flex-1 p-2 border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:border-foreground bg-background"
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={customType}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          handleCustomTypeChange(index, e.target.value);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="Enter your business type..."
-                        className="flex-1 p-2 border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:border-foreground bg-background"
-                      />
+                {/* Checkbox and Label Row */}
+                <div className="flex items-center gap-3 mb-3">
+                  {/* Checkbox */}
+                  <div
+                    className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center cursor-pointer ${
+                      isSelected ? "border-black bg-black" : "border-[#6B7280]"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isSelected) {
+                        handleCustomTypeRemove(index);
+                      }
+                    }}
+                  >
+                    {isSelected && (
+                      <svg
+                        width="8"
+                        height="6"
+                        viewBox="0 0 8 6"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 3L3 5L7 1"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     )}
                   </div>
+                  
+                  {/* Label */}
+                  <span className={`text-lg leading-6 ${
+                    isSelected ? "text-black" : "text-[#6B7280]"
+                  }`}>
+                    Other (Custom Type)
+                  </span>
+                </div>
+                
+                {/* Input Field Row */}
+                <div className="w-full">
+                  <input
+                    type="text"
+                    value={customType}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleCustomTypeChange(index, e.target.value);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="Enter your business type..."
+                    className="w-full p-2 border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:border-foreground bg-background"
+                  />
                 </div>
               </div>
             );
