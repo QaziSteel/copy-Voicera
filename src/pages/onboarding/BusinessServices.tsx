@@ -88,21 +88,41 @@ export const BusinessServices: React.FC = () => {
     );
   };
 
-  const handleAddCustomService = (businessType: string) => {
-    const customServiceName = customServiceInputs[businessType]?.trim();
-    if (customServiceName) {
-      handleServiceToggle(businessType, customServiceName);
-      setCustomServiceInputs(prev => ({ ...prev, [businessType]: '' }));
-      setShowCustomInput(prev => ({ ...prev, [businessType]: false }));
+  const handleCustomInputChange = (businessType: string, value: string) => {
+    setCustomServiceInputs(prev => ({ ...prev, [businessType]: value }));
+    
+    // Auto-add to selected services when text is entered
+    if (value.trim()) {
+      const customServiceName = value.trim();
+      const exists = selectedServices.find(
+        item => item.businessType === businessType && item.service === customServiceName
+      );
+      if (!exists) {
+        setSelectedServices(prev => {
+          // Remove any previous custom service for this business type
+          const filtered = prev.filter(
+            item => !(item.businessType === businessType && customServiceInputs[businessType]?.trim() && item.service === customServiceInputs[businessType].trim())
+          );
+          return [...filtered, { businessType, service: customServiceName, hours: "01 hr", minutes: "00 min" }];
+        });
+      }
     }
   };
 
-  const handleCustomInputChange = (businessType: string, value: string) => {
-    setCustomServiceInputs(prev => ({ ...prev, [businessType]: value }));
-  };
-
   const toggleCustomInput = (businessType: string) => {
-    setShowCustomInput(prev => ({ ...prev, [businessType]: !prev[businessType] }));
+    const newValue = !showCustomInput[businessType];
+    setShowCustomInput(prev => ({ ...prev, [businessType]: newValue }));
+    
+    // Clear custom input and remove from selected services when toggling off
+    if (!newValue) {
+      const customServiceName = customServiceInputs[businessType]?.trim();
+      if (customServiceName) {
+        setSelectedServices(prev => 
+          prev.filter(item => !(item.businessType === businessType && item.service === customServiceName))
+        );
+      }
+      setCustomServiceInputs(prev => ({ ...prev, [businessType]: '' }));
+    }
   };
 
   const isNextDisabled = selectedServices.length === 0;
@@ -234,54 +254,91 @@ export const BusinessServices: React.FC = () => {
                         ? "bg-[#F3F4F6] border-2 border-black"
                         : "bg-[#F3F4F6] border-2 border-transparent hover:border-gray-300"
                     }`}
-                    onClick={() => !showCustomInput[businessType] && toggleCustomInput(businessType)}
+                    onClick={() => toggleCustomInput(businessType)}
                   >
-                    {!showCustomInput[businessType] ? (
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3 flex-1">
                         {/* Checkbox */}
-                        <div className="w-4 h-4 border-[1.5px] rounded flex items-center justify-center border-[#6B7280]" />
+                        <div
+                          className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                            showCustomInput[businessType] ? "border-black bg-black" : "border-[#6B7280]"
+                          }`}
+                        >
+                          {showCustomInput[businessType] && (
+                            <svg
+                              width="8"
+                              height="6"
+                              viewBox="0 0 8 6"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M1 3L3 5L7 1"
+                                stroke="white"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
                         
-                        {/* Service Name */}
-                        <span className="text-lg leading-6 text-[#6B7280]">
-                          Other Custom
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1">
+                        {/* Service Name or Input */}
+                        {!showCustomInput[businessType] ? (
+                          <span className="text-lg leading-6 text-[#6B7280]">
+                            Other Custom
+                          </span>
+                        ) : (
+                          <div className="flex-1" onClick={(e) => e.stopPropagation()}>
                             <Input
                               placeholder="Enter custom service name"
                               value={customServiceInputs[businessType] || ''}
                               onChange={(e) => handleCustomInputChange(businessType, e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddCustomService(businessType);
-                                }
-                              }}
                               className="text-lg"
                               autoFocus
                             />
                           </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <button
-                            onClick={() => toggleCustomInput(businessType)}
-                            className="px-4 py-2 text-sm text-[#6B7280] hover:text-black transition-colors"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => handleAddCustomService(businessType)}
-                            disabled={!customServiceInputs[businessType]?.trim()}
-                            className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Add Service
-                          </button>
-                        </div>
+                        )}
                       </div>
-                    )}
+                      
+                      {/* Duration Selectors - Show when custom input has text */}
+                      {showCustomInput[businessType] && customServiceInputs[businessType]?.trim() && (() => {
+                        const customServiceName = customServiceInputs[businessType].trim();
+                        const customService = selectedServices.find(
+                          item => item.businessType === businessType && item.service === customServiceName
+                        );
+                        
+                        return customService && (
+                          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                            <span className="text-sm text-[#6B7280]">Duration:</span>
+                            <select
+                              value={customService.hours}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleDurationChange(businessType, customServiceName, 'hours', e.target.value);
+                              }}
+                              className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                            >
+                              {hourOptions.map(hour => (
+                                <option key={hour} value={hour}>{hour}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={customService.minutes}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleDurationChange(businessType, customServiceName, 'minutes', e.target.value);
+                              }}
+                              className="p-2 border border-border rounded-lg text-sm bg-background focus:outline-none focus:border-foreground"
+                            >
+                              {minuteOptions.map(minute => (
+                                <option key={minute} value={minute}>{minute}</option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </div>
               </div>
