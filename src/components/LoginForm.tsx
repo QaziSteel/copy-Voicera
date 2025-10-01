@@ -7,34 +7,68 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean().default(false),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
   onSignUpClick?: () => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const { signIn } = useAuth();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(data.email, data.password);
       
       if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Check if it's an invalid credentials error
+        if (error.message.toLowerCase().includes("invalid") || 
+            error.message.toLowerCase().includes("credentials")) {
+          form.setError("password", {
+            type: "manual",
+            message: "Invalid email or password",
+          });
+        } else {
+          // For other errors, show a toast
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
       }
       // Navigation is now handled by AuthContext
     } catch (error) {
@@ -64,98 +98,117 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email..."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full"
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Email Field */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-foreground">
+                      Email
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Password Field */}
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pr-10"
-                  required
+              {/* Password Field */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-foreground">
+                      Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          className="pr-10"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-auth-subtle hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <FormField
+                  control={form.control}
+                  name="rememberMe"
+                  render={({ field }) => (
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <Label
+                        htmlFor="remember"
+                        className="text-sm text-foreground cursor-pointer"
+                      >
+                        Remember me
+                      </Label>
+                    </div>
+                  )}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-auth-subtle hover:text-foreground transition-colors"
+                  className="text-sm text-auth-link hover:underline"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  Forgot password?
                 </button>
               </div>
-            </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                />
-                <Label
-                  htmlFor="remember"
-                  className="text-sm text-foreground cursor-pointer"
-                >
-                  Remember me
-                </Label>
-              </div>
-              <button
-                type="button"
-                className="text-sm text-auth-link hover:underline"
+              {/* Login Button */}
+              <Button
+                type="submit"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12"
+                disabled={loading}
               >
-                Forgot password?
-              </button>
-            </div>
+                {loading ? "Signing in..." : "Login"}
+              </Button>
 
-            {/* Login Button */}
-            <Button
-              type="submit"
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12"
-              disabled={loading}
-            >
-              {loading ? "Signing in..." : "Login"}
-            </Button>
-
-            {/* Sign Up Link */}
-            <div className="text-center">
-              <span className="text-auth-subtle text-sm">Don't have an account? </span>
-              {onSignUpClick ? (
-                <button
-                  type="button"
-                  onClick={onSignUpClick}
-                  className="text-sm text-auth-link hover:underline font-medium"
-                >
-                  Sign up
-                </button>
-              ) : (
-                <Link to="/auth/signup" className="text-sm text-auth-link hover:underline font-medium">
-                  Sign up
-                </Link>
-              )}
-            </div>
-          </form>
+              {/* Sign Up Link */}
+              <div className="text-center">
+                <span className="text-auth-subtle text-sm">Don't have an account? </span>
+                {onSignUpClick ? (
+                  <button
+                    type="button"
+                    onClick={onSignUpClick}
+                    className="text-sm text-auth-link hover:underline font-medium"
+                  >
+                    Sign up
+                  </button>
+                ) : (
+                  <Link to="/auth/signup" className="text-sm text-auth-link hover:underline font-medium">
+                    Sign up
+                  </Link>
+                )}
+              </div>
+            </form>
+          </Form>
         </div>
       </div>
     </div>

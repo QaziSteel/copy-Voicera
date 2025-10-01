@@ -7,25 +7,62 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+const step1Schema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Please enter a valid email address"),
+});
+
+const step3Schema = z.object({
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type Step1FormData = z.infer<typeof step1Schema>;
+type Step3FormData = z.infer<typeof step3Schema>;
+
 interface SignUpFormProps {
   onSuccess?: () => void;
 }
 export const SignUpForm: React.FC<SignUpFormProps> = ({
   onSuccess
 }) => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    verificationCode: '',
-    password: '',
-    confirmPassword: ''
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Name, 2: Verification, 3: Password
   const [countdown, setCountdown] = useState(30);
-  const [sentVerificationCode, setSentVerificationCode] = useState('');
+  const [emailForSignup, setEmailForSignup] = useState('');
+  const [fullNameForSignup, setFullNameForSignup] = useState('');
+
+  const step1Form = useForm<Step1FormData>({
+    resolver: zodResolver(step1Schema),
+    defaultValues: {
+      fullName: '',
+      email: '',
+    },
+  });
+
+  const step3Form = useForm<Step3FormData>({
+    resolver: zodResolver(step3Schema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
   const {
     signUp,
@@ -34,16 +71,11 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const {
     toast
   } = useToast();
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-  const sendVerificationEmail = async () => {
+
+  const sendVerificationEmail = async (email: string, fullName: string) => {
     setLoading(true);
     try {
-      const { error } = await sendMagicLink(formData.email, formData.fullName);
+      const { error } = await sendMagicLink(email, fullName);
       
       if (error) {
         toast({
@@ -57,7 +89,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       
       toast({
         title: "Verification email sent",
-        description: `We've sent a verification link to ${formData.email}`
+        description: `We've sent a verification link to ${email}`
       });
       setLoading(false);
       return true;
@@ -72,31 +104,18 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
     }
   };
 
-  const handleNext = async () => {
-    if (step === 1 && (!formData.fullName || !formData.email)) {
-      toast({
-        title: "Error",
-        description: "Please enter your name and email",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (step === 1) {
-      // Send verification email when moving to step 2
-      const success = await sendVerificationEmail();
-      if (success) {
-        setCountdown(30);
-        setStep(2);
-      }
-    } else if (step === 2) {
-      // Move to password creation step
-      setStep(3);
+  const onStep1Submit = async (data: Step1FormData) => {
+    setEmailForSignup(data.email);
+    setFullNameForSignup(data.fullName);
+    const success = await sendVerificationEmail(data.email, data.fullName);
+    if (success) {
+      setCountdown(30);
+      setStep(2);
     }
   };
 
   const handleResend = async () => {
-    const success = await sendVerificationEmail();
+    const success = await sendVerificationEmail(emailForSignup, fullNameForSignup);
     if (success) {
       setCountdown(30);
     }
@@ -112,29 +131,12 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
     }
     return () => clearTimeout(timer);
   }, [step, countdown]);
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
-      return;
-    }
-    if (formData.password.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters",
-        variant: "destructive"
-      });
-      return;
-    }
+  const onStep3Submit = async (data: Step3FormData) => {
     setLoading(true);
     try {
       const {
         error
-      } = await signUp(formData.email, formData.password, formData.fullName);
+      } = await signUp(emailForSignup, data.password, fullNameForSignup);
       if (error) {
         toast({
           title: "Error",
@@ -159,21 +161,43 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       setLoading(false);
     }
   };
-  const renderStep1 = () => <>
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="fullName">Full name</Label>
-          <Input id="fullName" name="fullName" type="text" value={formData.fullName} onChange={handleChange} placeholder="Enter your full name" className="mt-1" />
+  const renderStep1 = () => (
+    <Form {...step1Form}>
+      <form onSubmit={step1Form.handleSubmit(onStep1Submit)} className="space-y-6">
+        <div className="space-y-4">
+          <FormField
+            control={step1Form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full name</FormLabel>
+                <FormControl>
+                  <Input type="text" placeholder="Enter your full name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={step1Form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Enter your business email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-        <div>
-          <Label htmlFor="email">Business email</Label>
-          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Enter your business email" className="mt-1" />
-        </div>
-      </div>
-      <Button onClick={handleNext} className="w-full" disabled={loading || !formData.fullName || !formData.email}>
-        {loading ? "Sending..." : "Send Verification Email"}
-      </Button>
-    </>;
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Sending..." : "Send Verification Email"}
+        </Button>
+      </form>
+    </Form>
+  );
   const renderStep2 = () => <>
       <div className="space-y-4 text-center">
         <div className="mt-4">
@@ -199,31 +223,71 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         </Button>
       </div>
     </>;
-  const renderStep3 = () => <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="password">Password</Label>
-          <div className="relative mt-1">
-            <Input id="password" name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} placeholder="Create your password" className="pr-10" />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              {showPassword ? <Eye className="h-4 w-4 text-auth-subtle" /> : <EyeOff className="h-4 w-4 text-auth-subtle" />}
-            </button>
-          </div>
+  const renderStep3 = () => (
+    <Form {...step3Form}>
+      <form onSubmit={step3Form.handleSubmit(onStep3Submit)} className="space-y-6">
+        <div className="space-y-4">
+          <FormField
+            control={step3Form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input 
+                      type={showPassword ? "text" : "password"} 
+                      placeholder="Create your password" 
+                      className="pr-10"
+                      {...field} 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowPassword(!showPassword)} 
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showPassword ? <Eye className="h-4 w-4 text-auth-subtle" /> : <EyeOff className="h-4 w-4 text-auth-subtle" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={step3Form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input 
+                      type={showConfirmPassword ? "text" : "password"} 
+                      placeholder="Confirm your password" 
+                      className="pr-10"
+                      {...field} 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showConfirmPassword ? <Eye className="h-4 w-4 text-auth-subtle" /> : <EyeOff className="h-4 w-4 text-auth-subtle" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-        <div>
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <div className="relative mt-1">
-            <Input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm your password" className="pr-10" />
-            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              {showConfirmPassword ? <Eye className="h-4 w-4 text-auth-subtle" /> : <EyeOff className="h-4 w-4 text-auth-subtle" />}
-            </button>
-          </div>
-        </div>
-      </div>
-      <Button type="submit" className="w-full" disabled={loading || !formData.password || !formData.confirmPassword}>
-        {loading ? "Creating Account..." : "Create Account"}
-      </Button>
-    </form>;
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Creating Account..." : "Create Account"}
+        </Button>
+      </form>
+    </Form>
+  );
   return <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
@@ -242,7 +306,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
                 {step === 1 && "Get started with your Voicera AI dashboard in minutes"}
                 {step === 2 && (
                   <>
-                    A magic link will be sent to <span className="font-bold">{formData.email}</span>.
+                    A magic link will be sent to <span className="font-bold">{emailForSignup}</span>.
                     <br />
                     Click on the link to verify your identity
                   </>
