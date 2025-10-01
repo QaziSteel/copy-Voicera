@@ -24,17 +24,20 @@ export const BusinessType: React.FC = () => {
     const savedBusinessTypes = sessionStorage.getItem("businessTypes");
     if (savedBusinessTypes) {
       try {
-        const parsedTypes: string[] = JSON.parse(savedBusinessTypes);
+        const parsedTypes = JSON.parse(savedBusinessTypes);
         
         // Separate preset business types from custom ones
         const presetTypes: string[] = [];
         let customEntry: string | null = null;
         
-        parsedTypes.forEach((type: string) => {
-          if (businessTypes.includes(type)) {
-            presetTypes.push(type);
+        parsedTypes.forEach((item: any) => {
+          // Handle both old format (object with type property) and new format (string)
+          const typeName = typeof item === 'string' ? item : item.type;
+          
+          if (businessTypes.includes(typeName)) {
+            presetTypes.push(typeName);
           } else {
-            customEntry = type;
+            customEntry = typeName;
           }
         });
         
@@ -85,7 +88,7 @@ export const BusinessType: React.FC = () => {
     }
   };
 
-  const isNextDisabled = selectedBusinessTypes.length === 0 && !(isCustomSelected && customType.trim());
+  const isNextDisabled = selectedBusinessTypes.length === 0 && !(isCustomSelected && typeof customType === 'string' && customType.trim());
 
   return (
     <OnboardingLayout
