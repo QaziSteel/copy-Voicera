@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
+import { Input } from "@/components/ui/input";
 
 const hourOptions = ["00 hr", "01 hr", "02 hr", "03 hr", "04 hr"];
 const minuteOptions = ["00 min", "15 min", "30 min", "45 min"];
@@ -26,6 +27,8 @@ interface SelectedService {
 export const BusinessServices: React.FC = () => {
   const [businessTypesFromPrevious, setBusinessTypesFromPrevious] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
+  const [customServiceInputs, setCustomServiceInputs] = useState<Record<string, string>>({});
+  const [showCustomInput, setShowCustomInput] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
 
   // Load business types selected on previous page
@@ -83,6 +86,23 @@ export const BusinessServices: React.FC = () => {
         item.businessType === businessType && item.service === service ? { ...item, [field]: value } : item
       )
     );
+  };
+
+  const handleAddCustomService = (businessType: string) => {
+    const customServiceName = customServiceInputs[businessType]?.trim();
+    if (customServiceName) {
+      handleServiceToggle(businessType, customServiceName);
+      setCustomServiceInputs(prev => ({ ...prev, [businessType]: '' }));
+      setShowCustomInput(prev => ({ ...prev, [businessType]: false }));
+    }
+  };
+
+  const handleCustomInputChange = (businessType: string, value: string) => {
+    setCustomServiceInputs(prev => ({ ...prev, [businessType]: value }));
+  };
+
+  const toggleCustomInput = (businessType: string) => {
+    setShowCustomInput(prev => ({ ...prev, [businessType]: !prev[businessType] }));
   };
 
   const isNextDisabled = selectedServices.length === 0;
@@ -206,6 +226,63 @@ export const BusinessServices: React.FC = () => {
                       </div>
                     );
                   })}
+
+                  {/* Other Custom Service Card */}
+                  <div
+                    className={`flex flex-col p-4 rounded-xl transition-colors cursor-pointer ${
+                      showCustomInput[businessType]
+                        ? "bg-[#F3F4F6] border-2 border-black"
+                        : "bg-[#F3F4F6] border-2 border-transparent hover:border-gray-300"
+                    }`}
+                    onClick={() => !showCustomInput[businessType] && toggleCustomInput(businessType)}
+                  >
+                    {!showCustomInput[businessType] ? (
+                      <div className="flex items-center gap-3">
+                        {/* Checkbox */}
+                        <div className="w-4 h-4 border-[1.5px] rounded flex items-center justify-center border-[#6B7280]" />
+                        
+                        {/* Service Name */}
+                        <span className="text-lg leading-6 text-[#6B7280]">
+                          Other Custom
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1">
+                            <Input
+                              placeholder="Enter custom service name"
+                              value={customServiceInputs[businessType] || ''}
+                              onChange={(e) => handleCustomInputChange(businessType, e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddCustomService(businessType);
+                                }
+                              }}
+                              className="text-lg"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <button
+                            onClick={() => toggleCustomInput(businessType)}
+                            className="px-4 py-2 text-sm text-[#6B7280] hover:text-black transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleAddCustomService(businessType)}
+                            disabled={!customServiceInputs[businessType]?.trim()}
+                            className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-black/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Add Service
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
