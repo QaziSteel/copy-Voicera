@@ -45,6 +45,7 @@ export default function Profile() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
   const [originalName, setOriginalName] = useState('');
+  const [showNameSuccessModal, setShowNameSuccessModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -188,7 +189,7 @@ export default function Profile() {
 
       setProfileData({ ...profileData, full_name: editedName.trim() });
       setIsEditingName(false);
-      toast.success('Name updated successfully');
+      setShowNameSuccessModal(true);
     } catch (error) {
       console.error('Error updating name:', error);
       toast.error('Failed to update name');
@@ -603,6 +604,29 @@ export default function Profile() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Name Change Success Modal */}
+      {showNameSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 w-full max-w-md text-center">
+            <div className="mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-black mb-2">Success!</h3>
+              <p className="text-gray-600">Name changed successfully</p>
+            </div>
+            <Button
+              onClick={() => setShowNameSuccessModal(false)}
+              className="w-full bg-black text-white hover:bg-gray-800"
+            >
+              Continue
+            </Button>
           </div>
         </div>
       )}
