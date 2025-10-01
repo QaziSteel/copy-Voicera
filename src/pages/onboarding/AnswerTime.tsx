@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Clock } from "lucide-react";
 
 const scheduleOptions = [
   { id: "24-7", name: "24/7 (default)" },
@@ -11,9 +19,15 @@ const scheduleOptions = [
 export default function AnswerTime() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState("");
-  const [customSchedule, setCustomSchedule] = useState("");
-  const [error, setError] = useState("");
+  const [customFromTime, setCustomFromTime] = useState("");
+  const [customToTime, setCustomToTime] = useState("");
   const navigate = useNavigate();
+
+  // Generate time options (00:00 to 23:00)
+  const timeOptions = Array.from({ length: 24 }, (_, i) => {
+    const hour = i.toString().padStart(2, "0");
+    return `${hour}:00`;
+  });
 
   // Load saved data on component mount
   useEffect(() => {
@@ -23,17 +37,17 @@ export default function AnswerTime() {
       if (scheduleOption) {
         setSelectedSchedule(scheduleOption.id);
       } else {
-        // Handle custom schedule
+        // Handle custom schedule - parse the time range
         setSelectedSchedule("custom");
-        setCustomSchedule(savedSchedule);
+        // Expected format: "HH:MM - HH:MM" or "From HH:MM - To HH:MM"
+        const timeMatch = savedSchedule.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+        if (timeMatch) {
+          setCustomFromTime(timeMatch[1]);
+          setCustomToTime(timeMatch[2]);
+        }
       }
     }
   }, []);
-
-  const validateTimeFormat = (input: string) => {
-    const timeRangeRegex = /^\d{1,2}:\d{2}(am|pm)\s*-\s*\d{1,2}:\d{2}(am|pm)$/i;
-    return timeRangeRegex.test(input.trim());
-  };
 
   const handlePrevious = () => {
     navigate("/onboarding/assistant-name");
@@ -42,7 +56,7 @@ export default function AnswerTime() {
   const handleNext = () => {
     const finalSchedule =
       selectedSchedule === "custom"
-        ? customSchedule
+        ? `${customFromTime} - ${customToTime}`
         : scheduleOptions.find((s) => s.id === selectedSchedule)?.name;
     if (finalSchedule) {
       sessionStorage.setItem("aiCallSchedule", finalSchedule);
@@ -54,7 +68,8 @@ export default function AnswerTime() {
     setSelectedSchedule(scheduleId);
     setIsOpen(false);
     if (scheduleId !== "custom") {
-      setCustomSchedule("");
+      setCustomFromTime("");
+      setCustomToTime("");
     }
   };
 
@@ -62,10 +77,12 @@ export default function AnswerTime() {
     (s) => s.id === selectedSchedule,
   )?.name;
   const displayValue =
-    selectedSchedule === "custom" ? customSchedule : selectedScheduleName;
+    selectedSchedule === "custom" && customFromTime && customToTime
+      ? `${customFromTime} - ${customToTime}`
+      : selectedScheduleName;
   const isNextDisabled =
     !selectedSchedule ||
-    (selectedSchedule === "custom" && (!customSchedule.trim() || !!error));
+    (selectedSchedule === "custom" && (!customFromTime || !customToTime));
 
   return (
     <OnboardingLayout
@@ -122,38 +139,59 @@ export default function AnswerTime() {
             {scheduleOptions.map((schedule) => (
               <div key={schedule.id}>
                 {schedule.id === "custom" ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3 p-3 px-4">
-                      <span className="text-lg text-[#6B7280]">
-                        {schedule.name}
-                      </span>
-                      <input
-                        type="text"
-                        value={customSchedule}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setCustomSchedule(value);
-                          if (value) {
+                  <div className="flex flex-col gap-3 p-4">
+                    <span className="text-lg text-[#6B7280]">
+                      {schedule.name}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 relative">
+                        <Select
+                          value={customFromTime}
+                          onValueChange={(value) => {
+                            setCustomFromTime(value);
                             setSelectedSchedule("custom");
-                            if (!validateTimeFormat(value)) {
-                              setError("Please enter time range in format: 8:00am - 5:00pm");
-                            } else {
-                              setError("");
-                            }
-                          } else {
-                            setSelectedSchedule("");
-                            setError("");
-                          }
-                        }}
-                        placeholder="Enter custom range"
-                        className="flex-1 p-3 border-2 border-[#E5E7EB] rounded-xl text-base placeholder-[#6B7280] focus:outline-none focus:border-black transition-colors"
-                      />
+                          }}
+                        >
+                          <SelectTrigger className="w-full border-2 border-[#E5E7EB] rounded-xl h-12 text-base hover:border-black transition-colors">
+                            <div className="flex items-center gap-2 w-full">
+                              <Clock className="h-4 w-4 text-[#6B7280]" />
+                              <SelectValue placeholder="From" />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {timeOptions.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <span className="text-[#6B7280]">-</span>
+                      <div className="flex-1 relative">
+                        <Select
+                          value={customToTime}
+                          onValueChange={(value) => {
+                            setCustomToTime(value);
+                            setSelectedSchedule("custom");
+                          }}
+                        >
+                          <SelectTrigger className="w-full border-2 border-[#E5E7EB] rounded-xl h-12 text-base hover:border-black transition-colors">
+                            <div className="flex items-center gap-2 w-full">
+                              <Clock className="h-4 w-4 text-[#6B7280]" />
+                              <SelectValue placeholder="To" />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {timeOptions.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    {error && (
-                      <p className="text-red-500 text-sm px-4 pb-2">
-                        {error}
-                      </p>
-                    )}
                   </div>
                 ) : (
                   <button
