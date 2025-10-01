@@ -41,7 +41,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { projectId, userId } = await req.json();
+    const { projectId, email } = await req.json();
 
     if (!projectId) {
       return new Response(JSON.stringify({ error: 'projectId is required' }), {
@@ -50,19 +50,25 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Retrieving Google tokens for project: ${projectId}, user: ${userId || 'any'}`);
+    if (!email) {
+      return new Response(JSON.stringify({ error: 'email is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`Retrieving Google tokens for project: ${projectId}, email: ${email}`);
 
     // Build query for Google integration - only fetch metadata
+    // Query by email and get the first (oldest) record
     let query = supabase
       .from('google_integrations')
       .select('id, user_id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
       .eq('project_id', projectId)
-      .eq('is_active', true);
-
-    // Add user filter if provided
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
+      .eq('user_email', email)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1);
 
     const { data: integrations, error: integrationError } = await query;
 
@@ -75,8 +81,8 @@ serve(async (req) => {
     }
 
     if (!integrations || integrations.length === 0) {
-      console.log(`No Google integration found for project: ${projectId}`);
-      return new Response(JSON.stringify({ error: 'Google integration not found' }), {
+      console.log(`No Google integration found for project: ${projectId}, email: ${email}`);
+      return new Response(JSON.stringify({ error: 'Google integration not found for this email' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
