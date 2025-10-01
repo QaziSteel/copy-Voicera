@@ -291,7 +291,7 @@ export const BusinessServices: React.FC = () => {
                         ) : (
                           <div className="w-64" onClick={(e) => e.stopPropagation()}>
                             <Input
-                              placeholder="Enter custom service name"
+                              placeholder="Enter your service..."
                               value={customServiceInputs[businessType] || ''}
                               onChange={(e) => handleCustomInputChange(businessType, e.target.value)}
                               className="text-lg"
