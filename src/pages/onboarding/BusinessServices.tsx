@@ -95,7 +95,7 @@ export const BusinessServices: React.FC = () => {
       }));
       sessionStorage.setItem("services", JSON.stringify(servicesForOnboarding));
       
-      navigate("/onboarding/booking-intro");
+      navigate("/onboarding/business-location");
     }
   };
 
