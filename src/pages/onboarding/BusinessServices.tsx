@@ -289,7 +289,7 @@ export const BusinessServices: React.FC = () => {
                             Other Custom
                           </span>
                         ) : (
-                          <div className="flex-1" onClick={(e) => e.stopPropagation()}>
+                          <div className="w-64" onClick={(e) => e.stopPropagation()}>
                             <Input
                               placeholder="Enter custom service name"
                               value={customServiceInputs[businessType] || ''}
