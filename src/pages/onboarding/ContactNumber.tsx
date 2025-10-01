@@ -206,11 +206,6 @@ export default function ContactNumber() {
         setIsNumberPurchased(true);
         setShowConfirmationPopup(false);
         setShowPurchaseSuccessPopup(true);
-        
-        toast({
-          title: "Success!",
-          description: `Contact number ${selectedNumber} has been purchased successfully.`,
-        });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to purchase number';
