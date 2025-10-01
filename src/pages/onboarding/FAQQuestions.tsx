@@ -138,7 +138,7 @@ export default function FAQQuestions() {
 
               {/* Answer Input */}
               {selectedFAQs.includes(faq) && (
-                <div className="ml-8">
+                <div className="">
                   <input
                     type="text"
                     placeholder="Enter your answer..."
