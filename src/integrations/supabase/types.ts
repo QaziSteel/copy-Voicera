@@ -135,6 +135,8 @@ export type Database = {
           agent_id: string | null
           created_at: string
           created_without_agent: string | null
+          encrypted_access_token: string | null
+          encrypted_refresh_token: string | null
           id: string
           is_active: boolean
           project_id: string
@@ -150,6 +152,8 @@ export type Database = {
           agent_id?: string | null
           created_at?: string
           created_without_agent?: string | null
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
           id?: string
           is_active?: boolean
           project_id: string
@@ -165,6 +169,8 @@ export type Database = {
           agent_id?: string | null
           created_at?: string
           created_without_agent?: string | null
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
           id?: string
           is_active?: boolean
           project_id?: string
@@ -555,6 +561,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      decrypt_oauth_token: {
+        Args: { _encrypted_token: string; _user_id: string }
+        Returns: string
+      }
+      encrypt_oauth_token: {
+        Args: { _token: string; _user_id: string }
+        Returns: string
+      }
       get_booking_customer_info: {
         Args: {
           booking_row: Database["public"]["Tables"]["bookings"]["Row"]
@@ -644,6 +658,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      mask_email: {
+        Args: { _email: string }
+        Returns: string
       }
       project_owns_phone_number: {
         Args: { _phone_number: string; _user_id: string }

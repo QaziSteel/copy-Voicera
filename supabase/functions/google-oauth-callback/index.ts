@@ -215,19 +215,38 @@ serve(async (req) => {
       finalAgentId = agentId;
     }
 
-    // Check for existing integration with same user_id and user_email to reuse refresh token
+    // Check for existing integration to potentially reuse refresh token
+    // We need the integration ID to get decrypted tokens via RPC
     const { data: existingIntegration } = await supabase
       .from('google_integrations')
-      .select('refresh_token')
+      .select('id, user_id')
       .eq('user_id', finalUserId)
       .eq('user_email', userInfo.email)
       .eq('is_active', true)
       .limit(1)
       .maybeSingle();
 
-    // Use existing refresh token if available, otherwise use new one
-    const refreshTokenToUse = existingIntegration?.refresh_token || tokenData.refresh_token;
-    const isTokenReused = !!existingIntegration?.refresh_token;
+    let refreshTokenToUse = tokenData.refresh_token;
+    let isTokenReused = false;
+
+    // If we have an existing integration, try to reuse its refresh token
+    if (existingIntegration) {
+      try {
+        const { data: existingTokens } = await supabase
+          .rpc('get_google_integration_tokens', {
+            _integration_id: existingIntegration.id,
+            _requesting_user_id: existingIntegration.user_id
+          })
+          .single();
+        
+        if (existingTokens?.refresh_token) {
+          refreshTokenToUse = existingTokens.refresh_token;
+          isTokenReused = true;
+        }
+      } catch (e) {
+        console.log('Could not reuse refresh token, using new one:', e);
+      }
+    }
 
     console.log('Token reuse status:', { 
       isTokenReused, 

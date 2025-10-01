@@ -52,10 +52,10 @@ serve(async (req) => {
 
     console.log(`Retrieving Google tokens for project: ${projectId}, user: ${userId || 'any'}`);
 
-    // Build query for Google integration
+    // Build query for Google integration - only fetch metadata
     let query = supabase
       .from('google_integrations')
-      .select('*')
+      .select('id, user_id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
       .eq('project_id', projectId)
       .eq('is_active', true);
 
@@ -85,13 +85,29 @@ serve(async (req) => {
     // Use the first active integration
     const integration = integrations[0];
 
-    // Check if token needs refresh
-    const tokenExpiry = new Date(integration.token_expires_at);
-    const now = new Date();
-    let accessToken = integration.access_token;
-    let refreshToken = integration.refresh_token;
+    // Get decrypted tokens using the secure function
+    const { data: tokenData, error: tokenError } = await supabase
+      .rpc('get_google_integration_tokens', {
+        _integration_id: integration.id,
+        _requesting_user_id: integration.user_id
+      })
+      .single();
 
-    let tokenExpiresAt = integration.token_expires_at;
+    if (tokenError || !tokenData) {
+      console.error('Failed to retrieve tokens:', tokenError);
+      return new Response(JSON.stringify({ error: 'Failed to retrieve integration tokens' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check if token needs refresh
+    const tokenExpiry = new Date(tokenData.token_expires_at);
+    const now = new Date();
+    let accessToken = tokenData.access_token;
+    let refreshToken = tokenData.refresh_token;
+
+    let tokenExpiresAt = tokenData.token_expires_at;
     let isTokenRefreshed = false;
 
     if (tokenExpiry <= now) {
@@ -124,14 +140,14 @@ serve(async (req) => {
       accessToken = refreshData.access_token;
       isTokenRefreshed = true;
 
-      // Update the token in the database
+      // Update the token in the database (trigger will auto-encrypt)
       const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000);
       tokenExpiresAt = newExpiry.toISOString();
       
       const { error: updateError } = await supabase
         .from('google_integrations')
         .update({
-          access_token: accessToken,
+          access_token: accessToken, // Will be encrypted by trigger
           token_expires_at: tokenExpiresAt,
           updated_at: new Date().toISOString(),
         })
