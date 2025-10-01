@@ -66,7 +66,7 @@ export const Auth: React.FC = () => {
   }
 
   if (showSignUp) {
-    return <SignUpForm onSuccess={() => setShowSignUp(false)} />;
+    return <SignUpForm onSuccess={() => setShowSignUp(false)} onLoginClick={() => setShowSignUp(false)} />;
   }
 
   return <LoginForm onSignUpClick={() => setShowSignUp(true)} />;

@@ -43,9 +43,11 @@ type Step3FormData = z.infer<typeof step3Schema>;
 
 interface SignUpFormProps {
   onSuccess?: () => void;
+  onLoginClick?: () => void;
 }
 export const SignUpForm: React.FC<SignUpFormProps> = ({
-  onSuccess
+  onSuccess,
+  onLoginClick
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -202,6 +204,16 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Sending..." : "Send Verification Email"}
         </Button>
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Already have an account?{' '}
+          <button 
+            type="button"
+            onClick={onLoginClick}
+            className="font-bold text-foreground hover:underline"
+          >
+            Login
+          </button>
+        </p>
       </form>
     </Form>
   );
@@ -229,6 +241,16 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           Back
         </Button>
       </div>
+      <p className="text-center text-sm text-muted-foreground mt-4">
+        Already have an account?{' '}
+        <button 
+          type="button"
+          onClick={onLoginClick}
+          className="font-bold text-foreground hover:underline"
+        >
+          Login
+        </button>
+      </p>
     </>;
   const renderStep3 = () => (
     <Form {...step3Form}>
@@ -292,6 +314,16 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Creating Account..." : "Create Account"}
         </Button>
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Already have an account?{' '}
+          <button 
+            type="button"
+            onClick={onLoginClick}
+            className="font-bold text-foreground hover:underline"
+          >
+            Login
+          </button>
+        </p>
       </form>
     </Form>
   );
