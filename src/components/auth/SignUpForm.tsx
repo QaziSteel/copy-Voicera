@@ -77,7 +77,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
 
   const {
     signUp,
-    sendMagicLink
+    sendMagicLink,
+    checkEmailExists
   } = useAuth();
   const {
     toast
@@ -114,6 +115,25 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   };
 
   const onStep1Submit = async (data: Step1FormData) => {
+    setLoading(true);
+    
+    // Check if email already exists
+    const emailExists = await checkEmailExists(data.email);
+    
+    if (emailExists) {
+      toast({
+        title: "Account Already Exists",
+        description: "An account with this email already exists. Please use the login page instead.",
+        variant: "destructive"
+      });
+      setLoading(false);
+      step1Form.setError('email', {
+        type: 'manual',
+        message: 'This email is already registered. Please login instead.'
+      });
+      return;
+    }
+    
     setEmailForSignup(data.email);
     setFullNameForSignup(data.fullName);
     const success = await sendVerificationEmail(data.email, data.fullName);

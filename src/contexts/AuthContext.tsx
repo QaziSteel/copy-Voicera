@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  checkEmailExists: (email: string) => Promise<boolean>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   sendMagicLink: (email: string, fullName?: string) => Promise<{ error: any }>;
   sendPasswordResetLink: (email: string) => Promise<{ error: any }>;
@@ -54,6 +55,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    try {
+      // Try to sign in with a dummy password to check if email exists
+      // Supabase will return different errors for existing vs non-existing emails
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'dummy-password-for-check-only'
+      });
+      
+      // If error message indicates invalid credentials, the email exists
+      // If error indicates user not found, the email doesn't exist
+      if (error) {
+        // "Invalid login credentials" means email exists but password is wrong
+        if (error.message.toLowerCase().includes('invalid') || 
+            error.message.toLowerCase().includes('credentials')) {
+          return true;
+        }
+        // Any other error (like "user not found" or "email not confirmed") means email doesn't exist or isn't active
+        return false;
+      }
+      
+      // If no error, email exists (shouldn't happen with dummy password, but just in case)
+      return true;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  };
 
   const sendMagicLink = async (email: string, fullName?: string) => {
     const redirectUrl = `${window.location.origin}/auth/complete-signup`;
@@ -165,6 +195,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     session,
     loading,
+    checkEmailExists,
     signUp,
     sendMagicLink,
     sendPasswordResetLink,
