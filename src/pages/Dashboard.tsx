@@ -450,7 +450,7 @@ const Dashboard: React.FC = () => {
                 </div>
               ) : callLogs.length === 0 ? (
                 <div className="flex items-center justify-center py-40">
-                  <div className="text-center opacity-15">
+                  <div className="text-center opacity-30">
                     <img
                       src="https://api.builder.io/api/v1/image/assets/TEMP/b806c01e97879ada90b7566a617f9dcacf61430b?width=752"
                       alt="No calls"
