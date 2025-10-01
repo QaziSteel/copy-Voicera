@@ -138,18 +138,17 @@ serve(async (req) => {
       accessToken = refreshData.access_token;
       isTokenRefreshed = true;
 
-      // Update the token in the database (trigger will auto-encrypt)
+      // Update the token in the database using the secure encryption function
       const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000);
       tokenExpiresAt = newExpiry.toISOString();
       
       const { error: updateError } = await supabase
-        .from('google_integrations')
-        .update({
-          access_token: accessToken, // Will be encrypted by trigger
-          token_expires_at: tokenExpiresAt,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', integration.id);
+        .rpc('update_encrypted_access_token', {
+          _integration_id: integration.id,
+          _access_token: accessToken,
+          _expires_at: tokenExpiresAt,
+          _requesting_user_id: integration.user_id
+        });
 
       if (updateError) {
         console.error('Failed to update refreshed token:', updateError);

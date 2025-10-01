@@ -254,13 +254,11 @@ serve(async (req) => {
       hasExisting: !!existingIntegration 
     });
 
-    // Prepare integration data
+    // Prepare integration metadata (without tokens)
     const integrationData = {
       user_id: finalUserId,
       project_id: finalProjectId,
       agent_id: finalAgentId,
-      access_token: tokenData.access_token,
-      refresh_token: refreshTokenToUse,
       token_expires_at: expiresAt.toISOString(),
       scopes: tokenData.scope?.split(' ') || [],
       user_email: userInfo.email,
@@ -273,13 +271,15 @@ serve(async (req) => {
     }
 
     // Store or update the Google integration
-    const { error: integrationError } = await supabase
+    const { data: upsertedIntegration, error: integrationError } = await supabase
       .from('google_integrations')
       .upsert(integrationData, {
         onConflict: finalAgentId ? 'agent_id' : undefined // Only use conflict resolution if we have agent_id
-      });
+      })
+      .select('id')
+      .single();
 
-    if (integrationError) {
+    if (integrationError || !upsertedIntegration) {
       console.error('Error storing Google integration:', integrationError);
       if (isOnboardingFlow) {
         const htmlResponse = `<!DOCTYPE html>
@@ -316,6 +316,56 @@ serve(async (req) => {
         });
       }
       const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=storage_failed`;
+      return Response.redirect(redirectUrl, 302);
+    }
+
+    // Now store the encrypted tokens using the secure function
+    const { error: tokenStoreError } = await supabase
+      .rpc('store_google_tokens', {
+        _integration_id: upsertedIntegration.id,
+        _access_token: tokenData.access_token,
+        _refresh_token: refreshTokenToUse,
+        _expires_at: expiresAt.toISOString(),
+        _requesting_user_id: finalUserId
+      });
+
+    if (tokenStoreError) {
+      console.error('Error storing encrypted tokens:', tokenStoreError);
+      if (isOnboardingFlow) {
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Failed to store integration tokens</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Failed to store integration tokens'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        });
+      }
+      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=token_storage_failed`;
       return Response.redirect(redirectUrl, 302);
     }
 

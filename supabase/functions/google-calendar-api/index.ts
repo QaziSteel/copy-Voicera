@@ -101,16 +101,15 @@ serve(async (req) => {
       const refreshData = await refreshResponse.json();
       accessToken = refreshData.access_token;
 
-      // Update the token in the database (trigger will auto-encrypt)
+      // Update the token in the database using the secure encryption function
       const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000);
       await supabase
-        .from('google_integrations')
-        .update({
-          access_token: accessToken, // Will be encrypted by trigger
-          token_expires_at: newExpiry.toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', integration.id);
+        .rpc('update_encrypted_access_token', {
+          _integration_id: integration.id,
+          _access_token: accessToken,
+          _expires_at: newExpiry.toISOString(),
+          _requesting_user_id: user.id
+        });
     }
 
     // Handle different calendar actions
