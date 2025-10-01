@@ -220,16 +220,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
                 </FormControl>
                 <FormMessage />
                 {emailExistsError && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    This email is already registered. Please{' '}
-                    <button
-                      type="button"
-                      onClick={onLoginClick}
-                      className="underline font-semibold text-foreground hover:text-primary"
-                    >
-                      login
-                    </button>
-                    {' '}instead.
+                  <p className="text-sm text-destructive mt-2">
+                    This email is already registered.
                   </p>
                 )}
               </FormItem>
