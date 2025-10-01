@@ -636,6 +636,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_integration_status: {
+        Args: { _agent_id?: string; _project_id?: string; _user_id?: string }
+        Returns: {
+          agent_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          project_id: string
+          scopes: string[]
+          token_expires_at: string
+          updated_at: string
+          user_email: string
+        }[]
+      }
       get_user_projects: {
         Args: { _user_id: string }
         Returns: {

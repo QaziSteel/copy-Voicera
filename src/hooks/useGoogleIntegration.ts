@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface GoogleIntegration {
   id: string;
   project_id: string;
+  agent_id: string | null;
   token_expires_at: string;
   scopes: string[];
   user_email: string;
@@ -24,34 +25,38 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       let data = null;
       let error = null;
 
+      // Use the secure RPC function to fetch integration status
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        setIntegration(null);
+        return;
+      }
+
       if (onboardingMode) {
-        // For onboarding mode, look for orphaned records (agent_id = NULL) for current user/project
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          const response = await supabase
-            .from('google_integrations')
-            .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
-            .eq('user_id', userData.user.id)
-            .is('agent_id', null)
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          
-          data = response.data;
-          error = response.error;
+        // For onboarding mode, look for integrations without agent_id
+        const { data: integrations, error: rpcError } = await supabase
+          .rpc('get_user_integration_status', {
+            _user_id: userData.user.id,
+            _project_id: null,
+            _agent_id: null
+          });
+        
+        // Filter for integrations without agent_id (orphaned records)
+        if (integrations && integrations.length > 0) {
+          data = integrations.find(i => i.agent_id === null) || null;
         }
+        error = rpcError;
       } else if (agentId) {
         // For regular mode, look for agent-specific records
-        const response = await supabase
-          .from('google_integrations')
-          .select('id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
-          .eq('agent_id', agentId)
-          .eq('is_active', true)
-          .maybeSingle();
+        const { data: integrations, error: rpcError } = await supabase
+          .rpc('get_user_integration_status', {
+            _user_id: userData.user.id,
+            _project_id: null,
+            _agent_id: agentId
+          });
         
-        data = response.data;
-        error = response.error;
+        data = integrations && integrations.length > 0 ? integrations[0] : null;
+        error = rpcError;
       }
 
       if (error) {
