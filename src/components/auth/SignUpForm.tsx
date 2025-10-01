@@ -18,6 +18,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 const step1Schema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Please enter a valid email address"),
@@ -47,6 +54,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const [countdown, setCountdown] = useState(30);
   const [emailForSignup, setEmailForSignup] = useState('');
   const [fullNameForSignup, setFullNameForSignup] = useState('');
+  const [showVerificationDialog, setShowVerificationDialog] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
 
   const step1Form = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
@@ -87,10 +96,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         return false;
       }
       
-      toast({
-        title: "Verification email sent",
-        description: `We've sent a verification link to ${email}`
-      });
+      setVerificationMessage(email);
+      setShowVerificationDialog(true);
       setLoading(false);
       return true;
     } catch (error) {
@@ -288,7 +295,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
       </form>
     </Form>
   );
-  return <div className="min-h-screen flex items-center justify-center bg-background px-4">
+  return <>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">Voicera AI</h1>
@@ -324,5 +332,33 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           </div>
         </Card>
       </div>
-    </div>;
+    </div>
+
+    <Dialog open={showVerificationDialog} onOpenChange={(open) => {
+      setShowVerificationDialog(open);
+      if (!open && verificationMessage) {
+        setStep(2);
+        setCountdown(30);
+      }
+    }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Verification Email Sent</DialogTitle>
+          <DialogDescription className="pt-4">
+            Please check your email at <span className="font-semibold text-foreground">{verificationMessage}</span> to verify your account.
+          </DialogDescription>
+        </DialogHeader>
+        <Button 
+          onClick={() => {
+            setShowVerificationDialog(false);
+            setStep(2);
+            setCountdown(30);
+          }}
+          className="w-full"
+        >
+          Continue
+        </Button>
+      </DialogContent>
+    </Dialog>
+  </>;
 };
