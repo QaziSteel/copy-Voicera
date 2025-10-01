@@ -58,6 +58,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   const [fullNameForSignup, setFullNameForSignup] = useState('');
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState('');
+  const [emailExistsError, setEmailExistsError] = useState(false);
 
   const step1Form = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
@@ -116,21 +117,14 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
 
   const onStep1Submit = async (data: Step1FormData) => {
     setLoading(true);
+    setEmailExistsError(false);
     
     // Check if email already exists
     const emailExists = await checkEmailExists(data.email);
     
     if (emailExists) {
-      toast({
-        title: "Account Already Exists",
-        description: "An account with this email already exists. Please use the login page instead.",
-        variant: "destructive"
-      });
+      setEmailExistsError(true);
       setLoading(false);
-      step1Form.setError('email', {
-        type: 'manual',
-        message: 'This email is already registered. Please login instead.'
-      });
       return;
     }
     
@@ -214,9 +208,30 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
               <FormItem>
                 <FormLabel>Business email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Enter your business email" {...field} />
+                  <Input 
+                    type="email" 
+                    placeholder="Enter your business email" 
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setEmailExistsError(false);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
+                {emailExistsError && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This email is already registered. Please{' '}
+                    <button
+                      type="button"
+                      onClick={onLoginClick}
+                      className="underline font-semibold text-foreground hover:text-primary"
+                    >
+                      login
+                    </button>
+                    {' '}instead.
+                  </p>
+                )}
               </FormItem>
             )}
           />
