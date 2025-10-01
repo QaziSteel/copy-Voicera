@@ -173,12 +173,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
                     </div>
                   )}
                 />
-                <button
-                  type="button"
+                <Link
+                  to="/auth/forgot-password"
                   className="text-sm text-auth-link hover:underline"
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
 
               {/* Login Button */}

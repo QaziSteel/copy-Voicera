@@ -19,6 +19,8 @@ import Profile from "./pages/Profile";
 import { Invite } from "./pages/Invite";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import MagicLinkHandler from "@/components/auth/MagicLinkHandler";
+import ForgotPassword from "@/components/auth/ForgotPassword";
+import PasswordResetHandler from "@/components/auth/PasswordResetHandler";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
@@ -62,6 +64,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/signup" element={<SignUpForm />} />
             <Route path="/auth/complete-signup" element={<MagicLinkHandler />} />
+            <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/reset-password" element={<PasswordResetHandler />} />
             <Route path="/onboarding/business-intro" element={
               <ProtectedRoute>
                 <BusinessIntro />

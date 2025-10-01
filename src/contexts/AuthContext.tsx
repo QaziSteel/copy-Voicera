@@ -8,10 +8,12 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   sendMagicLink: (email: string, fullName?: string) => Promise<{ error: any }>;
+  sendPasswordResetLink: (email: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   verifyCurrentPassword: (currentPassword: string) => Promise<{ error: any }>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<{ error: any }>;
+  resetPassword: (newPassword: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,6 +66,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           full_name: fullName,
         }
       }
+    });
+    return { error };
+  };
+
+  const sendPasswordResetLink = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/auth/reset-password`;
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
     });
     return { error };
   };
@@ -142,16 +153,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
+  const resetPassword = async (newPassword: string) => {
+    // This is used during password reset flow (no current password needed)
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    return { error };
+  };
+
   const value = {
     user,
     session,
     loading,
     signUp,
     sendMagicLink,
+    sendPasswordResetLink,
     signIn,
     signOut,
     verifyCurrentPassword,
     updatePassword,
+    resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
