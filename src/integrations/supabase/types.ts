@@ -445,8 +445,8 @@ export type Database = {
           duration_seconds: number | null
           id: string
           project_id: string
-          recording_url: string | null
-          transcript_url: string | null
+          recording_file_path: string | null
+          transcript_file_path: string | null
           updated_at: string
           user_id: string
           vapi_call_id: string | null
@@ -460,8 +460,8 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           project_id: string
-          recording_url?: string | null
-          transcript_url?: string | null
+          recording_file_path?: string | null
+          transcript_file_path?: string | null
           updated_at?: string
           user_id: string
           vapi_call_id?: string | null
@@ -475,8 +475,8 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           project_id?: string
-          recording_url?: string | null
-          transcript_url?: string | null
+          recording_file_path?: string | null
+          transcript_file_path?: string | null
           updated_at?: string
           user_id?: string
           vapi_call_id?: string | null
@@ -605,6 +605,21 @@ export type Database = {
           access_token: string
           refresh_token: string
           token_expires_at: string
+        }[]
+      }
+      get_integration_metadata: {
+        Args: { _integration_id: string; _requesting_user_id: string }
+        Returns: {
+          agent_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          project_id: string
+          scopes: string[]
+          token_expires_at: string
+          updated_at: string
+          user_email: string
+          user_id: string
         }[]
       }
       get_user_projects: {
