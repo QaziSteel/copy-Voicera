@@ -41,14 +41,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { projectId, email } = await req.json();
-
-    if (!projectId) {
-      return new Response(JSON.stringify({ error: 'projectId is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const { email } = await req.json();
 
     if (!email) {
       return new Response(JSON.stringify({ error: 'email is required' }), {
@@ -57,14 +50,13 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Retrieving Google tokens for project: ${projectId}, email: ${email}`);
+    console.log(`Retrieving Google tokens for email: ${email}`);
 
     // Build query for Google integration - only fetch metadata
     // Query by email and get the first (oldest) record
     let query = supabase
       .from('google_integrations')
       .select('id, user_id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
-      .eq('project_id', projectId)
       .eq('user_email', email)
       .eq('is_active', true)
       .order('created_at', { ascending: true })
@@ -81,7 +73,7 @@ serve(async (req) => {
     }
 
     if (!integrations || integrations.length === 0) {
-      console.log(`No Google integration found for project: ${projectId}, email: ${email}`);
+      console.log(`No Google integration found for email: ${email}`);
       return new Response(JSON.stringify({ error: 'Google integration not found for this email' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -181,7 +173,7 @@ serve(async (req) => {
       token_refreshed: isTokenRefreshed
     };
 
-    console.log(`Successfully retrieved tokens for project: ${projectId}, user: ${integration.user_id}`);
+    console.log(`Successfully retrieved tokens for email: ${email}, user: ${integration.user_id}`);
 
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
