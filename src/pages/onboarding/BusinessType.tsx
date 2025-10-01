@@ -15,8 +15,7 @@ const businessTypes = [
 
 export const BusinessType: React.FC = () => {
   const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<string[]>([]);
-  const [customType, setCustomType] = useState("");
-  const [isCustomSelected, setIsCustomSelected] = useState(false);
+  const [customTypes, setCustomTypes] = useState<string[]>(['']);
   const navigate = useNavigate();
 
   // Load saved data on component mount
@@ -28,7 +27,7 @@ export const BusinessType: React.FC = () => {
         
         // Separate preset business types from custom ones
         const presetTypes: string[] = [];
-        let customEntry: string | null = null;
+        const customEntries: string[] = [];
         
         parsedTypes.forEach((item: any) => {
           // Handle both old format (object with type property) and new format (string)
@@ -37,17 +36,16 @@ export const BusinessType: React.FC = () => {
           if (businessTypes.includes(typeName)) {
             presetTypes.push(typeName);
           } else {
-            customEntry = typeName;
+            customEntries.push(typeName);
           }
         });
         
         // Set preset selections
         setSelectedBusinessTypes(presetTypes);
         
-        // Set custom entry if exists
-        if (customEntry) {
-          setIsCustomSelected(true);
-          setCustomType(customEntry);
+        // Set custom entries if exist, always ensure at least one empty slot
+        if (customEntries.length > 0) {
+          setCustomTypes([...customEntries, '']);
         }
       } catch (error) {
         console.error("Error parsing saved business types:", error);
@@ -61,9 +59,12 @@ export const BusinessType: React.FC = () => {
 
   const handleNext = () => {
     const allBusinessTypes = [...selectedBusinessTypes];
-    if (isCustomSelected && customType.trim()) {
-      allBusinessTypes.push(customType.trim());
-    }
+    // Add all filled custom types
+    customTypes.forEach(ct => {
+      if (ct.trim()) {
+        allBusinessTypes.push(ct.trim());
+      }
+    });
     
     if (allBusinessTypes.length > 0) {
       sessionStorage.setItem("businessTypes", JSON.stringify(allBusinessTypes));
@@ -81,14 +82,29 @@ export const BusinessType: React.FC = () => {
     });
   };
 
-  const handleCustomToggle = () => {
-    setIsCustomSelected(!isCustomSelected);
-    if (!isCustomSelected) {
-      setCustomType("");
+  const handleCustomTypeChange = (index: number, value: string) => {
+    const newCustomTypes = [...customTypes];
+    newCustomTypes[index] = value;
+    
+    // If this is the last item and it now has text, add a new empty slot
+    if (index === customTypes.length - 1 && value.trim()) {
+      newCustomTypes.push('');
     }
+    
+    setCustomTypes(newCustomTypes);
   };
 
-  const isNextDisabled = selectedBusinessTypes.length === 0 && !(isCustomSelected && typeof customType === 'string' && customType.trim());
+  const handleCustomTypeRemove = (index: number) => {
+    const newCustomTypes = customTypes.filter((_, i) => i !== index);
+    // Always keep at least one empty slot
+    if (newCustomTypes.length === 0 || newCustomTypes.every(ct => ct.trim())) {
+      newCustomTypes.push('');
+    }
+    setCustomTypes(newCustomTypes);
+  };
+
+  const hasFilledCustomTypes = customTypes.some(ct => ct.trim());
+  const isNextDisabled = selectedBusinessTypes.length === 0 && !hasFilledCustomTypes;
 
   return (
     <OnboardingLayout
@@ -163,63 +179,90 @@ export const BusinessType: React.FC = () => {
             );
           })}
 
-          {/* Custom Type Card */}
-          <div
-            className={`flex flex-col p-4 rounded-xl transition-colors cursor-pointer ${
-              isCustomSelected
-                ? "bg-[#F3F4F6] border-2 border-black"
-                : "bg-[#F3F4F6] border-2 border-transparent hover:border-gray-300"
-            }`}
-            onClick={() => handleCustomToggle()}
-          >
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-3">
-                {/* Checkbox */}
-                <div
-                  className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                    isCustomSelected ? "border-black bg-black" : "border-[#6B7280]"
-                  }`}
-                >
-                  {isCustomSelected && (
-                    <svg
-                      width="8"
-                      height="6"
-                      viewBox="0 0 8 6"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+          {/* Custom Type Cards */}
+          {customTypes.map((customType, index) => {
+            const isSelected = customType.trim().length > 0;
+            
+            return (
+              <div
+                key={index}
+                className={`flex flex-col p-4 rounded-xl transition-colors cursor-pointer ${
+                  isSelected
+                    ? "bg-[#F3F4F6] border-2 border-black"
+                    : "bg-[#F3F4F6] border-2 border-transparent hover:border-gray-300"
+                }`}
+                onClick={(e) => {
+                  if (!isSelected) {
+                    // Focus the input when card is clicked and not selected
+                    const input = (e.currentTarget as HTMLElement).querySelector('input');
+                    input?.focus();
+                  }
+                }}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3 flex-1">
+                    {/* Checkbox */}
+                    <div
+                      className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center cursor-pointer ${
+                        isSelected ? "border-black bg-black" : "border-[#6B7280]"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isSelected) {
+                          handleCustomTypeRemove(index);
+                        }
+                      }}
                     >
-                      <path
-                        d="M1 3L3 5L7 1"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                      {isSelected && (
+                        <svg
+                          width="8"
+                          height="6"
+                          viewBox="0 0 8 6"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M1 3L3 5L7 1"
+                            stroke="white"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    
+                    {/* Custom Input or Label */}
+                    {isSelected ? (
+                      <input
+                        type="text"
+                        value={customType}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleCustomTypeChange(index, e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Enter your business type..."
+                        className="flex-1 p-2 border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:border-foreground bg-background"
                       />
-                    </svg>
-                  )}
+                    ) : (
+                      <input
+                        type="text"
+                        value={customType}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleCustomTypeChange(index, e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Enter your business type..."
+                        className="flex-1 p-2 border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:border-foreground bg-background"
+                      />
+                    )}
+                  </div>
                 </div>
-                
-                {/* Custom Input or Label */}
-                {isCustomSelected ? (
-                  <input
-                    type="text"
-                    value={customType}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      setCustomType(e.target.value);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    placeholder="Enter your business type..."
-                    className="flex-1 p-2 border border-border rounded-lg text-sm placeholder-muted-foreground focus:outline-none focus:border-foreground bg-background"
-                  />
-                ) : (
-                  <span className="text-lg leading-6 text-[#6B7280]">
-                    Other (Custom type)
-                  </span>
-                )}
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
     </OnboardingLayout>
