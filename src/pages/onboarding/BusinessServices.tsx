@@ -21,7 +21,7 @@ interface SelectedBusinessType {
   minutes: string;
 }
 
-export const BusinessType: React.FC = () => {
+export const BusinessServices: React.FC = () => {
   const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<SelectedBusinessType[]>([]);
   const [customType, setCustomType] = useState("");
   const [isCustomSelected, setIsCustomSelected] = useState(false);
@@ -30,7 +30,7 @@ export const BusinessType: React.FC = () => {
 
   // Load saved data on component mount
   useEffect(() => {
-    const savedBusinessTypes = sessionStorage.getItem("businessTypes");
+    const savedBusinessTypes = sessionStorage.getItem("businessServices");
     if (savedBusinessTypes) {
       try {
         const parsedTypes = JSON.parse(savedBusinessTypes);
@@ -66,7 +66,7 @@ export const BusinessType: React.FC = () => {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/business-name");
+    navigate("/onboarding/business-type");
   };
 
   const handleNext = () => {
@@ -80,8 +80,8 @@ export const BusinessType: React.FC = () => {
     }
     
     if (allBusinessTypes.length > 0) {
-      sessionStorage.setItem("businessTypes", JSON.stringify(allBusinessTypes));
-      navigate("/onboarding/business-services");
+      sessionStorage.setItem("businessServices", JSON.stringify(allBusinessTypes));
+      navigate("/onboarding/business-location");
     }
   };
 

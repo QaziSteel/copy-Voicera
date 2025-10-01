@@ -22,6 +22,7 @@ import MagicLinkHandler from "@/components/auth/MagicLinkHandler";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
+import { BusinessServices } from "./pages/onboarding/BusinessServices";
 import BusinessLocation from "./pages/onboarding/BusinessLocation";
 import ContactNumber from "./pages/onboarding/ContactNumber";
 import CalendarIntegration from "./pages/onboarding/CalendarIntegration";
@@ -74,6 +75,11 @@ const App = () => (
             <Route path="/onboarding/business-type" element={
               <ProtectedRoute>
                 <BusinessType />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding/business-services" element={
+              <ProtectedRoute>
+                <BusinessServices />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-location" element={
