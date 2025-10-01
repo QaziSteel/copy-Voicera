@@ -42,6 +42,9 @@ export default function Profile() {
   const [showCurrentPasswordDisplay, setShowCurrentPasswordDisplay] = useState(false);
   const [currentPasswordVerified, setCurrentPasswordVerified] = useState(false);
   const [verifyingPassword, setVerifyingPassword] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [originalName, setOriginalName] = useState('');
 
   useEffect(() => {
     if (!user) {
@@ -169,6 +172,34 @@ export default function Profile() {
     navigate('/auth');
   };
 
+  const handleSaveName = async () => {
+    if (!editedName.trim()) {
+      toast.error('Name cannot be empty');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: editedName.trim() })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      setProfileData({ ...profileData, full_name: editedName.trim() });
+      setIsEditingName(false);
+      toast.success('Name updated successfully');
+    } catch (error) {
+      console.error('Error updating name:', error);
+      toast.error('Failed to update name');
+    }
+  };
+
+  const handleDiscardName = () => {
+    setEditedName(originalName);
+    setIsEditingName(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -270,10 +301,49 @@ export default function Profile() {
             <div className="bg-white rounded-3xl border border-gray-200 p-4 space-y-4">
               <div className="space-y-2">
                 <label className="text-base font-semibold text-black">Full Name</label>
-                <div className="bg-gray-100 rounded-xl px-4 py-3">
-                  <span className="text-gray-500">
-                    {profileData?.full_name || user?.user_metadata?.full_name || "Not provided"}
-                  </span>
+                <div className="bg-gray-100 rounded-xl px-4 py-3 flex justify-between items-center">
+                  {isEditingName ? (
+                    <>
+                      <Input
+                        type="text"
+                        value={editedName}
+                        onChange={(e) => setEditedName(e.target.value)}
+                        className="flex-1 mr-2 bg-white"
+                        placeholder="Enter your full name"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleDiscardName}
+                          className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 text-sm font-medium transition-colors"
+                        >
+                          Discard
+                        </button>
+                        <button
+                          onClick={handleSaveName}
+                          className="flex items-center gap-2 px-3 py-2 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-gray-500">
+                        {profileData?.full_name || user?.user_metadata?.full_name || "Not provided"}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const currentName = profileData?.full_name || user?.user_metadata?.full_name || '';
+                          setOriginalName(currentName);
+                          setEditedName(currentName);
+                          setIsEditingName(true);
+                        }}
+                        className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                      >
+                        Change name
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
