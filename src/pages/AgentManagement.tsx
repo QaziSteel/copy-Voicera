@@ -112,8 +112,7 @@ const AgentManagement = () => {
   // Basic Info
   const [businessName, setBusinessName] = useState('');
   const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<string[]>([]);
-  const [customType, setCustomType] = useState("");
-  const [isCustomSelected, setIsCustomSelected] = useState(false);
+  const [customTypes, setCustomTypes] = useState<string[]>([]);
   const [businessLocation, setBusinessLocation] = useState('');
   const [detailedServices, setDetailedServices] = useState<any[]>([]);
   
@@ -369,8 +368,7 @@ const AgentManagement = () => {
         // Load business types as simple string array
         const businessTypesData = Array.isArray(data.business_types) ? data.business_types : [];
         const loadedBusinessTypes: string[] = [];
-        let loadedCustomType = "";
-        let loadedCustomSelected = false;
+        const loadedCustomTypes: string[] = [];
 
         businessTypesData.forEach((bt: any) => {
           // Handle both string and object formats for backward compatibility
@@ -378,8 +376,7 @@ const AgentManagement = () => {
           if (typeName) {
             const isCustom = !businessTypes.includes(typeName);
             if (isCustom) {
-              loadedCustomType = typeName;
-              loadedCustomSelected = true;
+              loadedCustomTypes.push(typeName);
             } else {
               loadedBusinessTypes.push(typeName);
             }
@@ -387,8 +384,7 @@ const AgentManagement = () => {
         });
 
         setSelectedBusinessTypes(loadedBusinessTypes);
-        setCustomType(loadedCustomType);
-        setIsCustomSelected(loadedCustomSelected);
+        setCustomTypes(loadedCustomTypes);
         setBusinessLocation(data.primary_location || '');
         
         // Load detailed services with durations
@@ -474,10 +470,7 @@ const AgentManagement = () => {
       if (!user) throw new Error('No authenticated user');
 
       // Prepare business types array as simple strings
-      const allBusinessTypes = [...selectedBusinessTypes];
-      if (isCustomSelected && customType.trim()) {
-        allBusinessTypes.push(customType.trim());
-      }
+      const allBusinessTypes = [...selectedBusinessTypes, ...customTypes.filter(ct => ct.trim())];
 
       const agentData = {
         user_id: user.id,
@@ -649,7 +642,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customType, isCustomSelected, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -702,12 +695,37 @@ const AgentManagement = () => {
     });
   }, []);
 
-  const handleCustomToggle = useCallback(() => {
-    setIsCustomSelected(!isCustomSelected);
-    if (!isCustomSelected) {
-      setCustomType("");
-    }
-  }, [isCustomSelected]);
+  const addCustomType = useCallback(() => {
+    setCustomTypes(prev => [...prev, ""]);
+  }, []);
+
+  const updateCustomType = useCallback((index: number, value: string) => {
+    setCustomTypes(prev => prev.map((ct, i) => i === index ? value : ct));
+  }, []);
+
+  const removeCustomType = useCallback((index: number) => {
+    setCustomTypes(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  // Service handlers
+  const updateService = useCallback((index: number, field: 'type' | 'hours' | 'minutes', value: string) => {
+    setDetailedServices(prev => prev.map((service, i) => 
+      i === index ? { ...service, [field]: value } : service
+    ));
+  }, []);
+
+  const removeService = useCallback((index: number) => {
+    setDetailedServices(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const addServiceForBusinessType = useCallback((businessType: string) => {
+    setDetailedServices(prev => [...prev, {
+      businessType,
+      type: '',
+      hours: '01 hr',
+      minutes: '00 min'
+    }]);
+  }, []);
 
   // Discard functions for each section
   const discardBasicInfo = useCallback(async () => {
@@ -727,8 +745,7 @@ const AgentManagement = () => {
         // Reset business types to saved values
         const businessTypesData = Array.isArray(data.business_types) ? data.business_types : [];
         const resetBusinessTypes: string[] = [];
-        let resetCustomType = "";
-        let resetCustomSelected = false;
+        const resetCustomTypes: string[] = [];
 
         businessTypesData.forEach((bt: any) => {
           // Handle both string and object formats for backward compatibility
@@ -736,8 +753,7 @@ const AgentManagement = () => {
           if (typeName) {
             const isCustom = !businessTypes.includes(typeName);
             if (isCustom) {
-              resetCustomType = typeName;
-              resetCustomSelected = true;
+              resetCustomTypes.push(typeName);
             } else {
               resetBusinessTypes.push(typeName);
             }
@@ -745,8 +761,7 @@ const AgentManagement = () => {
         });
 
         setSelectedBusinessTypes(resetBusinessTypes);
-        setCustomType(resetCustomType);
-        setIsCustomSelected(resetCustomSelected);
+        setCustomTypes(resetCustomTypes);
         setBusinessLocation(data.primary_location || '');
         
         toast({
@@ -1058,71 +1073,132 @@ const AgentManagement = () => {
                 );
               })}
 
-              {/* Custom Type Card */}
-              <div
-                className={`flex items-center p-3 rounded-lg transition-colors cursor-pointer ${
-                  isCustomSelected
-                    ? "bg-gray-100 border-2 border-black"
-                    : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
-                }`}
-                onClick={() => handleCustomToggle()}
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <div
-                    className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                      isCustomSelected ? "border-black bg-black" : "border-gray-400"
-                    }`}
-                  >
-                    {isCustomSelected && (
+              {/* Custom Type Cards */}
+              {customTypes.map((customType, index) => (
+                <div
+                  key={`custom-${index}`}
+                  className="flex items-center gap-2 p-3 rounded-lg bg-gray-100 border-2 border-black"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-4 h-4 border-[1.5px] rounded flex items-center justify-center border-black bg-black">
                       <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
                         <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                    )}
-                  </div>
-                  
-                  {isCustomSelected ? (
+                    </div>
                     <input
                       type="text"
                       value={customType}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        setCustomType(e.target.value);
-                      }}
-                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateCustomType(index, e.target.value)}
                       placeholder="Enter your business type..."
                       className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-white"
                     />
-                  ) : (
-                    <span className="text-sm md:text-base text-gray-600">
-                      Other (Custom type)
-                    </span>
-                  )}
+                  </div>
+                  <button
+                    onClick={() => removeCustomType(index)}
+                    className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    title="Remove custom type"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
                 </div>
-              </div>
+              ))}
+
+              {/* Add Custom Type Button */}
+              <button
+                onClick={addCustomType}
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-gray-50 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors text-gray-600 hover:text-gray-800"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="text-sm font-medium">Add Custom Business Type</span>
+              </button>
             </div>
           </div>
 
           {/* Fourth Row - Services & Durations */}
-          {detailedServices.length > 0 && (
-            <div>
-              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Services & Durations</label>
-              <div className="space-y-2">
-                {detailedServices.map((service, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200"
-                  >
-                    <span className="text-sm md:text-base text-gray-700 font-medium">
-                      {service.type || 'Service'}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {service.hours} {service.minutes}
-                    </span>
+          <div>
+            <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Services & Durations</label>
+            <div className="space-y-4">
+              {[...selectedBusinessTypes, ...customTypes.filter(ct => ct.trim())].map((businessType) => {
+                const servicesForType = detailedServices.filter(s => s.businessType === businessType);
+                
+                return (
+                  <div key={businessType} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-gray-700">{businessType}</h4>
+                      <button
+                        onClick={() => addServiceForBusinessType(businessType)}
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        Add Service
+                      </button>
+                    </div>
+                    
+                    {servicesForType.length > 0 ? (
+                      <div className="space-y-2">
+                        {servicesForType.map((service) => {
+                          const serviceIndex = detailedServices.findIndex(s => s === service);
+                          return (
+                            <div
+                              key={serviceIndex}
+                              className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 border border-gray-200"
+                            >
+                              <input
+                                type="text"
+                                value={service.type || ''}
+                                onChange={(e) => updateService(serviceIndex, 'type', e.target.value)}
+                                placeholder="Service name"
+                                className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-white"
+                              />
+                              <select
+                                value={service.hours}
+                                onChange={(e) => updateService(serviceIndex, 'hours', e.target.value)}
+                                className="px-2 py-1 border border-gray-200 rounded text-sm bg-white focus:outline-none focus:border-gray-400"
+                              >
+                                {hourOptions.map(hour => (
+                                  <option key={hour} value={hour}>{hour}</option>
+                                ))}
+                              </select>
+                              <select
+                                value={service.minutes}
+                                onChange={(e) => updateService(serviceIndex, 'minutes', e.target.value)}
+                                className="px-2 py-1 border border-gray-200 rounded text-sm bg-white focus:outline-none focus:border-gray-400"
+                              >
+                                {minuteOptions.map(minute => (
+                                  <option key={minute} value={minute}>{minute}</option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => removeService(serviceIndex)}
+                                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                title="Remove service"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500 italic py-2">No services added yet</p>
+                    )}
                   </div>
-                ))}
-              </div>
+                );
+              })}
+              
+              {[...selectedBusinessTypes, ...customTypes.filter(ct => ct.trim())].length === 0 && (
+                <p className="text-sm text-gray-500 italic py-2">Please select or add business types first</p>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
