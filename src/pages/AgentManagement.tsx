@@ -734,7 +734,7 @@ const AgentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('business_name, business_types, primary_location')
+        .select('business_name, business_types, primary_location, services')
         .eq('id', selectedAgentId)
         .single();
 
@@ -761,12 +761,16 @@ const AgentManagement = () => {
         });
 
         setSelectedBusinessTypes(resetBusinessTypes);
-        setCustomTypes(resetCustomTypes);
+        setCustomTypes(resetCustomTypes.length > 0 ? resetCustomTypes : ['']);
         setBusinessLocation(data.primary_location || '');
+        
+        // Reset services
+        const servicesData = Array.isArray(data.services) ? data.services : [];
+        setDetailedServices(servicesData);
         
         toast({
           title: "Changes Discarded",
-          description: "Business information has been reset to saved values",
+          description: "Business information and services have been reset to saved values",
         });
       }
     } catch (error) {
