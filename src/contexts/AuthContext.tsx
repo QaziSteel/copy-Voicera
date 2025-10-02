@@ -58,27 +58,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkEmailExists = async (email: string): Promise<boolean> => {
     try {
-      // Try to sign in with a dummy password to check if email exists
-      // Supabase will return different errors for existing vs non-existing emails
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password-for-check-only'
+      const { data, error } = await supabase.rpc('check_email_exists', { 
+        _email: email 
       });
       
-      // If error message indicates invalid credentials, the email exists
-      // If error indicates user not found, the email doesn't exist
       if (error) {
-        // "Invalid login credentials" means email exists but password is wrong
-        if (error.message.toLowerCase().includes('invalid') || 
-            error.message.toLowerCase().includes('credentials')) {
-          return true;
-        }
-        // Any other error (like "user not found" or "email not confirmed") means email doesn't exist or isn't active
+        console.error('Error checking email:', error);
         return false;
       }
       
-      // If no error, email exists (shouldn't happen with dummy password, but just in case)
-      return true;
+      return data === true;
     } catch (error) {
       console.error('Error checking email:', error);
       return false;

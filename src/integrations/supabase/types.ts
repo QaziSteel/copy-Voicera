@@ -551,6 +551,10 @@ export type Database = {
         Args: { _booking_id: string; _user_id: string }
         Returns: boolean
       }
+      check_email_exists: {
+        Args: { _email: string }
+        Returns: boolean
+      }
       cleanup_orphaned_google_integrations: {
         Args: Record<PropertyKey, never>
         Returns: undefined
