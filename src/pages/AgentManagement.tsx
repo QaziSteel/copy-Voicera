@@ -111,11 +111,11 @@ const AgentManagement = () => {
   
   // Basic Info
   const [businessName, setBusinessName] = useState('');
-  const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<SelectedBusinessType[]>([]);
+  const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<string[]>([]);
   const [customType, setCustomType] = useState("");
   const [isCustomSelected, setIsCustomSelected] = useState(false);
-  const [customDuration, setCustomDuration] = useState({ hours: "01 hr", minutes: "00 min" });
   const [businessLocation, setBusinessLocation] = useState('');
+  const [detailedServices, setDetailedServices] = useState<any[]>([]);
   
   // AI Personality  
   const [aiAssistantName, setAiAssistantName] = useState('');
@@ -134,9 +134,6 @@ const AgentManagement = () => {
   const [selectedGreetingStyle, setSelectedGreetingStyle] = useState('warm');
   
   // Booking
-  const [services, setServices] = useState<string[]>([]);
-  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
-  const [customService, setCustomService] = useState('');
   const [appointmentDuration, setAppointmentDuration] = useState('');
   const [businessDays, setBusinessDays] = useState<string[]>([]);
   const [businessHours, setBusinessHours] = useState({ from: '8:00am', to: '05:00pm' });
@@ -368,29 +365,23 @@ const AgentManagement = () => {
       if (data) {
         // Basic Info
         setBusinessName(data.business_name || '');
-        // Load business types array
+        
+        // Load business types as simple string array
         const businessTypesData = Array.isArray(data.business_types) ? data.business_types : [];
-        const loadedBusinessTypes: SelectedBusinessType[] = [];
+        const loadedBusinessTypes: string[] = [];
         let loadedCustomType = "";
         let loadedCustomSelected = false;
-        let loadedCustomDuration = { hours: "01 hr", minutes: "00 min" };
 
         businessTypesData.forEach((bt: any) => {
-          if (typeof bt === 'object' && bt.type) {
-            const isCustom = !businessTypes.includes(bt.type);
+          // Handle both string and object formats for backward compatibility
+          const typeName = typeof bt === 'string' ? bt : bt.type;
+          if (typeName) {
+            const isCustom = !businessTypes.includes(typeName);
             if (isCustom) {
-              loadedCustomType = bt.type;
+              loadedCustomType = typeName;
               loadedCustomSelected = true;
-              loadedCustomDuration = { 
-                hours: bt.hours || "01 hr", 
-                minutes: bt.minutes || "00 min" 
-              };
             } else {
-              loadedBusinessTypes.push({
-                type: bt.type,
-                hours: bt.hours || "01 hr",
-                minutes: bt.minutes || "00 min"
-              });
+              loadedBusinessTypes.push(typeName);
             }
           }
         });
@@ -398,8 +389,11 @@ const AgentManagement = () => {
         setSelectedBusinessTypes(loadedBusinessTypes);
         setCustomType(loadedCustomType);
         setIsCustomSelected(loadedCustomSelected);
-        setCustomDuration(loadedCustomDuration);
         setBusinessLocation(data.primary_location || '');
+        
+        // Load detailed services with durations
+        const servicesData = Array.isArray(data.services) ? data.services : [];
+        setDetailedServices(servicesData);
         
         // AI Personality
         const savedAssistantName = data.ai_assistant_name || '';
@@ -438,7 +432,6 @@ const AgentManagement = () => {
         setHandlingUnknown(data.ai_handling_unknown || '');
         
         // Booking
-        setServices(isStringArray(data.services) ? data.services : []);
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
         setScheduleFullAction(data.schedule_full_action || '');
@@ -480,14 +473,10 @@ const AgentManagement = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
-      // Prepare business types array
+      // Prepare business types array as simple strings
       const allBusinessTypes = [...selectedBusinessTypes];
       if (isCustomSelected && customType.trim()) {
-        allBusinessTypes.push({
-          type: customType.trim(),
-          hours: customDuration.hours,
-          minutes: customDuration.minutes
-        });
+        allBusinessTypes.push(customType.trim());
       }
 
       const agentData = {
@@ -501,7 +490,7 @@ const AgentManagement = () => {
         ai_greeting_style: greetingOptions.find(g => g.id === selectedGreetingStyle) || greetingStyle,
         ai_handling_unknown: handlingUnknown,
         ai_call_schedule: selectedAnswerTime === 'custom-schedule' ? customAnswerTime : (selectedAnswerTime === 'custom' ? customAnswerTime : selectedAnswerTime),
-        services: services as any,
+        services: detailedServices as any,
         business_days: businessDays as any,
         business_hours: businessHours as any,
         schedule_full_action: scheduleFullAction,
@@ -660,7 +649,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customType, isCustomSelected, customDuration, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, services, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customType, isCustomSelected, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -705,11 +694,10 @@ const AgentManagement = () => {
   // Business type handlers
   const handleBusinessTypeToggle = useCallback((type: string) => {
     setSelectedBusinessTypes((prev) => {
-      const exists = prev.find(item => item.type === type);
-      if (exists) {
-        return prev.filter(item => item.type !== type);
+      if (prev.includes(type)) {
+        return prev.filter(item => item !== type);
       } else {
-        return [...prev, { type, hours: "01 hr", minutes: "00 min" }];
+        return [...prev, type];
       }
     });
   }, []);
@@ -720,14 +708,6 @@ const AgentManagement = () => {
       setCustomType("");
     }
   }, [isCustomSelected]);
-
-  const handleDurationChange = useCallback((type: string, field: 'hours' | 'minutes', value: string) => {
-    setSelectedBusinessTypes((prev) =>
-      prev.map(item =>
-        item.type === type ? { ...item, [field]: value } : item
-      )
-    );
-  }, []);
 
   // Discard functions for each section
   const discardBasicInfo = useCallback(async () => {
@@ -746,27 +726,20 @@ const AgentManagement = () => {
         setBusinessName(data.business_name || '');
         // Reset business types to saved values
         const businessTypesData = Array.isArray(data.business_types) ? data.business_types : [];
-        const resetBusinessTypes: SelectedBusinessType[] = [];
+        const resetBusinessTypes: string[] = [];
         let resetCustomType = "";
         let resetCustomSelected = false;
-        let resetCustomDuration = { hours: "01 hr", minutes: "00 min" };
 
         businessTypesData.forEach((bt: any) => {
-          if (typeof bt === 'object' && bt.type) {
-            const isCustom = !businessTypes.includes(bt.type);
+          // Handle both string and object formats for backward compatibility
+          const typeName = typeof bt === 'string' ? bt : bt.type;
+          if (typeName) {
+            const isCustom = !businessTypes.includes(typeName);
             if (isCustom) {
-              resetCustomType = bt.type;
+              resetCustomType = typeName;
               resetCustomSelected = true;
-              resetCustomDuration = { 
-                hours: bt.hours || "01 hr", 
-                minutes: bt.minutes || "00 min" 
-              };
             } else {
-              resetBusinessTypes.push({
-                type: bt.type,
-                hours: bt.hours || "01 hr",
-                minutes: bt.minutes || "00 min"
-              });
+              resetBusinessTypes.push(typeName);
             }
           }
         });
@@ -774,7 +747,6 @@ const AgentManagement = () => {
         setSelectedBusinessTypes(resetBusinessTypes);
         setCustomType(resetCustomType);
         setIsCustomSelected(resetCustomSelected);
-        setCustomDuration(resetCustomDuration);
         setBusinessLocation(data.primary_location || '');
         
         toast({
@@ -870,7 +842,8 @@ const AgentManagement = () => {
       if (error) throw error;
       
       if (data) {
-        setServices(isStringArray(data.services) ? data.services : []);
+        const servicesData = Array.isArray(data.services) ? data.services : [];
+        setDetailedServices(servicesData);
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
         setScheduleFullAction(data.schedule_full_action || '');
@@ -1048,72 +1021,38 @@ const AgentManagement = () => {
             </div>
           </div>
 
-          {/* Third Row - Business Types & Durations */}
+          {/* Third Row - Business Types */}
           <div>
-            <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Types & Durations</label>
+            <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Types</label>
             <div className="space-y-3">
               {businessTypes.map((type) => {
-                const isSelected = selectedBusinessTypes.find(item => item.type === type);
+                const isSelected = selectedBusinessTypes.includes(type);
                 
                 return (
                   <div
                     key={type}
-                    className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
+                    className={`flex items-center p-3 rounded-lg transition-colors cursor-pointer ${
                       isSelected
                         ? "bg-gray-100 border-2 border-black"
                         : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
                     }`}
                     onClick={() => handleBusinessTypeToggle(type)}
                   >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                            isSelected ? "border-black bg-black" : "border-gray-400"
-                          }`}
-                        >
-                          {isSelected && (
-                            <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                              <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          )}
-                        </div>
-                        <span className={`text-sm md:text-base ${isSelected ? "text-black" : "text-gray-600"}`}>
-                          {type}
-                        </span>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                          isSelected ? "border-black bg-black" : "border-gray-400"
+                        }`}
+                      >
+                        {isSelected && (
+                          <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                            <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
                       </div>
-                      
-                      {isSelected && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Duration:</span>
-                          <select
-                            value={isSelected.hours}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              handleDurationChange(type, 'hours', e.target.value);
-                            }}
-                            className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {hourOptions.map(hour => (
-                              <option key={hour} value={hour}>{hour}</option>
-                            ))}
-                          </select>
-                          <select
-                            value={isSelected.minutes}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              handleDurationChange(type, 'minutes', e.target.value);
-                            }}
-                            className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {minuteOptions.map(minute => (
-                              <option key={minute} value={minute}>{minute}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
+                      <span className={`text-sm md:text-base ${isSelected ? "text-black" : "text-gray-600"}`}>
+                        {type}
+                      </span>
                     </div>
                   </div>
                 );
@@ -1121,81 +1060,69 @@ const AgentManagement = () => {
 
               {/* Custom Type Card */}
               <div
-                className={`flex flex-col p-3 rounded-lg transition-colors cursor-pointer ${
+                className={`flex items-center p-3 rounded-lg transition-colors cursor-pointer ${
                   isCustomSelected
                     ? "bg-gray-100 border-2 border-black"
                     : "bg-gray-50 border-2 border-transparent hover:border-gray-300"
                 }`}
                 onClick={() => handleCustomToggle()}
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                        isCustomSelected ? "border-black bg-black" : "border-gray-400"
-                      }`}
-                    >
-                      {isCustomSelected && (
-                        <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                          <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                    
-                    {isCustomSelected ? (
-                      <input
-                        type="text"
-                        value={customType}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          setCustomType(e.target.value);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="Enter your business type..."
-                        className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-white"
-                      />
-                    ) : (
-                      <span className="text-sm md:text-base text-gray-600">
-                        Other (Custom type)
-                      </span>
+                <div className="flex items-center gap-3 flex-1">
+                  <div
+                    className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
+                      isCustomSelected ? "border-black bg-black" : "border-gray-400"
+                    }`}
+                  >
+                    {isCustomSelected && (
+                      <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                        <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
                     )}
                   </div>
                   
-                  {isCustomSelected && customType.trim() && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Duration:</span>
-                      <select
-                        value={customDuration.hours}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          setCustomDuration(prev => ({ ...prev, hours: e.target.value }));
-                        }}
-                        className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {hourOptions.map(hour => (
-                          <option key={hour} value={hour}>{hour}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={customDuration.minutes}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          setCustomDuration(prev => ({ ...prev, minutes: e.target.value }));
-                        }}
-                        className="px-2 py-1 border border-gray-200 rounded text-xs bg-white focus:outline-none focus:border-gray-400"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {minuteOptions.map(minute => (
-                          <option key={minute} value={minute}>{minute}</option>
-                        ))}
-                      </select>
-                    </div>
+                  {isCustomSelected ? (
+                    <input
+                      type="text"
+                      value={customType}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        setCustomType(e.target.value);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      placeholder="Enter your business type..."
+                      className="flex-1 px-2 py-1 border border-gray-200 rounded text-sm placeholder-gray-400 focus:outline-none focus:border-gray-400 bg-white"
+                    />
+                  ) : (
+                    <span className="text-sm md:text-base text-gray-600">
+                      Other (Custom type)
+                    </span>
                   )}
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Fourth Row - Services & Durations */}
+          {detailedServices.length > 0 && (
+            <div>
+              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Services & Durations</label>
+              <div className="space-y-2">
+                {detailedServices.map((service, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200"
+                  >
+                    <span className="text-sm md:text-base text-gray-700 font-medium">
+                      {service.type || 'Service'}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {service.hours} {service.minutes}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1646,178 +1573,7 @@ const AgentManagement = () => {
                 {/* Form Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
                   <div className="space-y-5">
-                    {/* First Row - Services & Duration */}
-                    <div className="flex gap-5">
-                      <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-3">
-                          What can customers book?
-                        </label>
-                        
-                        {/* Selected Services Tags */}
-                        {services.length > 0 && (
-                          <div className="mb-3">
-                            <div className="flex flex-wrap gap-2">
-                              {services.map((service, index) => (
-                                <div 
-                                  key={index}
-                                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
-                                >
-                                  <span>{service}</span>
-                                  {services.length > 1 && (
-                                    <button
-                                      onClick={() => {
-                                        setServices(services.filter((_, i) => i !== index));
-                                      }}
-                                      className="ml-1 hover:text-blue-900 transition-colors"
-                                      title="Remove service"
-                                    >
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                      </svg>
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Services Dropdown */}
-                        <div className="relative">
-                          <button
-                            onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
-                            className="flex items-center justify-between w-full p-4 border-2 border-gray-200 rounded-xl hover:border-black transition-colors bg-white"
-                          >
-                            <span className="text-lg text-gray-600">
-                              Add services customers can book
-                            </span>
-                            <svg
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              className={`transform transition-transform ${servicesDropdownOpen ? "rotate-180" : ""}`}
-                            >
-                              <path
-                                d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                                stroke="#141B34"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </button>
-
-                          {/* Dropdown Options */}
-                          {servicesDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-1 border-2 border-gray-200 rounded-xl overflow-hidden bg-white z-50 shadow-lg">
-                              {["Appointment", "Consultation", "Service", "Class", "Other"].map((serviceOption) => (
-                                <div key={serviceOption}>
-                                  {serviceOption === "Other" ? (
-                                    <div className="flex items-center gap-3 p-3 px-4 border-t border-gray-100">
-                                      <button
-                                        onClick={() => {
-                                          if (services.includes(serviceOption)) {
-                                            setServices(services.filter(s => s !== serviceOption));
-                                          } else {
-                                            setServices([...services, serviceOption]);
-                                          }
-                                        }}
-                                        className="flex items-center gap-2.5"
-                                      >
-                                        <div
-                                          className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                                            services.includes(serviceOption)
-                                              ? "border-black bg-black"
-                                              : "border-gray-400"
-                                          }`}
-                                        >
-                                          {services.includes(serviceOption) && (
-                                            <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                                              <path
-                                                d="M1 3L3 5L7 1"
-                                                stroke="white"
-                                                strokeWidth="1.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                              />
-                                            </svg>
-                                          )}
-                                        </div>
-                                        <span className="text-lg text-gray-600">{serviceOption}</span>
-                                      </button>
-                                      <input
-                                        type="text"
-                                        value={customService}
-                                        onChange={(e) => setCustomService(e.target.value)}
-                                        onKeyPress={(e) => {
-                                          if (e.key === 'Enter' && customService.trim()) {
-                                            if (!services.includes(customService.trim())) {
-                                              setServices([...services, customService.trim()]);
-                                            }
-                                            setCustomService('');
-                                          }
-                                        }}
-                                        placeholder="Enter custom service"
-                                        className="flex-1 p-3 border-2 border-gray-200 rounded-xl text-base placeholder-gray-400 focus:outline-none focus:border-black transition-colors"
-                                      />
-                                      {customService.trim() && (
-                                        <button
-                                          onClick={() => {
-                                            if (!services.includes(customService.trim())) {
-                                              setServices([...services, customService.trim()]);
-                                            }
-                                            setCustomService('');
-                                          }}
-                                          className="px-3 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition-colors"
-                                        >
-                                          Add
-                                        </button>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <button
-                                      onClick={() => {
-                                        if (services.includes(serviceOption)) {
-                                          setServices(services.filter(s => s !== serviceOption));
-                                        } else {
-                                          setServices([...services, serviceOption]);
-                                        }
-                                      }}
-                                      className="w-full flex items-center gap-2.5 p-3 px-4 hover:bg-gray-50 transition-colors"
-                                    >
-                                      <div
-                                        className={`w-4 h-4 border-[1.5px] rounded flex items-center justify-center ${
-                                          services.includes(serviceOption)
-                                            ? "border-black bg-black"
-                                            : "border-gray-400"
-                                        }`}
-                                      >
-                                        {services.includes(serviceOption) && (
-                                          <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                                            <path
-                                              d="M1 3L3 5L7 1"
-                                              stroke="white"
-                                              strokeWidth="1.5"
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                            />
-                                          </svg>
-                                        )}
-                                      </div>
-                                      <span className="text-lg text-gray-600">{serviceOption}</span>
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                    </div>
-
-                    {/* Second Row - Business Days & Hours */}
+                    {/* First Row - Business Days & Hours */}
                     <div className="flex gap-5">
                       <div className="flex-1">
                         <label className="block text-lg font-semibold text-black mb-3">
