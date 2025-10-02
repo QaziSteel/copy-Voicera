@@ -200,7 +200,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
   useEffect(() => {
     // Always fetch integration status on mount, regardless of mode
     fetchIntegration();
-  }, [onboardingMode]);
+  }, [agentId, onboardingMode]);
 
   return {
     integration,
