@@ -53,13 +53,14 @@ serve(async (req) => {
     console.log(`Retrieving Google tokens for email: ${email}`);
 
     // Build query for Google integration - only fetch metadata
-    // Query by email and get the first (oldest) record
+    // Query by email and get the newest record with non-null tokens
     let query = supabase
       .from('google_integrations')
-      .select('id, user_id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at')
+      .select('id, user_id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at, encrypted_access_token')
       .eq('user_email', email)
       .eq('is_active', true)
-      .order('created_at', { ascending: true })
+      .not('encrypted_access_token', 'is', null)
+      .order('created_at', { ascending: false })
       .limit(1);
 
     const { data: integrations, error: integrationError } = await query;
