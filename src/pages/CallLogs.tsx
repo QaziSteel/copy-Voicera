@@ -329,7 +329,7 @@ const CallLogs: React.FC = () => {
               </svg>
               <input
                 type="text"
-                placeholder="Search by caller, call ID, or customer name..."
+                placeholder="Search by customer number or business number"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="text-gray-500 text-sm bg-transparent border-none outline-none w-72"
