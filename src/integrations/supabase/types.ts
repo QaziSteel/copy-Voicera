@@ -556,19 +556,15 @@ export type Database = {
         Returns: undefined
       }
       decrypt_oauth_token: {
-        Args:
-          | {
-              _encrypted_token: string
-              _encryption_key: string
-              _user_id: string
-            }
-          | { _encrypted_token: string; _user_id: string }
+        Args: {
+          _encrypted_token: string
+          _encryption_key: string
+          _user_id: string
+        }
         Returns: string
       }
       encrypt_oauth_token: {
-        Args:
-          | { _encryption_key: string; _token: string; _user_id: string }
-          | { _token: string; _user_id: string }
+        Args: { _encryption_key: string; _token: string; _user_id: string }
         Returns: string
       }
       get_booking_customer_info: {
@@ -616,13 +612,11 @@ export type Database = {
         }[]
       }
       get_google_integration_tokens: {
-        Args:
-          | {
-              _encryption_key: string
-              _integration_id: string
-              _requesting_user_id: string
-            }
-          | { _integration_id: string; _requesting_user_id: string }
+        Args: {
+          _encryption_key: string
+          _integration_id: string
+          _requesting_user_id: string
+        }
         Returns: {
           access_token: string
           refresh_token: string
@@ -690,39 +684,24 @@ export type Database = {
         Returns: boolean
       }
       store_google_tokens: {
-        Args:
-          | {
-              _access_token: string
-              _encryption_key: string
-              _expires_at: string
-              _integration_id: string
-              _refresh_token: string
-              _requesting_user_id: string
-            }
-          | {
-              _access_token: string
-              _expires_at: string
-              _integration_id: string
-              _refresh_token: string
-              _requesting_user_id: string
-            }
+        Args: {
+          _access_token: string
+          _encryption_key: string
+          _expires_at: string
+          _integration_id: string
+          _refresh_token: string
+          _requesting_user_id: string
+        }
         Returns: undefined
       }
       update_encrypted_access_token: {
-        Args:
-          | {
-              _access_token: string
-              _encryption_key: string
-              _expires_at: string
-              _integration_id: string
-              _requesting_user_id: string
-            }
-          | {
-              _access_token: string
-              _expires_at: string
-              _integration_id: string
-              _requesting_user_id: string
-            }
+        Args: {
+          _access_token: string
+          _encryption_key: string
+          _expires_at: string
+          _integration_id: string
+          _requesting_user_id: string
+        }
         Returns: undefined
       }
       user_can_see_customer_data: {
