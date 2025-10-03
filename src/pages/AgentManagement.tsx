@@ -130,7 +130,7 @@ const AgentManagement = () => {
   const [customAssistantName, setCustomAssistantName] = useState('');
   const [selectedAnswerTime, setSelectedAnswerTime] = useState('business');
   const [customAnswerTime, setCustomAnswerTime] = useState('');
-  const [selectedGreetingStyle, setSelectedGreetingStyle] = useState('warm');
+  const [selectedGreetingStyle, setSelectedGreetingStyle] = useState('warm-reassuring');
   
   // Booking
   const [appointmentDuration, setAppointmentDuration] = useState('');
@@ -180,28 +180,42 @@ const AgentManagement = () => {
     return baseOptions;
   }, [customAnswerTime, selectedAnswerTime]);
 
-  const greetingOptions = [
+  // Map legacy greeting IDs to new ones
+  const mapLegacyGreetingId = (oldId: string): string => {
+    const idMap: Record<string, string> = {
+      'warm': 'warm-reassuring',
+      'professional': 'professional-polite',
+      'friendly': 'friendly-casual',
+      'efficient': 'energetic-enthusiastic',
+    };
+    return idMap[oldId] || oldId;
+  };
+
+  const greetingOptions = useMemo(() => [
     {
-      id: 'warm',
-      label: 'Warm & Reassuring',
-      text: "Hello, you're through to [Business Name]. I'm here to help, how can I assist?"
+      id: "friendly-casual",
+      label: "Friendly & Casual",
+      text: "Hi! Thanks for calling [Business Name]. How can I help you today?",
     },
     {
-      id: 'professional',
-      label: 'Professional & Direct',
-      text: "Good [morning/afternoon], [Business Name] speaking. How may I help you today?"
+      id: "professional-polite",
+      label: "Professional & Polite",
+      text: "Good day! You've reached [Business Name]. How may I assist you?",
     },
     {
-      id: 'friendly',
-      label: 'Friendly & Casual',
-      text: "Hi there! Thanks for calling [Business Name]. What can I do for you?"
+      id: "warm-reassuring",
+      label: "Warm & Reassuring",
+      text: "Hello, you're through to [Business Name]. I'm here to help, how can I assist?",
     },
     {
-      id: 'efficient',
-      label: 'Efficient & Brief',
-      text: "[Business Name], how can I help?"
-    }
-  ];
+      id: "energetic-enthusiastic",
+      label: "Energetic & Enthusiastic",
+      text: "Hey there! Thanks for calling [Business Name]! What can we do for you today?",
+    },
+  ].map(option => ({
+    ...option,
+    text: option.text.replace('[Business Name]', businessName || 'Business Name')
+  })), [businessName]);
 
   // Load data on component mount
   useEffect(() => {
@@ -409,9 +423,9 @@ const AgentManagement = () => {
         // Initialize greeting style
         const savedGreeting = data.ai_greeting_style;
         if (typeof savedGreeting === 'object' && savedGreeting && !Array.isArray(savedGreeting) && 'id' in savedGreeting) {
-          setSelectedGreetingStyle(savedGreeting.id as string);
+          setSelectedGreetingStyle(mapLegacyGreetingId(savedGreeting.id as string));
         } else {
-          setSelectedGreetingStyle('warm');
+          setSelectedGreetingStyle('warm-reassuring');
         }
         setGreetingStyle(savedGreeting || {});
         
