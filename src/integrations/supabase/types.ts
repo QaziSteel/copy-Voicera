@@ -716,6 +716,10 @@ export type Database = {
         Args: { _phone_number: string; _user_id: string }
         Returns: boolean
       }
+      validate_booking_api_key: {
+        Args: { _api_key: string }
+        Returns: boolean
+      }
     }
     Enums: {
       project_role: "owner" | "admin" | "member" | "viewer"
