@@ -255,6 +255,23 @@ serve(async (req) => {
       hasExisting: !!existingIntegration 
     });
 
+    // For onboarding flow, deactivate previous orphaned integrations
+    if (isOnboardingFlow) {
+      const { error: deactivateError } = await supabase
+        .from('google_integrations')
+        .update({ is_active: false })
+        .eq('user_id', finalUserId)
+        .eq('project_id', finalProjectId)
+        .is('agent_id', null)
+        .eq('is_active', true);
+      
+      if (deactivateError) {
+        console.error('Error deactivating previous orphans:', deactivateError);
+      } else {
+        console.log('Deactivated previous orphaned integrations');
+      }
+    }
+
     // Prepare integration metadata (without tokens)
     const integrationData = {
       user_id: finalUserId,

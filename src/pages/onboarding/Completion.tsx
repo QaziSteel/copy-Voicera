@@ -40,6 +40,33 @@ export default function Completion() {
         throw new Error("Failed to fetch onboarding data");
       }
 
+      // Link the most recent active orphaned integration to this agent
+      if (onboardingData?.id && currentProject?.id) {
+        const { data: orphanedIntegration } = await supabase
+          .from('google_integrations')
+          .select('id, user_email, created_at')
+          .eq('user_id', user.user.id)
+          .eq('project_id', currentProject.id)
+          .is('agent_id', null)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (orphanedIntegration) {
+          const { error: linkError } = await supabase
+            .from('google_integrations')
+            .update({ agent_id: onboardingData.id })
+            .eq('id', orphanedIntegration.id);
+          
+          if (linkError) {
+            console.error('Failed to link Google integration:', linkError);
+          } else {
+            console.log('Successfully linked Google integration to agent:', orphanedIntegration.user_email);
+          }
+        }
+      }
+
       // Fetch Google Calendar integration data if onboarding data exists
       let googleIntegration = null;
       if (onboardingData?.id) {
@@ -174,6 +201,33 @@ export default function Completion() {
       const { data: onboardingData, error: onboardingError } = await getLatestOnboardingResponse();
       if (onboardingError) {
         throw new Error("Failed to fetch onboarding data");
+      }
+
+      // Link the most recent active orphaned integration to this agent
+      if (onboardingData?.id && currentProject?.id) {
+        const { data: orphanedIntegration } = await supabase
+          .from('google_integrations')
+          .select('id, user_email, created_at')
+          .eq('user_id', user.user.id)
+          .eq('project_id', currentProject.id)
+          .is('agent_id', null)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (orphanedIntegration) {
+          const { error: linkError } = await supabase
+            .from('google_integrations')
+            .update({ agent_id: onboardingData.id })
+            .eq('id', orphanedIntegration.id);
+          
+          if (linkError) {
+            console.error('Failed to link Google integration:', linkError);
+          } else {
+            console.log('Successfully linked Google integration to agent:', orphanedIntegration.user_email);
+          }
+        }
       }
 
       // Fetch Google Calendar integration data if onboarding data exists
