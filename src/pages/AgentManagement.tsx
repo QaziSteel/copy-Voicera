@@ -160,7 +160,6 @@ const AgentManagement = () => {
   const [autoReminders, setAutoReminders] = useState(false);
 
   // Validation state
-  const [agentStatus, setAgentStatus] = useState<string>('offline');
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
 
@@ -472,9 +471,6 @@ const AgentManagement = () => {
         // Load agent status data into context
         await loadAgentStatus(agentId);
         
-        // Store current agent status for validation
-        setAgentStatus(data.current_status || 'offline');
-        
         // Handle reminder settings (jsonb format)
         if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
           const reminderData = data.reminder_settings as { wantsReminders?: boolean };
@@ -498,7 +494,7 @@ const AgentManagement = () => {
   // Validation function
   const validateBeforeSave = useCallback((): { isValid: boolean; message: string } => {
     // Check if agent is live
-    if (agentStatus !== 'live') {
+    if (!isAgentLive) {
       return {
         isValid: false,
         message: 'Make the agent live first to save the changes'
@@ -514,7 +510,7 @@ const AgentManagement = () => {
     }
     
     return { isValid: true, message: '' };
-  }, [agentStatus, googleIntegration]);
+  }, [isAgentLive, googleIntegration]);
 
   const saveChanges = useCallback(async () => {
     // Validate before saving
