@@ -8,14 +8,18 @@ type ProjectMember = Database['public']['Tables']['project_members']['Row'] & {
   profiles?: Database['public']['Tables']['profiles']['Row'] | null;
 };
 
+type ProjectRole = 'owner' | 'admin' | 'member';
+
 interface ProjectContextType {
   currentProject: Project | null;
   projects: Project[];
   projectMembers: ProjectMember[];
+  currentUserRole: ProjectRole | null;
   loading: boolean;
   switchProject: (projectId: string) => void;
   refreshProjects: () => Promise<void>;
   refreshProjectMembers: () => Promise<void>;
+  canViewCustomerData: () => boolean;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -37,6 +41,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
+  const [currentUserRole, setCurrentUserRole] = useState<ProjectRole | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProjects = async () => {
@@ -77,7 +82,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   };
 
   const fetchProjectMembers = async () => {
-    if (!currentProject) return;
+    if (!currentProject || !user) return;
 
     try {
       // First get project members
@@ -90,8 +95,13 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
 
       if (!membersData || membersData.length === 0) {
         setProjectMembers([]);
+        setCurrentUserRole(null);
         return;
       }
+
+      // Find current user's role
+      const currentUserMembership = membersData.find(m => m.user_id === user.id);
+      setCurrentUserRole(currentUserMembership?.role as ProjectRole || null);
 
       // Then get profiles for these members
       const userIds = membersData.map(m => m.user_id);
@@ -120,6 +130,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     } catch (error) {
       console.error('Error fetching project members:', error);
       setProjectMembers([]);
+      setCurrentUserRole(null);
     }
   };
 
@@ -138,6 +149,10 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     await fetchProjectMembers();
   };
 
+  const canViewCustomerData = (): boolean => {
+    return currentUserRole === 'owner' || currentUserRole === 'admin';
+  };
+
   useEffect(() => {
     if (user) {
       setLoading(true);
@@ -146,6 +161,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
       setCurrentProject(null);
       setProjects([]);
       setProjectMembers([]);
+      setCurrentUserRole(null);
       setLoading(false);
     }
   }, [user]);
@@ -158,10 +174,12 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     currentProject,
     projects,
     projectMembers,
+    currentUserRole,
     loading,
     switchProject,
     refreshProjects,
     refreshProjectMembers,
+    canViewCustomerData,
   };
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;

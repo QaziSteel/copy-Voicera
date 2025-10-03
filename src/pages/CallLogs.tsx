@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProject } from "@/contexts/ProjectContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import NotificationPopup from "@/components/NotificationPopup";
 import { DateFilterPopup } from "@/components/DateFilterPopup";
@@ -12,10 +13,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Phone, Clock, Calendar } from "lucide-react";
+import { getMaskedCustomerData, getMaskedBookingCustomerName } from "@/lib/customerDataMasking";
 
 const CallLogs: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canViewCustomerData } = useProject();
   const [searchTerm, setSearchTerm] = useState("");
   const {
     showDateFilter,
@@ -41,7 +44,17 @@ const CallLogs: React.FC = () => {
   } = useNotifications();
 
   // Get real call logs from database
-  const { callLogs, loading } = useCallLogs(searchTerm, getDateFilter(), filterVersion);
+  const { callLogs: rawCallLogs, loading } = useCallLogs(searchTerm, getDateFilter(), filterVersion);
+  
+  // Apply customer data masking based on user role
+  const callLogs = rawCallLogs.map(log => {
+    const maskedLog = getMaskedCustomerData(log, canViewCustomerData());
+    return {
+      ...maskedLog,
+      booking_customer_name: getMaskedBookingCustomerName(log.booking_customer_name, canViewCustomerData())
+    };
+  });
+  
   const audioPlayer = useAudioPlayer();
   const [currentlyPlayingPath, setCurrentlyPlayingPath] = useState<string | null>(null);
   const [showAudioPlayer, setShowAudioPlayer] = useState<boolean>(false);
