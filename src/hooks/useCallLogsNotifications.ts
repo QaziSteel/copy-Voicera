@@ -6,7 +6,7 @@ import { maskPhoneNumber } from "@/lib/customerDataMasking";
 import { notificationStorage } from "@/lib/notificationStorage";
 import type { Notification } from "./useNotifications";
 
-export const useCallLogsNotifications = () => {
+export const useCallLogsNotifications = (readTrigger?: number) => {
   const { callLogs, loading, error } = useCallLogs();
   const { canViewCustomerData } = useProject();
 
@@ -63,7 +63,7 @@ export const useCallLogsNotifications = () => {
 
   const unreadCount = useMemo(() => {
     return notifications.filter(n => !notificationStorage.isRead(n.id)).length;
-  }, [notifications]);
+  }, [notifications, readTrigger]);
 
   return {
     notifications,

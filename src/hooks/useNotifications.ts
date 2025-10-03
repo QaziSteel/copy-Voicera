@@ -17,13 +17,15 @@ export interface Notification {
 
 export const useNotifications = () => {
   const [showNotifications, setShowNotifications] = useState(false);
-  const { notifications, loading, error, notificationCount, unreadCount } = useCallLogsNotifications();
+  const [readTrigger, setReadTrigger] = useState(0);
+  const { notifications, loading, error, notificationCount, unreadCount } = useCallLogsNotifications(readTrigger);
 
   const openNotifications = () => {
     // Mark all current notifications as read when opening the popup
     if (notifications.length > 0) {
       const notificationIds = notifications.map(n => n.id);
       notificationStorage.markAsRead(notificationIds);
+      setReadTrigger(prev => prev + 1); // Force re-calculation of unread count
     }
     setShowNotifications(true);
   };
