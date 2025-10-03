@@ -84,19 +84,26 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
     try {
       const success = await callStatusWebhook(newStatus);
       if (success) {
-        setIsAgentLive(!isAgentLive);
-        
-        // Update database status
+        // Update database status FIRST to avoid race conditions
         if (currentAgentId) {
           const { error } = await supabase
             .from('onboarding_responses')
             .update({ current_status: newStatus.toLowerCase() })
             .eq('id', currentAgentId);
-            
+          
           if (error) {
             console.error('Error updating agent status in database:', error);
+            toast({
+              title: "Error",
+              description: "Failed to update agent status in database. Please try again.",
+              variant: "destructive",
+            });
+            return; // Don't update local state if DB update failed
           }
         }
+
+        // Only update local state after DB confirms
+        setIsAgentLive(!isAgentLive);
         
         toast({
           title: "Success", 

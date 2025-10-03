@@ -491,16 +491,44 @@ const AgentManagement = () => {
     }
   }, [toast]);
 
-  // Validation function
-  const validateBeforeSave = useCallback((): { isValid: boolean; message: string } => {
-    // Check if agent is live
-    if (!isAgentLive) {
-      return {
-        isValid: false,
-        message: 'Make the agent live first to save the changes'
-      };
+  // Validation function (checks DB to avoid stale state)
+  const validateBeforeSave = useCallback(async (): Promise<{ isValid: boolean; message: string }> => {
+    try {
+      // Prefer checking the source of truth in DB for selected agent
+      if (selectedAgentId) {
+        const { data, error } = await supabase
+          .from('onboarding_responses')
+          .select('current_status')
+          .eq('id', selectedAgentId)
+          .maybeSingle();
+
+        const dbIsLive = (data?.current_status === 'live');
+        if (!dbIsLive) {
+          return {
+            isValid: false,
+            message: 'Make the agent live first to save the changes'
+          };
+        }
+      } else {
+        // Fallback to context if no agent selected
+        if (!isAgentLive) {
+          return {
+            isValid: false,
+            message: 'Make the agent live first to save the changes'
+          };
+        }
+      }
+    } catch (e) {
+      console.error('Error checking agent live status:', e);
+      // If something goes wrong, fall back to context state
+      if (!isAgentLive) {
+        return {
+          isValid: false,
+          message: 'Make the agent live first to save the changes'
+        };
+      }
     }
-    
+
     // Check if Google Calendar is connected
     if (!googleIntegration || !googleIntegration.is_active) {
       return {
@@ -510,11 +538,11 @@ const AgentManagement = () => {
     }
     
     return { isValid: true, message: '' };
-  }, [isAgentLive, googleIntegration]);
+  }, [selectedAgentId, isAgentLive, googleIntegration]);
 
   const saveChanges = useCallback(async () => {
-    // Validate before saving
-    const validation = validateBeforeSave();
+    // Validate before saving (await DB-backed validation)
+    const validation = await validateBeforeSave();
     if (!validation.isValid) {
       setValidationMessage(validation.message);
       setShowValidationDialog(true);
