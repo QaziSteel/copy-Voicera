@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useAgentLiveStatus } from '@/hooks/useAgentLiveStatus';
 import NotificationPopup from '@/components/NotificationPopup';
 
 interface HeaderProps {
@@ -12,6 +13,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount } = useNotifications();
+  const { hasLiveAgent } = useAgentLiveStatus();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -95,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
             onClick={() => navigate("/agents")}
             className="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            <div className={`w-1.5 h-1.5 rounded-full ${hasLiveAgent ? 'bg-green-500' : 'bg-gray-400'}`}></div>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path
                 d="M19 16V14C19 11.1716 19 9.75736 18.1213 8.87868C17.2426 8 15.8284 8 13 8H11C8.17157 8 6.75736 8 5.87868 8.87868C5 9.75736 5 11.1716 5 14V16C5 18.8284 5 20.2426 5.87868 21.1213C6.75736 22 8.17157 22 11 22H13C15.8284 22 17.2426 22 18.1213 21.1213C19 20.2426 19 18.8284 19 16Z"
