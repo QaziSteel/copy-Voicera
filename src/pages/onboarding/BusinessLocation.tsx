@@ -20,7 +20,7 @@ export default function BusinessLocation() {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/business-type");
+    navigate("/onboarding/business-services");
   };
 
   const handleNext = () => {
