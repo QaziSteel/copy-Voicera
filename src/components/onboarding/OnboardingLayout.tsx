@@ -1,7 +1,19 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLocation } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useProject } from '@/contexts/ProjectContext';
+import { supabase } from '@/integrations/supabase/client';
+import { LogOut, ArrowLeft } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface OnboardingLayoutProps {
   children: ReactNode;
@@ -22,8 +34,12 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   nextDisabled = false,
   leftAligned = false
 }) => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const { currentProject } = useProject();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [hasExistingAgents, setHasExistingAgents] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
   // Hardcoded step values based on route
   const getStepInfo = () => {
@@ -83,20 +99,141 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
 
   const { step, totalSteps, completionPercentage } = getStepInfo();
 
+  // Check if the current project already has agents
+  useEffect(() => {
+    const checkExistingAgents = async () => {
+      if (!currentProject?.id) {
+        setHasExistingAgents(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('onboarding_responses')
+        .select('id')
+        .eq('project_id', currentProject.id)
+        .limit(1);
+
+      if (!error && data && data.length > 0) {
+        setHasExistingAgents(true);
+      } else {
+        setHasExistingAgents(false);
+      }
+    };
+
+    checkExistingAgents();
+  }, [currentProject?.id]);
+
+  // Check if we should show the back button (business-intro to reminders)
+  const shouldShowBackButton = () => {
+    if (!hasExistingAgents) return false;
+
+    const onboardingRoutes = [
+      '/onboarding/business-intro',
+      '/onboarding/business-name',
+      '/onboarding/business-type',
+      '/onboarding/business-services',
+      '/onboarding/business-location',
+      '/onboarding/contact-number',
+      '/onboarding/calendar-integration',
+      '/onboarding/personality-intro',
+      '/onboarding/voice-style',
+      '/onboarding/greetings',
+      '/onboarding/assistant-name',
+      '/onboarding/answer-time',
+      '/onboarding/booking-intro',
+      '/onboarding/services',
+      '/onboarding/business-days',
+      '/onboarding/business-hours',
+      '/onboarding/schedule',
+      '/onboarding/faq-intro',
+      '/onboarding/faq-questions',
+      '/onboarding/integrations',
+      '/onboarding/question-handling',
+      '/onboarding/summaries',
+      '/onboarding/confirmations',
+      '/onboarding/reminders',
+    ];
+
+    return onboardingRoutes.includes(location.pathname);
+  };
 
   const handleLogout = async () => {
     await signOut();
+  };
+
+  const handleBackToDashboard = () => {
+    setShowDiscardDialog(true);
+  };
+
+  const handleDiscardAndReturn = async () => {
+    try {
+      // Clear all onboarding-related sessionStorage data
+      const keysToRemove = [
+        'businessName', 'businessTypes', 'primaryLocation', 'contactNumber', 
+        'purchasedNumberDetails', 'aiVoiceStyle', 'aiGreetingStyle', 'aiAssistantName', 
+        'aiHandlingUnknown', 'aiCallSchedule', 'services', 'businessDays', 'businessHours', 
+        'scheduleFullAction', 'wantsDailySummary', 'wantsEmailConfirmations', 'reminderSettings', 
+        'faqQuestions', 'faqAnswers', 'calendarIntegration', 'calendar_integration_required'
+      ];
+
+      // Remove static keys
+      keysToRemove.forEach(key => sessionStorage.removeItem(key));
+
+      // Remove dynamic keys by pattern
+      const allSessionKeys = Object.keys(sessionStorage);
+      const dynamicPatterns = [
+        /^onboardingId/,
+        /^purchasedContactNumber_/,
+        /^contactNumberPurchased_/,
+        /^contactNumbersWebhookCalled_/,
+        /^cachedContactNumbers_/
+      ];
+
+      allSessionKeys.forEach(key => {
+        if (dynamicPatterns.some(pattern => pattern.test(key))) {
+          sessionStorage.removeItem(key);
+        }
+      });
+
+      // Deactivate ALL existing active Google integrations for this user
+      if (user?.id) {
+        await supabase
+          .from('google_integrations')
+          .update({ is_active: false })
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+      }
+
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error during discard:', error);
+      // Still navigate even if cleanup fails
+      navigate('/dashboard');
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
       {/* Header Section */}
       <div className="grid grid-cols-3 items-center px-8 md:px-6 sm:px-4 py-6 md:py-5 sm:py-4 mb-8 md:mb-6 sm:mb-4">
-        <div></div>
+        {/* Back to Dashboard Button - Left */}
+        <div className="flex justify-start">
+          {shouldShowBackButton() && (
+            <button 
+              onClick={handleBackToDashboard}
+              className="flex items-center gap-2 px-4 py-2 bg-[#F3F4F6] rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 md:w-3.5 md:h-3.5 sm:w-3 sm:h-3 text-[#6B7280]" />
+              <span className="text-base md:text-sm sm:text-xs text-[#6B7280]">Back</span>
+            </button>
+          )}
+        </div>
+        
         {/* App Title - Centered */}
         <h1 className="text-3xl md:text-2xl sm:text-xl font-bold text-black text-center">Voicera AI</h1>
         
-        {/* Logout Button */}
+        {/* Logout Button - Right */}
         <div className="flex justify-end">
           <button 
             onClick={handleLogout}
@@ -177,6 +314,27 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Discard Confirmation Dialog */}
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Return to Dashboard?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to go back to the dashboard? All data for this agent will be discarded.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDiscardAndReturn}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Discard & Go Back
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
