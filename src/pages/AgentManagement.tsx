@@ -18,6 +18,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useGoogleIntegration } from "@/hooks/useGoogleIntegration";
 import { supabase } from "@/integrations/supabase/client";
 import { OnboardingData } from "@/lib/onboarding";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const businessTypes = [
   "Hairdressers",
@@ -149,6 +158,11 @@ const AgentManagement = () => {
   const [dailySummary, setDailySummary] = useState(false);
   const [emailConfirmations, setEmailConfirmations] = useState(false);
   const [autoReminders, setAutoReminders] = useState(false);
+
+  // Validation state
+  const [agentStatus, setAgentStatus] = useState<string>('offline');
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [validationMessage, setValidationMessage] = useState('');
 
   // Options arrays
   const assistantNameOptions = React.useMemo(() => {
@@ -458,6 +472,9 @@ const AgentManagement = () => {
         // Load agent status data into context
         await loadAgentStatus(agentId);
         
+        // Store current agent status for validation
+        setAgentStatus(data.current_status || 'offline');
+        
         // Handle reminder settings (jsonb format)
         if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
           const reminderData = data.reminder_settings as { wantsReminders?: boolean };
@@ -478,7 +495,36 @@ const AgentManagement = () => {
     }
   }, [toast]);
 
+  // Validation function
+  const validateBeforeSave = useCallback((): { isValid: boolean; message: string } => {
+    // Check if agent is live
+    if (agentStatus !== 'live') {
+      return {
+        isValid: false,
+        message: 'Make the agent live first to save the changes'
+      };
+    }
+    
+    // Check if Google Calendar is connected
+    if (!googleIntegration || !googleIntegration.is_active) {
+      return {
+        isValid: false,
+        message: "Connect to a google calendar first in the 'Advanced' section"
+      };
+    }
+    
+    return { isValid: true, message: '' };
+  }, [agentStatus, googleIntegration]);
+
   const saveChanges = useCallback(async () => {
+    // Validate before saving
+    const validation = validateBeforeSave();
+    if (!validation.isValid) {
+      setValidationMessage(validation.message);
+      setShowValidationDialog(true);
+      return;
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
@@ -2248,6 +2294,23 @@ const AgentManagement = () => {
         onClose={closeNotifications}
         notificationCount={notificationCount}
       />
+
+      {/* Validation Alert Dialog */}
+      <AlertDialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cannot Save Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              {validationMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowValidationDialog(false)}>
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
