@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCallLogsNotifications } from "./useCallLogsNotifications";
+import { notificationStorage } from "@/lib/notificationStorage";
 
 export interface Notification {
   id: string;
@@ -16,9 +17,17 @@ export interface Notification {
 
 export const useNotifications = () => {
   const [showNotifications, setShowNotifications] = useState(false);
-  const { notifications, loading, error, notificationCount } = useCallLogsNotifications();
+  const { notifications, loading, error, notificationCount, unreadCount } = useCallLogsNotifications();
 
-  const openNotifications = () => setShowNotifications(true);
+  const openNotifications = () => {
+    // Mark all current notifications as read when opening the popup
+    if (notifications.length > 0) {
+      const notificationIds = notifications.map(n => n.id);
+      notificationStorage.markAsRead(notificationIds);
+    }
+    setShowNotifications(true);
+  };
+
   const closeNotifications = () => setShowNotifications(false);
 
   return {
@@ -27,6 +36,7 @@ export const useNotifications = () => {
     openNotifications,
     closeNotifications,
     notificationCount,
+    unreadCount,
     loading,
     error,
   };

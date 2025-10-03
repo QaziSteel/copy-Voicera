@@ -3,6 +3,7 @@ import { useCallLogs } from "./useCallLogs";
 import { useProject } from "@/contexts/ProjectContext";
 import { format, isToday, isYesterday } from "date-fns";
 import { maskPhoneNumber } from "@/lib/customerDataMasking";
+import { notificationStorage } from "@/lib/notificationStorage";
 import type { Notification } from "./useNotifications";
 
 export const useCallLogsNotifications = () => {
@@ -60,10 +61,15 @@ export const useCallLogsNotifications = () => {
       });
   }, [callLogs, canViewCustomerData]);
 
+  const unreadCount = useMemo(() => {
+    return notifications.filter(n => !notificationStorage.isRead(n.id)).length;
+  }, [notifications]);
+
   return {
     notifications,
     loading,
     error,
     notificationCount: notifications.length,
+    unreadCount,
   };
 };
