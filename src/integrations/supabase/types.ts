@@ -25,7 +25,7 @@ export type Database = {
           customer_number: string
           id: string
           notes: string | null
-          project_id: string | null
+          project_id: string
           service_type: string | null
           status: string
           updated_at: string
@@ -40,7 +40,7 @@ export type Database = {
           customer_number: string
           id?: string
           notes?: string | null
-          project_id?: string | null
+          project_id: string
           service_type?: string | null
           status?: string
           updated_at?: string
@@ -55,7 +55,7 @@ export type Database = {
           customer_number?: string
           id?: string
           notes?: string | null
-          project_id?: string | null
+          project_id?: string
           service_type?: string | null
           status?: string
           updated_at?: string
