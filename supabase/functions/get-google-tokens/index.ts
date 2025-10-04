@@ -54,11 +54,11 @@ serve(async (req) => {
 
     // Build query for Google integration - only fetch metadata
     // Query by email and get the newest record with non-null tokens
+    // Note: We don't filter by is_active to allow webhooks to work even if UI shows disconnected
     let query = supabase
       .from('google_integrations')
       .select('id, user_id, project_id, token_expires_at, scopes, user_email, is_active, created_at, updated_at, encrypted_access_token')
       .eq('user_email', email)
-      .eq('is_active', true)
       .not('encrypted_access_token', 'is', null)
       .order('created_at', { ascending: false })
       .limit(1);
