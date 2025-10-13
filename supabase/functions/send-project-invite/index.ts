@@ -178,19 +178,19 @@ serve(async (req) => {
 
     if (!emailResponse || emailResponse.error) {
       console.error('Error sending invitation email via Resend:', emailResponse?.error);
-      
-      // Clean up invitation record if email failed
-      await supabaseAdmin
-        .from('project_invitations')
-        .delete()
-        .eq('id', invitation.id);
 
+      // Do NOT delete the invitation; return a success payload with a copyable link
       return new Response(
-        JSON.stringify({ 
-          error: 'Failed to send invitation email', 
-          details: emailResponse?.error?.message || 'Unknown email service error' 
+        JSON.stringify({
+          success: true,
+          invitationId: invitation.id,
+          token: invitationToken,
+          invitationUrl,
+          emailSent: false,
+          message: 'Invitation created, but email could not be sent. Share the link directly.',
+          expiresAt: expiresAt.toISOString()
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -201,6 +201,8 @@ serve(async (req) => {
         success: true, 
         invitationId: invitation.id,
         token: invitationToken,
+        invitationUrl,
+        emailSent: true,
         emailId: emailResponse.data?.id,
         message: `Invitation sent to ${email}`,
         expiresAt: expiresAt.toISOString()

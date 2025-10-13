@@ -46,14 +46,27 @@ export const useProjectInvite = () => {
       }
 
       console.log('Invitation sent successfully:', data);
-      toast.success(`Invitation sent to ${email}! They will receive an email with instructions to join.`);
+      if (data?.emailSent === false) {
+        toast.info('Invitation created, but email could not be sent. Share the invite link directly.', {
+          action: {
+            label: 'Copy link',
+            onClick: () => {
+              if (data?.invitationUrl) navigator.clipboard.writeText(data.invitationUrl);
+            }
+          }
+        });
+      } else {
+        toast.success(`Invitation sent to ${email}! They will receive an email with instructions to join.`);
+      }
       
       return { 
         success: true, 
         invitationId: data.invitationId,
         token: data.token,
         emailId: data.emailId,
-        expiresAt: data.expiresAt
+        expiresAt: data.expiresAt,
+        inviteUrl: data.invitationUrl,
+        emailSent: data.emailSent
       };
     } catch (error) {
       console.error('Error inviting user:', error);
