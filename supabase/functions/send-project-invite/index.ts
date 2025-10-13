@@ -106,8 +106,8 @@ serve(async (req) => {
     const inviterName = inviter?.full_name || inviter?.email || 'Team Member';
     const inviterEmail = inviter?.email || '';
 
-    // Construct invitation URL with token
-    const baseUrl = 'https://nhhdxwgrmcdsapbuvelx.lovable.app';
+    // Construct invitation URL with token (use environment variable or fallback)
+    const baseUrl = Deno.env.get('APP_BASE_URL') ?? 'https://nhhdxwgrmcdsapbuvelx.lovable.app';
     const invitationUrl = `${baseUrl}/invite?token=${invitationToken}`;
 
     console.log('Sending invitation email with token-based URL:', invitationUrl);

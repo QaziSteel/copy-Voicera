@@ -46,58 +46,24 @@ export const Invite: React.FC = () => {
 
       console.log('Loading invitation data for token:', token);
 
-      // Load invitation details using token
-      const { data: invitationData, error: inviteError } = await supabase
-        .from('project_invitations')
-        .select('*')
-        .eq('token', token)
-        .eq('status', 'pending')
-        .single();
+      // Call edge function to get invitation details (bypasses RLS)
+      const { data, error } = await supabase.functions.invoke('get-invite-details', {
+        body: { token }
+      });
 
-      if (inviteError || !invitationData) {
-        console.error('Invitation lookup error:', inviteError);
-        toast.error('Invitation not found, has expired, or has already been used');
+      if (error || !data?.success) {
+        console.error('Error loading invitation details:', error);
+        toast.error(data?.error || 'Invitation not found, has expired, or has already been used');
         navigate('/');
         return;
       }
 
-      // Check if invitation has expired
-      const now = new Date();
-      const expiresAt = new Date(invitationData.expires_at);
-      
-      if (now > expiresAt) {
-        console.log('Invitation expired:', { now, expiresAt });
-        toast.error('This invitation has expired');
-        navigate('/');
-        return;
-      }
+      console.log('Invitation details loaded:', data);
 
-      setInvitation(invitationData);
-      console.log('Invitation loaded:', invitationData);
-
-      // Load project details
-      const { data: projectData, error: projectError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', invitationData.project_id)
-        .single();
-
-      if (projectError) {
-        console.error('Error loading project:', projectError);
-      }
-      setProject(projectData);
-
-      // Load inviter details
-      const { data: inviterData, error: inviterError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', invitationData.inviter_id)
-        .single();
-
-      if (inviterError) {
-        console.error('Error loading inviter:', inviterError);
-      }
-      setInviter(inviterData);
+      // Set state from sanitized response
+      setInvitation(data.invitation);
+      setProject(data.project);
+      setInviter(data.inviter);
 
     } catch (error) {
       console.error('Error loading invitation:', error);
@@ -258,7 +224,7 @@ export const Invite: React.FC = () => {
           </div>
           <CardTitle>You're Invited!</CardTitle>
           <CardDescription>
-            {inviter?.full_name || inviter?.email} has invited you to join{' '}
+            {inviter?.name} has invited you to join{' '}
             <strong>{project.name}</strong> as a {invitation.role}.
           </CardDescription>
           
