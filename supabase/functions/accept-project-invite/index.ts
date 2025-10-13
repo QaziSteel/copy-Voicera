@@ -156,17 +156,65 @@ serve(async (req) => {
 
     console.log('Adding user to project members...');
 
-    // Add user to project members using service role (bypasses RLS)
-    const { error: memberError } = await supabase
+    // Double-check: ensure user doesn't belong to any other project
+    const { data: anyMembership, error: checkError } = await supabase
       .from('project_members')
-      .insert({
-        project_id: invitation.project_id,
-        user_id: user.id,
-        role: invitation.role
-      });
+      .select('id, project_id, role, projects(name)')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
-    if (memberError) {
-      console.error('Error adding user to project:', memberError);
+    if (anyMembership && !checkError) {
+      const projectName = anyMembership.projects?.name || 'another project';
+      console.error('User already belongs to another project:', user.id, anyMembership.project_id);
+      
+      // Update invitation status to rejected
+      await supabase
+        .from('project_invitations')
+        .update({ status: 'rejected' })
+        .eq('id', invitation.id);
+      
+      return new Response(
+        JSON.stringify({ 
+          error: `You are already a ${anyMembership.role} of "${projectName}". Each user can only belong to one project. Please contact support if you need to switch projects.`,
+          code: 'USER_ALREADY_IN_PROJECT'
+        }), 
+        { 
+          status: 409, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Add user to project members using service role (bypasses RLS)
+    try {
+      const { error: memberError } = await supabase
+        .from('project_members')
+        .insert({
+          project_id: invitation.project_id,
+          user_id: user.id,
+          role: invitation.role
+        });
+
+      if (memberError) {
+        // Check if it's the unique constraint violation
+        if (memberError.message?.includes('idx_one_user_one_project')) {
+          console.error('Database constraint: User already in another project');
+          return new Response(
+            JSON.stringify({ 
+              error: 'You are already a member of another project. Each user can only belong to one project.',
+              code: 'USER_ALREADY_IN_PROJECT'
+            }), 
+            { 
+              status: 409, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+        
+        throw memberError;
+      }
+    } catch (error) {
+      console.error('Error adding user to project:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to add user to project' }), 
         { 

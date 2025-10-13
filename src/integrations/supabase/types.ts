@@ -555,6 +555,10 @@ export type Database = {
         Args: { _email: string }
         Returns: boolean
       }
+      cleanup_expired_invitations: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_orphaned_google_integrations: {
         Args: Record<PropertyKey, never>
         Returns: undefined

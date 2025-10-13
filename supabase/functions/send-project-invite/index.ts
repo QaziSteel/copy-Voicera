@@ -17,16 +17,53 @@ serve(async (req) => {
 
   try {
     const { email, projectId, inviterId, role = 'member' } = await req.json();
-
-    if (!email || !projectId || !inviterId) {
-      console.error('Missing required fields:', { email: !!email, projectId: !!projectId, inviterId: !!inviterId });
+    
+    // Normalize email
+    const normalizedEmail = email?.toLowerCase().trim();
+    
+    if (!normalizedEmail || !projectId || !inviterId) {
+      console.error('Missing required fields');
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: email, projectId, inviterId' }),
+        JSON.stringify({ error: 'Missing required fields: email, projectId, and inviterId are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Processing invitation request:', { email, projectId, role });
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      console.error('Invalid email format:', normalizedEmail);
+      return new Response(
+        JSON.stringify({ error: 'Invalid email address format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate email length
+    if (normalizedEmail.length > 255) {
+      console.error('Email too long:', normalizedEmail.length);
+      return new Response(
+        JSON.stringify({ error: 'Email address too long (max 255 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate role
+    const validRoles = ['member', 'admin'];
+    if (!validRoles.includes(role)) {
+      console.error('Invalid role:', role);
+      return new Response(
+        JSON.stringify({ error: 'Invalid role. Must be "member" or "admin"' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Processing invitation request:', { 
+      email: normalizedEmail, 
+      projectId, 
+      role,
+      timestamp: new Date().toISOString()
+    });
 
     // Create Supabase admin client
     const supabaseAdmin = createClient(
@@ -40,17 +77,52 @@ serve(async (req) => {
       }
     );
 
+    // Check if the invited email already belongs to a registered user
+    const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+    if (usersError) {
+      console.error('Error fetching users:', usersError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to validate invitation' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const existingUser = users.find(u => u.email?.toLowerCase().trim() === normalizedEmail);
+
+    // If user exists, check if they're already in ANY project
+    if (existingUser) {
+      const { data: existingMembership, error: memberError } = await supabaseAdmin
+        .from('project_members')
+        .select('id, role, projects(name)')
+        .eq('user_id', existingUser.id)
+        .maybeSingle();
+
+      if (existingMembership && !memberError) {
+        const projectName = existingMembership.projects?.name || 'another project';
+        const userRole = existingMembership.role;
+        console.log('User already belongs to a project:', normalizedEmail, existingMembership);
+        
+        return new Response(
+          JSON.stringify({ 
+            error: `This user is already a ${userRole} of "${projectName}". Each user can only belong to one project.`,
+            code: 'USER_ALREADY_IN_PROJECT'
+          }),
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Check for existing pending invitation
     const { data: existingInvite } = await supabaseAdmin
       .from('project_invitations')
       .select('id, status')
       .eq('project_id', projectId)
-      .eq('email', email.toLowerCase())
+      .eq('email', normalizedEmail)
       .eq('status', 'pending')
       .single();
 
     if (existingInvite) {
-      console.log('Pending invitation already exists for:', email);
+      console.log('Pending invitation already exists for:', normalizedEmail);
       return new Response(
         JSON.stringify({ error: 'An invitation for this email is already pending for this project' }),
         { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -69,7 +141,7 @@ serve(async (req) => {
       .insert({
         project_id: projectId,
         inviter_id: inviterId,
-        email,
+        email: normalizedEmail,
         role,
         status: 'pending',
         token: invitationToken,
@@ -81,7 +153,7 @@ serve(async (req) => {
     if (inviteError) {
       console.error('Error creating invitation record:', inviteError);
       return new Response(
-        JSON.stringify({ error: 'Failed to create invitation record', details: inviteError.message }),
+        JSON.stringify({ error: 'Failed to create invitation record' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -171,7 +243,7 @@ serve(async (req) => {
     // Send invitation email using Resend
     const emailResponse = await resend.emails.send({
       from: 'VoiceRA <invitations@resend.dev>',
-      to: [email],
+      to: [normalizedEmail],
       subject: `You're invited to join ${projectName}!`,
       html: htmlContent,
     });
@@ -194,7 +266,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Invitation sent successfully via Resend to:', email, 'Email ID:', emailResponse.data?.id);
+    console.log('Invitation sent successfully via Resend to:', normalizedEmail, 'Email ID:', emailResponse.data?.id);
 
     return new Response(
       JSON.stringify({ 
@@ -204,7 +276,7 @@ serve(async (req) => {
         invitationUrl,
         emailSent: true,
         emailId: emailResponse.data?.id,
-        message: `Invitation sent to ${email}`,
+        message: `Invitation sent to ${normalizedEmail}`,
         expiresAt: expiresAt.toISOString()
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -213,7 +285,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Unexpected error in send-project-invite:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

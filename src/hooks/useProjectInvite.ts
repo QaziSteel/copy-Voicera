@@ -35,13 +35,29 @@ export const useProjectInvite = () => {
 
       if (error) {
         console.error('Error sending invitation:', error);
-        toast.error(error.message || 'Failed to send invitation');
+        
+        // Handle specific error codes
+        if (error.message?.includes('USER_ALREADY_IN_PROJECT') || 
+            error.message?.includes('already a member') || 
+            error.message?.includes('already a')) {
+          toast.error(error.message, { duration: 6000 });
+        } else if (error.message?.includes('409')) {
+          toast.error('This user is already part of another project');
+        } else {
+          toast.error('Failed to send invitation');
+        }
         return { success: false };
       }
 
       if (!data?.success) {
         console.error('Invitation failed:', data);
-        toast.error(data?.error || 'Failed to send invitation');
+        
+        // Handle error codes from response
+        if (data?.code === 'USER_ALREADY_IN_PROJECT') {
+          toast.error(data?.error, { duration: 6000 });
+        } else {
+          toast.error(data?.error || 'Failed to send invitation');
+        }
         return { success: false };
       }
 
