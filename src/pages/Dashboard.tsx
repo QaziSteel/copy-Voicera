@@ -477,8 +477,12 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
-                          Information Inquiry
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          call.booking_id 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-blue-100 text-blue-600'
+                        }`}>
+                          {call.booking_id ? 'Booking' : 'Information Inquiry'}
                         </div>
                       </div>
                     </div>
