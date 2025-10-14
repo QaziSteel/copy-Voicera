@@ -376,14 +376,14 @@ const Dashboard: React.FC = () => {
                         >
                           <path
                             d="M17.5 2.5L2.5 17.5"
-                            stroke="#EF4444"
+                            stroke="#9CA3AF"
                             strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
                           <path
                             d="M2.5 2.5L17.5 17.5"
-                            stroke="#EF4444"
+                            stroke="#9CA3AF"
                             strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
