@@ -10,6 +10,8 @@ export interface DailySummaryEntry {
   bookingsMade: number;
   missed: number;
   informationInquiries: number;
+  conversionRate: string;
+  peakTime: string;
 }
 
 export interface UseDailySummaryResult {
@@ -50,7 +52,9 @@ export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterV
         
         // For now, treat all calls as information inquiries
         const informationInquiries = callsTaken;
-        const bookingsMade = 0; // Will be 0 for now as requested
+        
+        // Count actual bookings from call logs
+        const bookingsMade = calls.filter(call => call.booking_id !== null).length;
         
         // Calculate missed calls (very short duration or specific end reasons)
         const missed = calls.filter(call => 
@@ -80,6 +84,49 @@ export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterV
 
         const avgDuration = formatDuration(averageDurationSeconds);
 
+        // Calculate peak time (busiest 2-hour window)
+        const calculatePeakTime = (callsForDay: CallLogRecord[]): string => {
+          if (callsForDay.length === 0) return 'N/A';
+          
+          // Create hourly buckets (0-23)
+          const hourCounts: Record<number, number> = {};
+          
+          callsForDay.forEach(call => {
+            if (call.started_at) {
+              const hour = new Date(call.started_at).getHours();
+              hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            }
+          });
+          
+          // Find the busiest 2-hour window
+          let maxCalls = 0;
+          let peakStartHour = 0;
+          
+          for (let hour = 0; hour <= 22; hour++) {
+            const windowCount = (hourCounts[hour] || 0) + (hourCounts[hour + 1] || 0);
+            if (windowCount > maxCalls) {
+              maxCalls = windowCount;
+              peakStartHour = hour;
+            }
+          }
+          
+          // Format the time range
+          const formatHour = (hour: number): string => {
+            const period = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+            return `${displayHour}:00 ${period}`;
+          };
+          
+          return `${formatHour(peakStartHour)} – ${formatHour(peakStartHour + 2)}`;
+        };
+
+        const peakTime = calculatePeakTime(calls);
+
+        // Calculate conversion rate
+        const conversionRate = callsTaken > 0 
+          ? `${Math.round((bookingsMade / callsTaken) * 100)}%`
+          : '0%';
+
         return {
           id: String(index + 1).padStart(2, '0'),
           date: dateKey,
@@ -93,6 +140,8 @@ export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterV
           bookingsMade,
           missed,
           informationInquiries,
+          conversionRate,
+          peakTime,
         };
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Most recent first

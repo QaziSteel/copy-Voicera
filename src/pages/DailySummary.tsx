@@ -85,17 +85,17 @@ const DailySummary: React.FC = () => {
               <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                 <span className="text-lg text-gray-500">Calls Taken:</span>
                 <span className="text-lg font-semibold text-black">
-                  {selectedSummary?.callsTaken || 6} Calls
+                  {selectedSummary?.callsTaken ?? 0} Calls
                 </span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                 <span className="text-lg text-gray-500">Average Duration:</span>
-                <span className="text-lg font-semibold text-black">{selectedSummary?.avgDuration || "3m 45s"}</span>
+                <span className="text-lg font-semibold text-black">{selectedSummary?.avgDuration ?? "0s"}</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                 <span className="text-lg text-gray-500">Bookings Made:</span>
                 <span className="text-lg font-semibold text-black">
-                  {selectedSummary?.bookingsMade || 4} Bookings
+                  {selectedSummary?.bookingsMade ?? 0} Bookings
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -115,12 +115,12 @@ const DailySummary: React.FC = () => {
             <div className="space-y-5">
               <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                 <span className="text-lg text-gray-500">Conversion Rate:</span>
-                <span className="text-lg font-semibold text-black">66%</span>
+                <span className="text-lg font-semibold text-black">{selectedSummary?.conversionRate ?? '0%'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-lg text-gray-500">Peak Time:</span>
                 <span className="text-lg font-semibold text-black">
-                  11:00 AM – 1:00 PM
+                  {selectedSummary?.peakTime ?? 'N/A'}
                 </span>
               </div>
             </div>
