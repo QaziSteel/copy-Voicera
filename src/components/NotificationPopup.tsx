@@ -1,7 +1,6 @@
 import React from "react";
 import { Notification } from "@/hooks/useNotifications";
 import { CheckCircle, AlertTriangle, Info, AlertCircle } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface NotificationPopupProps {
   notifications: Notification[];
@@ -36,7 +35,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-start pt-24 px-4 z-50">
       <div className="bg-white rounded-2xl w-full max-w-[650px] overflow-hidden shadow-lg">
-        <ScrollArea className="max-h-[80vh]">
+        <div className="max-h-[80vh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
           {/* Header */}
           <div className="flex justify-between items-center p-5 border-b border-gray-200">
             <h3 className="text-xl font-medium text-gray-600">
@@ -85,7 +84,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
               </div>
             ))}
           </div>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );
