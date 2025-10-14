@@ -224,7 +224,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
 
             {/* Previous Test Calls List */}
             {!isCallActive && !isConnecting && (
-              <div className="space-y-3">
+            <div className="space-y-3 max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
                 {testCallLogsLoading ? (
                   <div className="text-sm text-gray-500 text-center py-4">Loading test calls...</div>
                 ) : testCallLogs.length === 0 ? (
