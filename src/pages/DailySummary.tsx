@@ -225,7 +225,7 @@ const DailySummary: React.FC = () => {
 
         {/* Daily Summary Table */}
         <div className="border border-gray-200 rounded-xl overflow-hidden">
-          {/* Table Header */}
+          {/* Table Header - Fixed */}
           <div className="flex items-center gap-4 p-3 bg-gray-100 border-b border-black border-opacity-10">
             <div className="w-4 h-4 border border-gray-300"></div>
             <div className="w-8 text-xs font-bold text-gray-700 uppercase tracking-wide">
@@ -251,61 +251,64 @@ const DailySummary: React.FC = () => {
             </div>
           </div>
 
-          {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="ml-2 text-muted-foreground">Loading summaries...</p>
-            </div>
-          )}
+          {/* Scrollable Content Area */}
+          <div className="max-h-[calc(100vh-320px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="ml-2 text-muted-foreground">Loading summaries...</p>
+              </div>
+            )}
 
-          {/* Table Rows */}
-          {!loading && dailySummaryEntries.map((entry) => (
-            <div
-              key={entry.id}
-              className="flex items-center gap-4 p-3 h-16 bg-white border-b border-gray-200"
-            >
-              <div className="w-4 h-4 border border-gray-300"></div>
-              <div className="w-8 font-semibold text-gray-700 text-sm">
-                {entry.id}
+            {/* Table Rows */}
+            {!loading && dailySummaryEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex items-center gap-4 p-3 h-16 bg-white border-b border-gray-200"
+              >
+                <div className="w-4 h-4 border border-gray-300"></div>
+                <div className="w-8 font-semibold text-gray-700 text-sm">
+                  {entry.id}
+                </div>
+                <div className="flex-1 text-gray-700 text-sm">
+                  {entry.formattedDate}
+                </div>
+                <div className="flex-1 text-gray-700 text-sm">
+                  {entry.callsTaken} Calls
+                </div>
+                <div className="flex-1 text-gray-700 text-sm">
+                  {entry.avgDuration}
+                </div>
+                <div className="flex-1 text-gray-700 text-sm">
+                  {entry.informationInquiries} Inquiries
+                </div>
+                <div className="flex-1 text-gray-700 text-sm">
+                  {entry.missed} Missed
+                </div>
+                <div className="flex-1">
+                  <button
+                    onClick={() => openSummaryPopup(entry)}
+                    className="bg-black text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors"
+                  >
+                    View Summary
+                  </button>
+                </div>
               </div>
-              <div className="flex-1 text-gray-700 text-sm">
-                {entry.formattedDate}
-              </div>
-              <div className="flex-1 text-gray-700 text-sm">
-                {entry.callsTaken} Calls
-              </div>
-              <div className="flex-1 text-gray-700 text-sm">
-                {entry.avgDuration}
-              </div>
-              <div className="flex-1 text-gray-700 text-sm">
-                {entry.informationInquiries} Inquiries
-              </div>
-              <div className="flex-1 text-gray-700 text-sm">
-                {entry.missed} Missed
-              </div>
-              <div className="flex-1">
-                <button
-                  onClick={() => openSummaryPopup(entry)}
-                  className="bg-black text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors"
-                >
-                  View Summary
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
 
-          {/* Empty State */}
-          {!loading && dailySummaryEntries.length === 0 && (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No call data yet
-              </h3>
-              <p className="text-gray-500">
-                Daily summaries will appear here once calls are logged.
-              </p>
-            </div>
-          )}
+            {/* Empty State */}
+            {!loading && dailySummaryEntries.length === 0 && (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No call data yet
+                </h3>
+                <p className="text-gray-500">
+                  Daily summaries will appear here once calls are logged.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
