@@ -248,6 +248,7 @@ export const hasCompletedOnboarding = async (projectId?: string): Promise<boolea
       return false;
     }
 
+    // Check 1: Does user have an onboarding_responses record?
     let query = supabase
       .from('onboarding_responses')
       .select('id')
@@ -265,7 +266,26 @@ export const hasCompletedOnboarding = async (projectId?: string): Promise<boolea
       return false;
     }
 
-    return !!data;
+    // If they have an onboarding response, they've completed onboarding
+    if (data) {
+      return true;
+    }
+
+    // Check 2: Are they a member of any project (invited users)?
+    const { data: membership, error: memberError } = await supabase
+      .from('project_members')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (memberError) {
+      console.error('Error checking project membership:', memberError);
+      return false;
+    }
+
+    // If they're in a project, consider onboarding complete (invited user)
+    return !!membership;
   } catch (error) {
     console.error('Error checking onboarding status:', error);
     return false;
