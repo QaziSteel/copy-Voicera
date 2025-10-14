@@ -446,8 +446,15 @@ const CallLogs: React.FC = () => {
                       <Badge variant="secondary" className="text-xs">
                         {call.type === 'outbound' ? 'Outgoing' : 'Incoming'}
                       </Badge>
-                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
-                        Inquiry
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs ${
+                          call.booking_id 
+                            ? 'bg-green-50 text-green-600 border-green-200' 
+                            : 'bg-blue-50 text-blue-600 border-blue-200'
+                        }`}
+                      >
+                        {call.booking_id ? 'Booking' : 'Inquiry'}
                       </Badge>
                     </div>
 
