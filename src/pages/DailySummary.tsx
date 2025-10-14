@@ -126,15 +126,6 @@ const DailySummary: React.FC = () => {
             </div>
           </div>
 
-          {/* Close Button */}
-          <div className="flex">
-            <button
-              onClick={() => setShowSummaryPopup(false)}
-              className="flex-1 bg-gray-100 text-gray-500 font-semibold text-lg py-4 px-5 rounded-xl hover:bg-gray-200 transition-colors"
-            >
-              Close
-            </button>
-          </div>
         </div>
       </div>
     </div>
