@@ -747,7 +747,7 @@ const CallLogs: React.FC = () => {
       {/* Transcript Popup */}
       {showTranscript && selectedTranscript && (
         <div className="fixed inset-0 bg-black bg-opacity-20 flex justify-center items-center z-50">
-          <div className="bg-white rounded-2xl w-[700px] max-h-[90vh] overflow-y-auto shadow-lg">
+          <div className="bg-white rounded-2xl w-[700px] overflow-hidden shadow-lg">
             {/* Header */}
             <div className="flex justify-between items-center p-5 border-b border-gray-200">
               <h3 className="text-xl font-medium text-gray-800">
@@ -777,26 +777,28 @@ const CallLogs: React.FC = () => {
             </div>
 
             {/* Transcript Content */}
-            <div className="p-5 space-y-4">
-              {transcriptContent.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  Loading transcript...
-                </div>
-              ) : (
-                transcriptContent.map((message, index) => (
-                  <div key={index} className="flex gap-4 pb-4">
-                    <div className="flex-1">
-                      <div className="mb-3">
-                        <div className="text-xl font-medium text-black">{message.speaker}</div>
-                        <div className="text-gray-500 text-base">{message.role}</div>
-                      </div>
-                      <div className="p-3 border border-gray-200 rounded-xl">
-                        <div className="text-gray-600">{message.message}</div>
+            <div className="max-h-[calc(90vh-80px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400 p-5">
+              <div className="space-y-4">
+                {transcriptContent.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Loading transcript...
+                  </div>
+                ) : (
+                  transcriptContent.map((message, index) => (
+                    <div key={index} className="flex gap-4 pb-4">
+                      <div className="flex-1">
+                        <div className="mb-3">
+                          <div className="text-xl font-medium text-black">{message.speaker}</div>
+                          <div className="text-gray-500 text-base">{message.role}</div>
+                        </div>
+                        <div className="p-3 border border-gray-200 rounded-xl">
+                          <div className="text-gray-600">{message.message}</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
