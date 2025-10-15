@@ -22,7 +22,6 @@ import {
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
-  rememberMe: z.boolean().default(false),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -43,7 +42,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
   });
 
@@ -152,27 +150,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
                 )}
               />
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <FormField
-                  control={form.control}
-                  name="rememberMe"
-                  render={({ field }) => (
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="remember"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                      <Label
-                        htmlFor="remember"
-                        className="text-sm text-foreground cursor-pointer"
-                      >
-                        Remember me
-                      </Label>
-                    </div>
-                  )}
-                />
+              {/* Forgot Password */}
+              <div className="text-right">
                 <Link
                   to="/auth/forgot-password"
                   className="text-sm text-auth-link hover:underline"
