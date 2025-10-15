@@ -32,6 +32,8 @@ const DailySummary: React.FC = () => {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("");
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const {
     showDateFilter,
     selectedFilter,
@@ -58,11 +60,69 @@ const DailySummary: React.FC = () => {
   // Get real daily summary data from database
   const { dailySummaryEntries, loading, callLogs } = useDailySummary(getDateFilter(), filterVersion);
 
+  // Get unique agents for filter dropdown
+  const uniqueAgents = React.useMemo(() => {
+    const agents = new Map<string, { id: string; name: string; phone: string }>();
+    dailySummaryEntries.forEach(entry => {
+      entry.agentSummaries?.forEach(agentEntry => {
+        if (agentEntry.agent_id && !agents.has(agentEntry.agent_id)) {
+          agents.set(agentEntry.agent_id, {
+            id: agentEntry.agent_id,
+            name: agentEntry.agent_name || 'Unknown',
+            phone: agentEntry.phone_number || '',
+          });
+        }
+      });
+    });
+    return Array.from(agents.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [dailySummaryEntries]);
+
+  // Filter entries by selected agent
+  const filteredEntries = React.useMemo(() => {
+    if (!selectedAgentId) return dailySummaryEntries;
+    
+    return dailySummaryEntries
+      .map(dateEntry => {
+        const filteredAgentSummaries = dateEntry.agentSummaries?.filter(
+          agentEntry => agentEntry.agent_id === selectedAgentId
+        );
+        
+        if (!filteredAgentSummaries || filteredAgentSummaries.length === 0) {
+          return null;
+        }
+
+        // Recalculate date totals for filtered agents
+        const allCalls = filteredAgentSummaries.reduce((sum, agent) => sum + agent.callsTaken, 0);
+        const allBookings = filteredAgentSummaries.reduce((sum, agent) => sum + agent.bookingsMade, 0);
+        const allMissed = filteredAgentSummaries.reduce((sum, agent) => sum + agent.missed, 0);
+        
+        return {
+          ...dateEntry,
+          agentSummaries: filteredAgentSummaries,
+          callsTaken: allCalls,
+          bookingsMade: allBookings,
+          missed: allMissed,
+          conversionRate: allCalls > 0 ? `${Math.round((allBookings / allCalls) * 100)}%` : '0%',
+        };
+      })
+      .filter((entry) => entry !== null) as DailySummaryEntry[];
+  }, [dailySummaryEntries, selectedAgentId]);
+
+  const toggleDateExpansion = (dateKey: string) => {
+    const newExpanded = new Set(expandedDates);
+    if (newExpanded.has(dateKey)) {
+      newExpanded.delete(dateKey);
+    } else {
+      newExpanded.add(dateKey);
+    }
+    setExpandedDates(newExpanded);
+  };
+
   const handleSelectAll = () => {
-    if (selectedDates.size === dailySummaryEntries.length) {
+    if (selectedDates.size === filteredEntries.length) {
       setSelectedDates(new Set());
     } else {
-      setSelectedDates(new Set(dailySummaryEntries.map(entry => entry.date)));
+      setSelectedDates(new Set(filteredEntries.map(entry => entry.date)));
     }
   };
 
@@ -242,6 +302,20 @@ const DailySummary: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
+            {/* Agent Filter Dropdown */}
+            <select
+              value={selectedAgentId}
+              onChange={(e) => setSelectedAgentId(e.target.value)}
+              className="bg-white border border-gray-300 text-black px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black"
+            >
+              <option value="">All Agents</option>
+              {uniqueAgents.map(agent => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name} ({agent.phone})
+                </option>
+              ))}
+            </select>
+
             {selectedDates.size > 0 && (
               <button
                 onClick={handleDeleteClick}
@@ -252,7 +326,7 @@ const DailySummary: React.FC = () => {
               </button>
             )}
             
-            <button 
+            <button
               onClick={openDateFilter}
               className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2"
             >
@@ -323,15 +397,15 @@ const DailySummary: React.FC = () => {
           {/* Table Header - Fixed */}
           <div className="flex items-center gap-4 p-3 bg-gray-100 border-b border-black border-opacity-10">
             <Checkbox
-              checked={selectedDates.size === dailySummaryEntries.length && dailySummaryEntries.length > 0}
+              checked={selectedDates.size === filteredEntries.length && filteredEntries.length > 0}
               onCheckedChange={handleSelectAll}
               className="w-4 h-4"
             />
             <div className="w-8 text-xs font-bold text-gray-700 uppercase tracking-wide">
               NO.
             </div>
-            <div className="flex-1 text-xs font-bold text-gray-700 uppercase tracking-wide">
-              DATE
+            <div className="flex-[1.5] text-xs font-bold text-gray-700 uppercase tracking-wide">
+              DATE / AGENT
             </div>
             <div className="flex-1 text-xs font-bold text-gray-700 uppercase tracking-wide">
               CALLS TAKEN
@@ -340,7 +414,7 @@ const DailySummary: React.FC = () => {
               AVG DURATION
             </div>
             <div className="flex-1 text-xs font-bold text-gray-700 uppercase tracking-wide">
-              INFO INQUIRIES
+              BOOKINGS
             </div>
             <div className="flex-1 text-xs font-bold text-gray-700 uppercase tracking-wide">
               MISSED
@@ -360,48 +434,97 @@ const DailySummary: React.FC = () => {
               </div>
             )}
 
-            {/* Table Rows */}
-            {!loading && dailySummaryEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-center gap-4 p-3 h-16 bg-white border-b border-gray-200"
-              >
-                <Checkbox
-                  checked={selectedDates.has(entry.date)}
-                  onCheckedChange={() => handleSelectRow(entry.date)}
-                  className="w-4 h-4"
-                />
-                <div className="w-8 font-semibold text-gray-700 text-sm">
-                  {entry.id}
+            {/* Table Rows - Nested Structure */}
+            {!loading && filteredEntries.map((entry) => (
+              <React.Fragment key={entry.id}>
+                {/* Date Header Row */}
+                <div className="flex items-center gap-4 p-3 bg-gray-50 border-b border-gray-200">
+                  <Checkbox
+                    checked={selectedDates.has(entry.date)}
+                    onCheckedChange={() => handleSelectRow(entry.date)}
+                    className="w-4 h-4"
+                  />
+                  <div className="w-8 font-semibold text-gray-700 text-sm">
+                    {entry.id}
+                  </div>
+                  <div className="flex-[1.5] flex items-center gap-2">
+                    <button
+                      onClick={() => toggleDateExpansion(entry.date)}
+                      className="text-gray-700 hover:text-black transition-colors"
+                    >
+                      <svg
+                        className={`w-4 h-4 transition-transform ${
+                          expandedDates.has(entry.date) ? 'rotate-90' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                    <span className="font-semibold text-gray-900 text-sm">{entry.formattedDate}</span>
+                  </div>
+                  <div className="flex-1 font-semibold text-gray-900 text-sm">
+                    {entry.callsTaken} Calls
+                  </div>
+                  <div className="flex-1 font-semibold text-gray-900 text-sm">
+                    {entry.avgDuration}
+                  </div>
+                  <div className="flex-1 font-semibold text-gray-900 text-sm">
+                    {entry.bookingsMade} Bookings
+                  </div>
+                  <div className="flex-1 font-semibold text-gray-900 text-sm">
+                    {entry.missed} Missed
+                  </div>
+                  <div className="flex-1">
+                    <button
+                      onClick={() => openSummaryPopup(entry)}
+                      className="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors"
+                    >
+                      View
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-1 text-gray-700 text-sm">
-                  {entry.formattedDate}
-                </div>
-                <div className="flex-1 text-gray-700 text-sm">
-                  {entry.callsTaken} Calls
-                </div>
-                <div className="flex-1 text-gray-700 text-sm">
-                  {entry.avgDuration}
-                </div>
-                <div className="flex-1 text-gray-700 text-sm">
-                  {entry.informationInquiries} Inquiries
-                </div>
-                <div className="flex-1 text-gray-700 text-sm">
-                  {entry.missed} Missed
-                </div>
-                <div className="flex-1">
-                  <button
-                    onClick={() => openSummaryPopup(entry)}
-                    className="bg-black text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors"
+
+                {/* Agent Rows (Nested) */}
+                {expandedDates.has(entry.date) && entry.agentSummaries?.map((agentEntry) => (
+                  <div
+                    key={agentEntry.id}
+                    className="flex items-center gap-4 p-3 pl-16 bg-white border-b border-gray-100"
                   >
-                    View Summary
-                  </button>
-                </div>
-              </div>
+                    <div className="w-8"></div>
+                    <div className="flex-[1.5] text-gray-700 text-sm">
+                      <div className="font-medium">{agentEntry.agent_name}</div>
+                      <div className="text-xs text-gray-500">{agentEntry.phone_number}</div>
+                    </div>
+                    <div className="flex-1 text-gray-600 text-sm">
+                      {agentEntry.callsTaken} Calls
+                    </div>
+                    <div className="flex-1 text-gray-600 text-sm">
+                      {agentEntry.avgDuration}
+                    </div>
+                    <div className="flex-1 text-gray-600 text-sm">
+                      {agentEntry.bookingsMade} Bookings
+                    </div>
+                    <div className="flex-1 text-gray-600 text-sm">
+                      {agentEntry.missed} Missed
+                    </div>
+                    <div className="flex-1">
+                      <button
+                        onClick={() => openSummaryPopup(agentEntry)}
+                        className="bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-300 transition-colors"
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </React.Fragment>
             ))}
 
             {/* Empty State */}
-            {!loading && dailySummaryEntries.length === 0 && (
+            {!loading && filteredEntries.length === 0 && (
               <div className="text-center py-12">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No call data yet

@@ -22,6 +22,11 @@ export interface CallLogRecord {
   booking_service_type: string | null;
   booking_appointment_date: string | null;
   booking_appointment_time: string | null;
+  // Agent information
+  phone_number_id?: string;
+  agent_id?: string;
+  agent_name?: string;
+  wants_daily_summary?: boolean;
 }
 
 export interface UseCallLogsResult {
@@ -49,25 +54,57 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
       setLoading(true);
       setError(null);
 
-      // First, get all phone numbers for the current project
-      const { data: phoneNumbers, error: phoneNumbersError } = await supabase
+      // First, get all phone numbers for the current project with agent info
+      const { data: phoneNumbersData, error: phoneNumbersError } = await supabase
         .from('phone_numbers')
-        .select('id, phone_number')
+        .select(`
+          id,
+          phone_number,
+          project_id
+        `)
         .eq('project_id', currentProject.id);
 
       if (phoneNumbersError) {
         throw phoneNumbersError;
       }
 
-      if (!phoneNumbers || phoneNumbers.length === 0) {
+      if (!phoneNumbersData || phoneNumbersData.length === 0) {
         setCallLogs([]);
         setLoading(false);
         return;
       }
 
+      // Get agent information for these phone numbers
+      const { data: agentsData, error: agentsError } = await supabase
+        .from('onboarding_responses')
+        .select('id, contact_number, business_name, wants_daily_summary')
+        .eq('project_id', currentProject.id)
+        .in('contact_number', phoneNumbersData.map(pn => pn.phone_number));
+
+      if (agentsError) {
+        console.error('Error fetching agents:', agentsError);
+      }
+
+      // Create a map of phone_number -> agent info
+      const agentMap = new Map(
+        (agentsData || []).map(agent => [
+          agent.contact_number,
+          {
+            agent_id: agent.id,
+            agent_name: agent.business_name || 'Unknown Agent',
+            wants_daily_summary: agent.wants_daily_summary || false,
+          }
+        ])
+      );
+
+      // Create a map of phone_number -> phone_number_id
+      const phoneNumberIdMap = new Map(
+        phoneNumbersData.map(pn => [pn.phone_number, pn.id])
+      );
+
       // Extract phone number IDs and phone number strings
-      const phoneNumberIds = phoneNumbers.map(pn => pn.id);
-      const phoneNumberStrings = phoneNumbers.map(pn => pn.phone_number);
+      const phoneNumberIds = phoneNumbersData.map(pn => pn.id);
+      const phoneNumberStrings = phoneNumbersData.map(pn => pn.phone_number);
 
       // Use database function to get call logs with booking information
       const { data, error: callLogsError } = await supabase.rpc('get_call_logs_with_bookings', {
@@ -82,7 +119,20 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
         throw callLogsError;
       }
 
-      setCallLogs(data || []);
+      // Enrich call logs with agent information
+      const enrichedCallLogs = (data || []).map(log => {
+        const agentInfo = agentMap.get(log.phone_number);
+        const phoneNumberId = phoneNumberIdMap.get(log.phone_number);
+        return {
+          ...log,
+          phone_number_id: phoneNumberId,
+          agent_id: agentInfo?.agent_id,
+          agent_name: agentInfo?.agent_name,
+          wants_daily_summary: agentInfo?.wants_daily_summary,
+        };
+      });
+
+      setCallLogs(enrichedCallLogs);
     } catch (err) {
       console.error('Error fetching call logs:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch call logs');

@@ -12,6 +12,14 @@ export interface DailySummaryEntry {
   informationInquiries: number;
   conversionRate: string;
   peakTime: string;
+  // Agent grouping
+  phone_number?: string;
+  agent_id?: string;
+  agent_name?: string;
+  wants_summary?: boolean;
+  // For date-level summaries
+  isDateSummary?: boolean;
+  agentSummaries?: DailySummaryEntry[];
 }
 
 export interface UseDailySummaryResult {
@@ -31,25 +39,35 @@ export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterV
       return;
     }
 
-    // Group calls by date
-    const callsByDate = callLogs.reduce((acc, call) => {
-      if (!call.started_at) return acc;
+    // Filter calls to only include those from agents with wants_daily_summary = true
+    const filteredCallLogs = callLogs.filter(call => call.wants_daily_summary === true);
+
+    if (filteredCallLogs.length === 0) {
+      setDailySummaryEntries([]);
+      return;
+    }
+
+    // Group calls by date AND agent
+    const callsByDateAndAgent = filteredCallLogs.reduce((acc, call) => {
+      if (!call.started_at || !call.agent_id) return acc;
       
       const date = new Date(call.started_at);
-      const dateKey = date.toDateString(); // e.g., "Mon Jan 08 2025"
+      const dateKey = date.toDateString();
+      const agentKey = call.agent_id;
       
       if (!acc[dateKey]) {
-        acc[dateKey] = [];
+        acc[dateKey] = {};
       }
-      acc[dateKey].push(call);
+      if (!acc[dateKey][agentKey]) {
+        acc[dateKey][agentKey] = [];
+      }
+      acc[dateKey][agentKey].push(call);
       return acc;
-    }, {} as Record<string, CallLogRecord[]>);
+    }, {} as Record<string, Record<string, CallLogRecord[]>>);
 
-    // Convert grouped data to daily summary entries
-    const summaryEntries: DailySummaryEntry[] = Object.entries(callsByDate)
-      .map(([dateKey, calls], index) => {
-        const date = new Date(dateKey);
-        const callsTaken = calls.length;
+    // Helper function to calculate metrics for a set of calls
+    const calculateMetrics = (calls: CallLogRecord[]) => {
+      const callsTaken = calls.length;
         
         // For now, treat all calls as information inquiries
         const informationInquiries = callsTaken;
@@ -121,31 +139,69 @@ export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterV
           return `${formatHour(peakStartHour)} – ${formatHour(peakStartHour + 2)}`;
         };
 
-        const peakTime = calculatePeakTime(calls);
+      const peakTime = calculatePeakTime(calls);
 
-        // Calculate conversion rate
-        const conversionRate = callsTaken > 0 
-          ? `${Math.round((bookingsMade / callsTaken) * 100)}%`
-          : '0%';
+      // Calculate conversion rate
+      const conversionRate = callsTaken > 0 
+        ? `${Math.round((bookingsMade / callsTaken) * 100)}%`
+        : '0%';
+
+      return {
+        callsTaken,
+        avgDuration,
+        bookingsMade,
+        missed,
+        informationInquiries,
+        conversionRate,
+        peakTime,
+      };
+    };
+
+    // Convert grouped data to nested summary entries
+    const summaryEntries: DailySummaryEntry[] = Object.entries(callsByDateAndAgent)
+      .map(([dateKey, agentGroups], dateIndex) => {
+        const date = new Date(dateKey);
+        
+        // Create agent-level summaries
+        const agentSummaries = Object.entries(agentGroups).map(([agentId, calls], agentIndex) => {
+          const firstCall = calls[0];
+          const metrics = calculateMetrics(calls);
+          
+          return {
+            id: `${String(dateIndex + 1).padStart(2, '0')}-${String(agentIndex + 1)}`,
+            date: dateKey,
+            formattedDate: date.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            }),
+            ...metrics,
+            phone_number: firstCall.phone_number,
+            agent_id: agentId,
+            agent_name: firstCall.agent_name || 'Unknown Agent',
+            wants_summary: firstCall.wants_daily_summary,
+            isDateSummary: false,
+          };
+        }).sort((a, b) => a.agent_name!.localeCompare(b.agent_name!));
+
+        // Calculate date-level totals
+        const allCallsForDate = Object.values(agentGroups).flat();
+        const dateTotals = calculateMetrics(allCallsForDate);
 
         return {
-          id: String(index + 1).padStart(2, '0'),
+          id: String(dateIndex + 1).padStart(2, '0'),
           date: dateKey,
           formattedDate: date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
           }),
-          callsTaken,
-          avgDuration,
-          bookingsMade,
-          missed,
-          informationInquiries,
-          conversionRate,
-          peakTime,
+          ...dateTotals,
+          isDateSummary: true,
+          agentSummaries,
         };
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Most recent first
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     setDailySummaryEntries(summaryEntries);
   }, [callLogs]);
