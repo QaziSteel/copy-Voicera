@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 
@@ -49,6 +49,8 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
       setLoading(false);
       return;
     }
+
+    const supabase = createDynamicSupabaseClient();
 
     try {
       setLoading(true);
@@ -148,6 +150,8 @@ export const useCallLogs = (searchTerm: string = '', dateFilter?: { from?: Date;
   // Set up real-time subscription
   useEffect(() => {
     if (!user || !currentProject) return;
+
+    const supabase = createDynamicSupabaseClient();
 
     const channel = supabase
       .channel('call-logs-changes')
