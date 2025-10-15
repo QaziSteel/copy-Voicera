@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 
@@ -40,6 +40,8 @@ export const usePhoneNumbers = (): UsePhoneNumbersResult => {
       setLoading(true);
       setError(null);
 
+      const supabase = createDynamicSupabaseClient();
+
       const { data, error: phoneNumbersError } = await supabase
         .from('phone_numbers')
         .select('*')
@@ -65,6 +67,8 @@ export const usePhoneNumbers = (): UsePhoneNumbersResult => {
     }
 
     try {
+      const supabase = createDynamicSupabaseClient();
+      
       const phoneNumberData = {
         phone_number: phoneNumber,
         project_id: currentProject.id,
@@ -96,6 +100,7 @@ export const usePhoneNumbers = (): UsePhoneNumbersResult => {
 
   const updatePhoneNumber = async (id: string, updates: Partial<PhoneNumberRecord>): Promise<void> => {
     try {
+      const supabase = createDynamicSupabaseClient();
       const { error: updateError } = await supabase
         .from('phone_numbers')
         .update(updates)
@@ -114,6 +119,7 @@ export const usePhoneNumbers = (): UsePhoneNumbersResult => {
 
   const deletePhoneNumber = async (id: string): Promise<void> => {
     try {
+      const supabase = createDynamicSupabaseClient();
       const { error: deleteError } = await supabase
         .from('phone_numbers')
         .delete()
@@ -138,6 +144,7 @@ export const usePhoneNumbers = (): UsePhoneNumbersResult => {
   useEffect(() => {
     if (!user || !currentProject) return;
 
+    const supabase = createDynamicSupabaseClient();
     const channel = supabase
       .channel('phone-numbers-changes')
       .on(

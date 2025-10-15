@@ -5,7 +5,7 @@ import { Header } from '@/components/shared/Header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2 } from 'lucide-react';
 import {
@@ -48,6 +48,8 @@ const AgentOverview = () => {
   const loadAgents = async () => {
     try {
       setLoading(true);
+      
+      const supabase = createDynamicSupabaseClient();
       
       const { data, error } = await supabase
         .from('onboarding_responses')
@@ -114,6 +116,7 @@ const AgentOverview = () => {
 
       // Deactivate ALL existing active Google integrations for this user
       if (user?.id) {
+        const supabase = createDynamicSupabaseClient();
         const { error } = await supabase
           .from('google_integrations')
           .update({ is_active: false })
@@ -145,6 +148,8 @@ const AgentOverview = () => {
 
     try {
       setDeleting(true);
+
+      const supabase = createDynamicSupabaseClient();
 
       // Delete related Google integrations first
       const { error: googleError } = await supabase

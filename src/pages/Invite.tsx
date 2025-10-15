@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,6 +46,8 @@ export const Invite: React.FC = () => {
 
       console.log('Loading invitation data for token:', token);
 
+      const supabase = createDynamicSupabaseClient();
+
       // Call edge function to get invitation details (bypasses RLS)
       const { data, error } = await supabase.functions.invoke('get-invite-details', {
         body: { token }
@@ -84,6 +86,8 @@ export const Invite: React.FC = () => {
     setJoining(true);
     try {
       console.log('Attempting to join project via edge function:', invitation.project_id, 'as role:', invitation.role);
+
+      const supabase = createDynamicSupabaseClient();
 
       // Call the edge function to accept the invitation
       const { data, error } = await supabase.functions.invoke('accept-project-invite', {

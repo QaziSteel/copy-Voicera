@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProject } from '@/contexts/ProjectContext';
 import { useProjectInvite } from '@/hooks/useProjectInvite';
 import { useInvitations } from '@/hooks/useInvitations';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, X, UserPlus, Users, Mail, Crown, Shield, User, Trash2 } from 'lucide-react';
 import { Header } from '@/components/shared/Header';
@@ -55,6 +55,7 @@ export default function Profile() {
 
     const fetchProfileData = async () => {
       try {
+        const supabase = createDynamicSupabaseClient();
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -180,6 +181,7 @@ export default function Profile() {
     }
 
     try {
+      const supabase = createDynamicSupabaseClient();
       const { error } = await supabase
         .from('profiles')
         .update({ full_name: editedName.trim() })

@@ -2,7 +2,7 @@ import React, { ReactNode, useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useProject } from '@/contexts/ProjectContext';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { LogOut, ArrowLeft } from 'lucide-react';
 import {
   AlertDialog,
@@ -107,6 +107,8 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         return;
       }
 
+      const supabase = createDynamicSupabaseClient();
+      
       const { data, error } = await supabase
         .from('onboarding_responses')
         .select('id')
@@ -197,6 +199,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
 
       // Deactivate ALL existing active Google integrations for this user
       if (user?.id) {
+        const supabase = createDynamicSupabaseClient();
         await supabase
           .from('google_integrations')
           .update({ is_active: false })

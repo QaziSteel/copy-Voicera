@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OnboardingLayout } from '@/components/onboarding/OnboardingLayout';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 
 interface Voice {
@@ -31,6 +31,7 @@ export const VoiceStyle: React.FC = () => {
     }
 
     const fetchVoices = async () => {
+      const supabase = createDynamicSupabaseClient();
       const { data, error } = await supabase
         .from('voices')
         .select('*')

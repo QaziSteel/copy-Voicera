@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 import { useProject } from '@/contexts/ProjectContext';
 
@@ -15,6 +15,7 @@ export const useProjectInvite = () => {
 
     setLoading(true);
     try {
+      const supabase = createDynamicSupabaseClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error('You must be logged in to send invitations');
@@ -102,6 +103,7 @@ export const useProjectInvite = () => {
     const projectId = currentProject.id;
     setLoading(true);
     try {
+      const supabase = createDynamicSupabaseClient();
       const { error } = await supabase
         .from('project_members')
         .delete()

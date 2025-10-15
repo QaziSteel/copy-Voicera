@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 
 export type PendingInvitation = {
@@ -21,6 +21,7 @@ export function useInvitations() {
   const fetchInvites = useCallback(async () => {
     setLoading(true);
     try {
+      const supabase = createDynamicSupabaseClient();
       const { data, error } = await supabase.functions.invoke('list-user-invitations');
       if (error) throw error;
       setInvites(data?.invitations || []);
@@ -38,6 +39,7 @@ export function useInvitations() {
 
   const acceptInvite = useCallback(async (token: string): Promise<{ success: boolean; projectId?: string; error?: string }> => {
     try {
+      const supabase = createDynamicSupabaseClient();
       const { data, error } = await supabase.functions.invoke('accept-project-invite', {
         body: { token },
       });
@@ -51,6 +53,7 @@ export function useInvitations() {
 
   const declineInvite = useCallback(async (token: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      const supabase = createDynamicSupabaseClient();
       const { error } = await supabase.functions.invoke('decline-project-invite', {
         body: { token },
       });
