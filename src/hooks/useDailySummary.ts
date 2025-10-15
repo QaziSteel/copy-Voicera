@@ -18,6 +18,7 @@ export interface UseDailySummaryResult {
   dailySummaryEntries: DailySummaryEntry[];
   loading: boolean;
   error: string | null;
+  callLogs: CallLogRecord[];
 }
 
 export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterVersion?: number): UseDailySummaryResult => {
@@ -153,5 +154,6 @@ export const useDailySummary = (dateFilter?: { from?: Date; to?: Date }, filterV
     dailySummaryEntries,
     loading,
     error,
+    callLogs,
   };
 };

@@ -7,13 +7,31 @@ import { DateFilterPopup } from "@/components/DateFilterPopup";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { Header } from "@/components/shared/Header";
 import { useDailySummary, DailySummaryEntry } from "@/hooks/useDailySummary";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const DailySummary: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [showSummaryPopup, setShowSummaryPopup] = useState(false);
   const [selectedSummary, setSelectedSummary] =
     useState<DailySummaryEntry | null>(null);
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const {
     showDateFilter,
     selectedFilter,
@@ -38,7 +56,81 @@ const DailySummary: React.FC = () => {
   } = useNotifications();
 
   // Get real daily summary data from database
-  const { dailySummaryEntries, loading } = useDailySummary(getDateFilter(), filterVersion);
+  const { dailySummaryEntries, loading, callLogs } = useDailySummary(getDateFilter(), filterVersion);
+
+  const handleSelectAll = () => {
+    if (selectedDates.size === dailySummaryEntries.length) {
+      setSelectedDates(new Set());
+    } else {
+      setSelectedDates(new Set(dailySummaryEntries.map(entry => entry.date)));
+    }
+  };
+
+  const handleSelectRow = (date: string) => {
+    const newSelected = new Set(selectedDates);
+    if (newSelected.has(date)) {
+      newSelected.delete(date);
+    } else {
+      newSelected.add(date);
+    }
+    setSelectedDates(newSelected);
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    try {
+      // Get all call log IDs for selected dates
+      const callLogIds: string[] = [];
+      selectedDates.forEach(dateKey => {
+        const logsForDate = callLogs.filter(log => {
+          if (!log.started_at) return false;
+          const logDate = new Date(log.started_at).toDateString();
+          return logDate === dateKey;
+        });
+        callLogIds.push(...logsForDate.map(log => log.id));
+      });
+
+      if (callLogIds.length === 0) {
+        toast({
+          title: "No data to delete",
+          description: "No call logs found for selected dates.",
+          variant: "destructive",
+        });
+        setIsDeleting(false);
+        return;
+      }
+
+      // Delete call logs from Supabase
+      const { error } = await supabase
+        .from('call_logs')
+        .delete()
+        .in('id', callLogIds);
+
+      if (error) throw error;
+
+      toast({
+        title: "Successfully deleted",
+        description: `Deleted ${callLogIds.length} call log(s) from ${selectedDates.size} date(s).`,
+      });
+
+      // Clear selection and close dialog
+      setSelectedDates(new Set());
+      setShowDeleteDialog(false);
+    } catch (error) {
+      console.error('Error deleting call logs:', error);
+      toast({
+        title: "Deletion failed",
+        description: "Failed to delete call logs. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const openSummaryPopup = (entry: DailySummaryEntry) => {
     setSelectedSummary(entry);
@@ -148,11 +240,22 @@ const DailySummary: React.FC = () => {
             </p>
           </div>
 
-          {/* Today Button */}
-          <button 
-            onClick={openDateFilter}
-            className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2"
-          >
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            {selectedDates.size > 0 && (
+              <button
+                onClick={handleDeleteClick}
+                className="bg-red-600 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-red-700 transition-colors"
+              >
+                <Trash2 className="w-5 h-5" />
+                <span className="text-sm font-medium">Delete ({selectedDates.size})</span>
+              </button>
+            )}
+            
+            <button 
+              onClick={openDateFilter}
+              className="bg-black text-white px-3 py-2 rounded-lg flex items-center gap-2"
+            >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <g clipPath="url(#clip0_82_219)">
                 <path
@@ -211,14 +314,19 @@ const DailySummary: React.FC = () => {
               </defs>
             </svg>
             <span className="text-sm font-medium">{getButtonText()}</span>
-          </button>
+            </button>
+          </div>
         </div>
 
         {/* Daily Summary Table */}
         <div className="border border-gray-200 rounded-xl overflow-hidden">
           {/* Table Header - Fixed */}
           <div className="flex items-center gap-4 p-3 bg-gray-100 border-b border-black border-opacity-10">
-            <div className="w-4 h-4 border border-gray-300"></div>
+            <Checkbox
+              checked={selectedDates.size === dailySummaryEntries.length && dailySummaryEntries.length > 0}
+              onCheckedChange={handleSelectAll}
+              className="w-4 h-4"
+            />
             <div className="w-8 text-xs font-bold text-gray-700 uppercase tracking-wide">
               NO.
             </div>
@@ -258,7 +366,11 @@ const DailySummary: React.FC = () => {
                 key={entry.id}
                 className="flex items-center gap-4 p-3 h-16 bg-white border-b border-gray-200"
               >
-                <div className="w-4 h-4 border border-gray-300"></div>
+                <Checkbox
+                  checked={selectedDates.has(entry.date)}
+                  onCheckedChange={() => handleSelectRow(entry.date)}
+                  className="w-4 h-4"
+                />
                 <div className="w-8 font-semibold text-gray-700 text-sm">
                   {entry.id}
                 </div>
@@ -326,6 +438,38 @@ const DailySummary: React.FC = () => {
 
       {/* Summary Popup */}
       {showSummaryPopup && renderSummaryPopup()}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Daily Summaries</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedDates.size === 1 ? (
+                <>
+                  Are you sure you want to delete the summary for this date? This will permanently delete all call logs from that date.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to delete summaries for {selectedDates.size} dates? This will permanently delete all associated call logs.
+                </>
+              )}
+              <br /><br />
+              <strong>Warning:</strong> This action cannot be undone and will permanently delete call logs, recordings, and transcripts.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
