@@ -25,6 +25,7 @@ export interface OnboardingData {
   };
   aiAssistantName?: string;
   aiHandlingUnknown?: string;
+  aiHandlingPhoneNumber?: string;
   aiCallSchedule?: string;
   services?: Array<{
     businessType: string;
@@ -99,6 +100,9 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
 
   const aiHandlingUnknown = sessionStorage.getItem('aiHandlingUnknown');
   if (aiHandlingUnknown) data.aiHandlingUnknown = aiHandlingUnknown;
+
+  const aiHandlingPhoneNumber = sessionStorage.getItem('aiHandlingPhoneNumber');
+  if (aiHandlingPhoneNumber) data.aiHandlingPhoneNumber = aiHandlingPhoneNumber;
 
   const aiCallSchedule = sessionStorage.getItem('aiCallSchedule');
   if (aiCallSchedule) data.aiCallSchedule = aiCallSchedule;

@@ -4,14 +4,19 @@ import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
 export default function QuestionHandling() {
   const [selectedOption, setSelectedOption] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
   // Load saved data on component mount
   useEffect(() => {
     const savedHandling = sessionStorage.getItem("aiHandlingUnknown");
+    const savedPhone = sessionStorage.getItem("aiHandlingPhoneNumber");
     if (savedHandling) {
       setSelectedOption(savedHandling);
+    }
+    if (savedPhone) {
+      setPhoneNumber(savedPhone);
     }
   }, []);
 
@@ -28,6 +33,12 @@ export default function QuestionHandling() {
   const handleNext = () => {
     if (selectedOption) {
       sessionStorage.setItem("aiHandlingUnknown", selectedOption);
+      
+      // Save phone number if transfer option is selected
+      if (shouldShowPhoneInput && phoneNumber) {
+        sessionStorage.setItem("aiHandlingPhoneNumber", phoneNumber);
+      }
+      
       navigate("/onboarding/summaries");
     }
   };
@@ -37,7 +48,8 @@ export default function QuestionHandling() {
     setShowDropdown(false);
   };
 
-  const isNextDisabled = !selectedOption;
+  const shouldShowPhoneInput = selectedOption === "Politely transfer the call to you (or your voicemail)";
+  const isNextDisabled = !selectedOption || (shouldShowPhoneInput && !phoneNumber.trim());
 
   return (
     <OnboardingLayout
@@ -101,6 +113,19 @@ export default function QuestionHandling() {
               </div>
             )}
           </div>
+
+          {/* Conditional Phone Number Input */}
+          {shouldShowPhoneInput && (
+            <div className="flex flex-col gap-2 mt-4">
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Enter your number"
+                className="w-full p-4 border-2 border-[#E5E7EB] rounded-xl text-lg text-black placeholder:text-[#6B7280] focus:outline-none focus:border-[#141B34]"
+              />
+            </div>
+          )}
         </div>
       </div>
     </OnboardingLayout>
