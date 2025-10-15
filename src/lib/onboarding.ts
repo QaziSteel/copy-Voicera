@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { createDynamicSupabaseClient } from "@/lib/supabaseClient";
 
 export interface OnboardingData {
   businessName?: string;
@@ -176,6 +176,8 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
 };
 
 export const saveOnboardingResponse = async (data: OnboardingData, projectId?: string) => {
+  const supabase = createDynamicSupabaseClient();
+  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('User not authenticated');
@@ -225,6 +227,8 @@ export const saveOnboardingResponse = async (data: OnboardingData, projectId?: s
 };
 
 export const getLatestOnboardingResponse = async (projectId?: string) => {
+  const supabase = createDynamicSupabaseClient();
+  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('User not authenticated');
@@ -247,6 +251,8 @@ export const getLatestOnboardingResponse = async (projectId?: string) => {
 
 export const hasCompletedOnboarding = async (projectId?: string): Promise<boolean> => {
   try {
+    const supabase = createDynamicSupabaseClient();
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return false;
