@@ -51,7 +51,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
     setLoading(true);
 
     try {
-      const { error } = await signIn(data.email, data.password);
+      const { error } = await signIn(data.email, data.password, data.rememberMe);
       
       if (error) {
         // Check if it's an invalid credentials error

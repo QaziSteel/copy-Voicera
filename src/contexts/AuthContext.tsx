@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
 
 interface AuthContextType {
   user: User | null;
@@ -10,7 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   sendMagicLink: (email: string, fullName?: string) => Promise<{ error: any }>;
   sendPasswordResetLink: (email: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   verifyCurrentPassword: (currentPassword: string) => Promise<{ error: any }>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<{ error: any }>;
@@ -37,8 +38,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Create client with correct storage
+    const client = createDynamicSupabaseClient();
+    
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = client.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
@@ -47,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    client.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -115,8 +119,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+  const signIn = async (email: string, password: string, rememberMe: boolean = false) => {
+    // Store the remember me preference BEFORE signing in
+    if (rememberMe) {
+      localStorage.setItem('auth_remember_me', 'true');
+    } else {
+      localStorage.removeItem('auth_remember_me');
+      // Clear any existing session from localStorage
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+
+    // Create a new client with the correct storage
+    const dynamicClient = createDynamicSupabaseClient();
+    
+    const { error } = await dynamicClient.auth.signInWithPassword({
       email,
       password,
     });
@@ -126,12 +146,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
-      // Clean up existing state
-      localStorage.removeItem('supabase.auth.token');
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          localStorage.removeItem(key);
-        }
+      // Clear remember me preference
+      localStorage.removeItem('auth_remember_me');
+      
+      // Clear from both storages
+      [localStorage, sessionStorage].forEach(storage => {
+        Object.keys(storage).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            storage.removeItem(key);
+          }
+        });
       });
       
       // Attempt global sign out
