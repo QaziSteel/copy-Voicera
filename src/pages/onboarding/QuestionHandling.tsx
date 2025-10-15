@@ -5,8 +5,24 @@ import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 export default function QuestionHandling() {
   const [selectedOption, setSelectedOption] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumberError, setPhoneNumberError] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+
+  // Validate phone number
+  const isValidPhoneNumber = (phone: string): boolean => {
+    // Remove all non-digit characters to count actual digits
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    // Must have at least 10 digits (standard phone number length)
+    if (digitsOnly.length < 10) return false;
+    
+    // Allow only digits, spaces, +, -, (, )
+    const validCharactersRegex = /^[\d\s\+\-\(\)]+$/;
+    if (!validCharactersRegex.test(phone)) return false;
+    
+    return true;
+  };
 
   // Load saved data on component mount
   useEffect(() => {
@@ -48,8 +64,28 @@ export default function QuestionHandling() {
     setShowDropdown(false);
   };
 
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    // Only allow digits, spaces, +, -, (, )
+    const sanitized = value.replace(/[^\d\s\+\-\(\)]/g, '');
+    
+    setPhoneNumber(sanitized);
+    
+    // Clear error when user starts typing
+    if (phoneNumberError) {
+      setPhoneNumberError("");
+    }
+  };
+
+  const handlePhoneNumberBlur = () => {
+    if (phoneNumber && !isValidPhoneNumber(phoneNumber)) {
+      setPhoneNumberError("Please enter a valid phone number (minimum 10 digits)");
+    }
+  };
+
   const shouldShowPhoneInput = selectedOption === "Politely transfer the call to you (or your voicemail)";
-  const isNextDisabled = !selectedOption || (shouldShowPhoneInput && !phoneNumber.trim());
+  const isNextDisabled = !selectedOption || (shouldShowPhoneInput && (!phoneNumber.trim() || !isValidPhoneNumber(phoneNumber)));
 
   return (
     <OnboardingLayout
@@ -120,10 +156,20 @@ export default function QuestionHandling() {
               <input
                 type="tel"
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={handlePhoneNumberChange}
+                onBlur={handlePhoneNumberBlur}
                 placeholder="Enter your number"
-                className="w-full p-4 border-2 border-[#E5E7EB] rounded-xl text-lg text-black placeholder:text-[#6B7280] focus:outline-none focus:border-[#141B34]"
+                className={`w-full p-4 border-2 rounded-xl text-lg text-black placeholder:text-[#6B7280] focus:outline-none ${
+                  phoneNumberError 
+                    ? "border-red-500 focus:border-red-600" 
+                    : "border-[#E5E7EB] focus:border-[#141B34]"
+                }`}
               />
+              {phoneNumberError && (
+                <p className="text-sm text-red-600 font-medium">
+                  {phoneNumberError}
+                </p>
+              )}
             </div>
           )}
         </div>
