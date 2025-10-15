@@ -207,6 +207,7 @@ export const saveOnboardingResponse = async (data: OnboardingData, projectId?: s
       ai_greeting_style: data.aiGreetingStyle,
       ai_assistant_name: data.aiAssistantName,
       ai_handling_unknown: data.aiHandlingUnknown,
+      ai_handling_phone_number: data.aiHandlingPhoneNumber,
       ai_call_schedule: data.aiCallSchedule,
       services: data.services,
       business_days: data.businessDays,

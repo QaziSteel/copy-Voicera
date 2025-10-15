@@ -182,6 +182,7 @@ export type Database = {
           ai_assistant_name: string | null
           ai_call_schedule: string | null
           ai_greeting_style: Json | null
+          ai_handling_phone_number: string | null
           ai_handling_unknown: string | null
           ai_voice_style: string | null
           assistant_id: string | null
@@ -210,6 +211,7 @@ export type Database = {
           ai_assistant_name?: string | null
           ai_call_schedule?: string | null
           ai_greeting_style?: Json | null
+          ai_handling_phone_number?: string | null
           ai_handling_unknown?: string | null
           ai_voice_style?: string | null
           assistant_id?: string | null
@@ -238,6 +240,7 @@ export type Database = {
           ai_assistant_name?: string | null
           ai_call_schedule?: string | null
           ai_greeting_style?: Json | null
+          ai_handling_phone_number?: string | null
           ai_handling_unknown?: string | null
           ai_voice_style?: string | null
           assistant_id?: string | null
