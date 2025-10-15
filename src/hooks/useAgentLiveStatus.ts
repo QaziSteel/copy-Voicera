@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { useProject } from '@/contexts/ProjectContext';
 
 export const useAgentLiveStatus = () => {
@@ -15,7 +15,6 @@ export const useAgentLiveStatus = () => {
     }
 
     const checkAgentStatus = async () => {
-      const supabase = createDynamicSupabaseClient();
       const { data, error } = await supabase
         .from('onboarding_responses')
         .select('current_status')
@@ -32,7 +31,6 @@ export const useAgentLiveStatus = () => {
     checkAgentStatus();
 
     // Subscribe to real-time changes
-    const supabase = createDynamicSupabaseClient();
     const channel = supabase
       .channel('agent-status-changes')
       .on(

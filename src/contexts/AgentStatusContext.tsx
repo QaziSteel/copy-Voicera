@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AgentStatusContextType {
   isAgentLive: boolean;
@@ -86,7 +86,6 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
       if (success) {
         // Update database status FIRST to avoid race conditions
         if (currentAgentId) {
-          const supabase = createDynamicSupabaseClient();
           const { error } = await supabase
             .from('onboarding_responses')
             .update({ current_status: newStatus.toLowerCase() })
@@ -118,7 +117,6 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
 
   const loadAgentStatus = useCallback(async (agentId: string) => {
     try {
-      const supabase = createDynamicSupabaseClient();
       const { data, error } = await supabase
         .from('onboarding_responses')
         .select('contact_number, assistant_id, purchased_number_details, current_status')

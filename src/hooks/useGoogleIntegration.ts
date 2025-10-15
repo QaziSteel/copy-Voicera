@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface GoogleIntegration {
@@ -25,8 +25,6 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       let data = null;
       let error = null;
 
-      const supabase = createDynamicSupabaseClient();
-      
       // Use the secure RPC function to fetch integration status
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) {
@@ -89,7 +87,6 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
     
     setLoading(true);
     try {
-      const supabase = createDynamicSupabaseClient();
       const { error } = await supabase
         .from('google_integrations')
         .update({ is_active: false })

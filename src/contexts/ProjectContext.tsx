@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { createDynamicSupabaseClient } from '@/lib/supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Database } from '@/integrations/supabase/types';
 
@@ -47,8 +47,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   const fetchProjects = async () => {
     if (!user) return;
     
-    const supabase = createDynamicSupabaseClient();
-    
     try {
       // First get project memberships
       const { data: memberships, error: memberError } = await supabase
@@ -85,8 +83,6 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
 
   const fetchProjectMembers = async () => {
     if (!currentProject || !user) return;
-
-    const supabase = createDynamicSupabaseClient();
 
     try {
       // First get project members
