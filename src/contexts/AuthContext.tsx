@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   checkEmailExists: (email: string) => Promise<boolean>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ user: User | null; error: any }>;
   sendMagicLink: (email: string, fullName?: string) => Promise<{ error: any }>;
   sendPasswordResetLink: (email: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Use the current domain for the redirect URL (works for both preview and deployed environments)
     const redirectUrl = window.location.origin;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
     });
-    return { error };
+    return { user: data?.user ?? null, error };
   };
 
   const signIn = async (email: string, password: string) => {

@@ -101,7 +101,8 @@ const handler = async (req: Request): Promise<Response> => {
       invitation: {
         email: invitation.email,
         role: invitation.role,
-        expires_at: invitation.expires_at
+        expires_at: invitation.expires_at,
+        project_id: invitation.project_id
       },
       project: {
         name: project.name,

@@ -144,7 +144,7 @@ export const Invite: React.FC = () => {
     try {
       console.log('Attempting signup for invitation email:', invitation.email);
 
-      const { error } = await signUp(invitation.email, password, fullName);
+      const { user: newUser, error } = await signUp(invitation.email, password, fullName);
       
       if (error) {
         console.error('Signup error:', error);
@@ -152,12 +152,16 @@ export const Invite: React.FC = () => {
         return;
       }
 
-      console.log('Signup successful, now joining project');
+      if (!newUser) {
+        console.error('Signup succeeded but no user returned');
+        toast.error('Account created but unable to join project automatically. Please sign in and use the invitation link again.');
+        navigate('/auth');
+        return;
+      }
+
+      console.log('Signup successful with user:', newUser.id);
       
-      // Small delay to ensure auth state is updated
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // After successful signup, join the project
+      // Now join the project immediately with the new user
       await joinProject();
 
     } catch (error) {
