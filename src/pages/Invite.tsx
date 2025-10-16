@@ -74,9 +74,11 @@ export const Invite: React.FC = () => {
     }
   };
 
-  const joinProject = async () => {
-    if (!user || !invitation) {
-      console.error('Missing user or invitation for join:', { user: !!user, invitation: !!invitation });
+  const joinProject = async (userOverride?: typeof user) => {
+    const currentUser = userOverride || user;
+    
+    if (!currentUser || !invitation) {
+      console.error('Missing user or invitation for join:', { user: !!currentUser, invitation: !!invitation });
       toast.error('Unable to join project - missing user or invitation data');
       return;
     }
@@ -162,7 +164,7 @@ export const Invite: React.FC = () => {
       console.log('Signup successful with user:', newUser.id);
       
       // Now join the project immediately with the new user
-      await joinProject();
+      await joinProject(newUser);
 
     } catch (error) {
       console.error('Unexpected error during signup:', error);
@@ -252,7 +254,7 @@ export const Invite: React.FC = () => {
               </div>
               
               <Button 
-                onClick={joinProject} 
+                onClick={() => joinProject()} 
                 disabled={joining}
                 className="w-full"
               >
