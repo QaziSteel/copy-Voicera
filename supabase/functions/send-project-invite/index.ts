@@ -112,14 +112,15 @@ serve(async (req) => {
       }
     }
 
-    // Check for existing pending invitation
+    // Check for existing pending invitation (exclude expired ones)
     const { data: existingInvite } = await supabaseAdmin
       .from('project_invitations')
-      .select('id, status')
+      .select('id, status, expires_at')
       .eq('project_id', projectId)
       .eq('email', normalizedEmail)
       .eq('status', 'pending')
-      .single();
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
 
     if (existingInvite) {
       console.log('Pending invitation already exists for:', normalizedEmail);
@@ -134,7 +135,7 @@ serve(async (req) => {
 
     // Create invitation record with token and expiration
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+    expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour from now
 
     const { data: invitation, error: inviteError } = await supabaseAdmin
       .from('project_invitations')
@@ -225,7 +226,7 @@ serve(async (req) => {
             
             <div style="border-top: 1px solid #e1e5e9; padding-top: 20px; margin-top: 30px;">
               <p style="color: #666; font-size: 14px; margin: 0;">
-                This invitation was sent by <strong>${inviterName}</strong> ${inviterEmail ? `(${inviterEmail})` : ''} and will expire in 7 days.
+                This invitation was sent by <strong>${inviterName}</strong> ${inviterEmail ? `(${inviterEmail})` : ''} and will expire in 1 hour.
               </p>
               <p style="color: #999; font-size: 12px; margin: 15px 0 0 0;">
                 If you didn't expect this invitation, you can safely ignore this email. If you have questions, please contact the person who invited you.
