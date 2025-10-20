@@ -111,6 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
+          invitation_token: invitationToken,
         }
       }
     });
