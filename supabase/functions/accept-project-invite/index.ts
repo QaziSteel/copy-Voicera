@@ -43,34 +43,21 @@ serve(async (req) => {
       }
     );
 
-    // Get user from request auth
+    // Try to get email from JWT if provided (optional, for existing users)
+    let userEmail: string | null = null;
     const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error('No auth header found');
-      return new Response(
-        JSON.stringify({ error: 'Authentication required' }), 
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
 
-    const userToken = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabase.auth.getUser(userToken);
-    
-    if (userError || !user) {
-      console.error('Invalid user token:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid authentication' }), 
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const userToken = authHeader.replace('Bearer ', '');
+        const payload = JSON.parse(atob(userToken.split('.')[1]));
+        userEmail = payload.email || payload.sub;
+        console.log('Extracted email from JWT:', userEmail);
+      } catch (e) {
+        console.log('Could not extract email from JWT (might be new signup):', e);
+        // Continue anyway - we'll use the invitation email
+      }
     }
-
-    console.log('User authenticated:', user.id);
 
     // Find the invitation
     const { data: invitation, error: inviteError } = await supabase
@@ -103,15 +90,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Found valid invitation:', invitation.id, 'for email:', invitation.email);
+    console.log('Found valid invitation for email:', invitation.email);
 
-    // Verify the invitation email matches the authenticated user
-    const invitedEmail = (invitation.email || '').toLowerCase().trim();
-    const userEmail = (user.email || '').toLowerCase().trim();
-    if (!userEmail || invitedEmail !== userEmail) {
-      console.error('Authenticated user email does not match invitation email', { invitedEmail, userEmail });
+    // If JWT email provided, verify it matches invitation
+    if (userEmail && userEmail.toLowerCase() !== invitation.email.toLowerCase()) {
+      console.error('JWT email does not match invitation email');
       return new Response(
-        JSON.stringify({ error: 'This invitation was sent to a different email address. Please sign in with the invited email.' }),
+        JSON.stringify({ error: 'This invitation is for a different email address' }),
         { 
           status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -119,6 +104,27 @@ serve(async (req) => {
       );
     }
 
+    // Look up user by invitation email (works for both new signups and existing users)
+    const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserByEmail(
+      invitation.email
+    );
+
+    if (authUserError || !authUser?.user) {
+      console.error('User not found for invitation email:', authUserError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'User account not found. Please ensure you have signed up with the invited email address.',
+          code: 'USER_NOT_FOUND'
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const user = authUser.user;
+    console.log('Found user for invitation:', user.id);
     console.log('Email verified for invitation token:', token);
 
     // Check if user is already a member

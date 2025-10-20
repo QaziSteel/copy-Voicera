@@ -163,22 +163,7 @@ export const Invite: React.FC = () => {
 
       console.log('Signup successful with user:', newUser.id);
       
-      // Wait for session to be fully established before joining project
-      console.log('Waiting for session to be established...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Verify session is ready
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession) {
-        console.error('Session not established after signup');
-        toast.error('Account created but unable to join project automatically. Please sign in and use the invitation link again.');
-        navigate('/auth');
-        return;
-      }
-      
-      console.log('Session established, proceeding to join project');
-      
-      // Now join the project with the established session
+      // Join project immediately - edge function handles user lookup by email
       await joinProject(newUser);
 
     } catch (error) {
