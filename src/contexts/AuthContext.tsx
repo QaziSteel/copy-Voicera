@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   checkEmailExists: (email: string) => Promise<boolean>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ user: User | null; error: any }>;
+  signUp: (email: string, password: string, fullName?: string, invitationToken?: string) => Promise<{ user: User | null; error: any }>;
   sendMagicLink: (email: string, fullName?: string) => Promise<{ error: any }>;
   sendPasswordResetLink: (email: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -98,9 +98,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
-    // Use the current domain for the redirect URL (works for both preview and deployed environments)
-    const redirectUrl = window.location.origin;
+  const signUp = async (email: string, password: string, fullName?: string, invitationToken?: string) => {
+    // If invitation token exists, pass it through the confirmation flow
+    const redirectUrl = invitationToken 
+      ? `${window.location.origin}/auth/confirm?token=${invitationToken}`
+      : window.location.origin;
     
     const { data, error } = await supabase.auth.signUp({
       email,

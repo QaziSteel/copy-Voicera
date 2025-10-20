@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Loader2, Users, Mail, Clock } from 'lucide-react';
 
@@ -22,6 +23,8 @@ export const Invite: React.FC = () => {
   const [invitation, setInvitation] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [inviter, setInviter] = useState<any>(null);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [signupEmail, setSignupEmail] = useState('');
   
   // Signup form state
   const [password, setPassword] = useState('');
@@ -146,7 +149,8 @@ export const Invite: React.FC = () => {
     try {
       console.log('Attempting signup for invitation email:', invitation.email);
 
-      const { user: newUser, error } = await signUp(invitation.email, password, fullName);
+      // Sign up with invitation token - this will redirect to /auth/confirm after email confirmation
+      const { user: newUser, error } = await signUp(invitation.email, password, fullName, token || undefined);
       
       if (error) {
         console.error('Signup error:', error);
@@ -154,17 +158,11 @@ export const Invite: React.FC = () => {
         return;
       }
 
-      if (!newUser) {
-        console.error('Signup succeeded but no user returned');
-        toast.error('Account created but unable to join project automatically. Please sign in and use the invitation link again.');
-        navigate('/auth');
-        return;
-      }
-
-      console.log('Signup successful with user:', newUser.id);
+      console.log('Signup initiated successfully');
       
-      // Join project immediately - edge function handles user lookup by email
-      await joinProject(newUser);
+      // Show confirmation dialog
+      setSignupEmail(invitation.email);
+      setShowConfirmationDialog(true);
 
     } catch (error) {
       console.error('Unexpected error during signup:', error);
@@ -345,6 +343,39 @@ export const Invite: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Email Confirmation Dialog */}
+      <Dialog open={showConfirmationDialog} onOpenChange={setShowConfirmationDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Check Your Email
+            </DialogTitle>
+            <DialogDescription className="space-y-4 pt-4">
+              <p>
+                We've sent a confirmation link to <strong>{signupEmail}</strong>
+              </p>
+              <p>
+                Please check your email and click the confirmation link to complete your registration and join the project.
+              </p>
+              <div className="bg-muted p-4 rounded-lg mt-4">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Note:</strong> Make sure to check your spam folder if you don't see the email within a few minutes.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 mt-4">
+            <Button 
+              onClick={() => setShowConfirmationDialog(false)}
+              className="w-full"
+            >
+              Got it
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
