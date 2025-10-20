@@ -104,13 +104,28 @@ serve(async (req) => {
       );
     }
 
-    // Look up user by invitation email (works for both new signups and existing users)
-    const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserByEmail(
-      invitation.email
-    );
+    // Look up user by invitation email using listUsers (works for both new signups and existing users)
+    const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
 
-    if (authUserError || !authUser?.user) {
-      console.error('User not found for invitation email:', authUserError);
+    if (listError) {
+      console.error('Error listing users:', listError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to verify user account',
+          code: 'AUTH_ERROR'
+        }), 
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Find user by email (case-insensitive)
+    const user = users.find(u => u.email?.toLowerCase() === invitation.email.toLowerCase());
+
+    if (!user) {
+      console.error('User not found for invitation email:', invitation.email);
       return new Response(
         JSON.stringify({ 
           error: 'User account not found. Please ensure you have signed up with the invited email address.',
@@ -123,7 +138,6 @@ serve(async (req) => {
       );
     }
 
-    const user = authUser.user;
     console.log('Found user for invitation:', user.id);
     console.log('Email verified for invitation token:', token);
 
