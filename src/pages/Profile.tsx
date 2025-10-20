@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 
 export default function Profile() {
   const { user, verifyCurrentPassword, updatePassword, signOut } = useAuth();
-  const { currentProject, projects, projectMembers, switchProject, refreshProjectMembers, refreshProjects } = useProject();
+  const { currentProject, projects, projectMembers, currentUserRole, switchProject, refreshProjectMembers, refreshProjects } = useProject();
   const { inviteUserToProject, removeUserFromProject, loading: inviteLoading } = useProjectInvite();
   const navigate = useNavigate();
   const { invites, loading: invitesLoading, acceptInvite, declineInvite, refresh: refreshInvites } = useInvitations();
@@ -467,7 +467,7 @@ export default function Profile() {
                       </Badge>
                     </div>
                     <div className="w-32">
-                      {member.role !== 'owner' && member.user_id !== user?.id && (
+                      {member.role !== 'owner' && member.user_id !== user?.id && currentUserRole === 'owner' && (
                         <Button
                           size="sm"
                           variant="outline"
