@@ -131,10 +131,11 @@ export const BusinessServices: React.FC = () => {
       
       return { ...prev, [businessType]: newInputs };
     });
-    
-    // Auto-add to selected services when text is entered
-    if (value.trim()) {
-      const customServiceName = value.trim();
+  };
+
+  const handleCustomServiceAdd = (businessType: string, serviceName: string) => {
+    if (serviceName.trim()) {
+      const customServiceName = serviceName.trim();
       const exists = selectedServices.find(
         item => item.businessType === businessType && item.service === customServiceName
       );
@@ -385,6 +386,13 @@ export const BusinessServices: React.FC = () => {
                             placeholder="Enter your service..."
                             value={customInput}
                             onChange={(e) => handleCustomInputChange(businessType, index, e.target.value)}
+                            onBlur={(e) => handleCustomServiceAdd(businessType, e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleCustomServiceAdd(businessType, customInput);
+                              }
+                            }}
                             className="text-lg w-full"
                           />
                         </div>
