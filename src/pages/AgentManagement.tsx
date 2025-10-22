@@ -1447,7 +1447,7 @@ const AgentManagement = () => {
                     </div>
                     <p className="text-base font-semibold text-gray-500">Customize how your AI assistant communicates and engages with customers.</p>
                   </div>
-                   <div className="flex items-center gap-3">
+                   <div className="flex items-center gap-2">
                      <button 
                        onClick={discardPersonality}
                        className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50"
