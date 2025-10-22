@@ -362,7 +362,7 @@ export default function Profile() {
                     <span className="text-gray-500 text-xl">••••••••••••</span>
                     <button
                       onClick={() => setShowChangePasswordModal(true)}
-                      className="bg-black text-white px-3 py-1 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                      className="bg-black text-white px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
                     >
                       Change Password
                     </button>
