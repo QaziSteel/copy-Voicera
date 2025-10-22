@@ -351,7 +351,7 @@ export default function Profile() {
               <div className="flex gap-4">
                 <div className="flex-1 space-y-2">
                   <label className="text-base font-semibold text-black">Email Address</label>
-                  <div className="bg-gray-100 rounded-xl px-4 py-3">
+                  <div className="bg-gray-100 rounded-xl px-4 py-3 flex items-center">
                     <span className="text-gray-500">{user?.email || "Not provided"}</span>
                   </div>
                 </div>
