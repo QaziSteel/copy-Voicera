@@ -66,7 +66,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="min-h-screen bg-[#F9FAFB] pt-[72px]">
       <Header currentPage="dashboard" />
 
       {/* Main Content */}

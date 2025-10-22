@@ -1351,7 +1351,7 @@ const AgentManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="min-h-screen bg-[#F9FAFB] pt-[72px]">
       <style>{`
         @keyframes pulse {
           0%, 100% { transform: scaleY(1); }

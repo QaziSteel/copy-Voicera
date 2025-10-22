@@ -284,7 +284,7 @@ const DailySummary: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="min-h-screen bg-[#F9FAFB] pt-[72px]">
       <Header currentPage="daily-summary" />
 
       {/* Main Content */}

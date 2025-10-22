@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-3 md:px-6 lg:px-12 py-3">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-3 md:px-6 lg:px-12 py-3">
       <div className="relative flex justify-between items-center">
         <h1 className="text-xl font-semibold text-black">Voicera AI</h1>
         

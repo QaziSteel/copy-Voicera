@@ -213,7 +213,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-[72px]">
       <Header currentPage="profile" />
 
       <main className="px-3 md:px-6 lg:px-12 py-6">
