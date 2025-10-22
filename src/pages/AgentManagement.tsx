@@ -1070,21 +1070,20 @@ const AgentManagement = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
+            <button
               onClick={discardBasicInfo}
-              className="px-3 py-2 text-sm font-medium"
+              className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50"
             >
-              <RotateCcw className="w-4 h-4 mr-1.5" />
-              Discard
-            </Button>
-            <Button
+              <RotateCcw className="w-4 h-4" />
+              <span className="text-sm font-medium text-black">Discard</span>
+            </button>
+            <button
               onClick={saveChanges}
-              className="px-3 py-2 text-sm font-medium"
+              className="flex items-center gap-2 px-3 py-2 bg-black text-white rounded-xl"
             >
-              <Save className="w-4 h-4 mr-1.5" />
-              Save Changes
-            </Button>
+              <Save className="w-4 h-4" />
+              <span className="text-sm font-medium">Save Changes</span>
+            </button>
           </div>
         </div>
 
