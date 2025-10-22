@@ -1395,7 +1395,7 @@ const AgentManagement = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-0">
             <div className="flex items-center gap-2 mb-2 lg:mb-0">
               <span className="text-lg md:text-xl font-semibold text-gray-500">Agent status:</span>
-              <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${isAgentLive ? 'bg-green-50' : 'bg-red-50'}`}>
+              <div className={`flex items-center gap-1 px-3 py-1 rounded-full ring-2 ${isAgentLive ? 'ring-green-500 bg-green-50' : 'ring-red-500 bg-red-50'}`}>
                 <div className={`w-2 h-2 ${isAgentLive ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></div>
                 <span className={`text-sm md:text-base font-semibold ${isAgentLive ? 'text-green-600' : 'text-red-600'}`}>
                   {isAgentLive ? 'Live' : 'Offline'}
