@@ -20,8 +20,12 @@ export const useCallLogsNotifications = (readTrigger?: number) => {
       .slice(0, 10)
       .map((callLog) => {
         const hasBooking = !!callLog.booking_id;
-        const isDropped = callLog.ended_reason === 'voicemail' || 
-                         callLog.ended_reason === 'customer-did-not-give-microphone-permission';
+        const isDropped = !callLog.total_call_time || 
+                         callLog.total_call_time < 10 || 
+                         callLog.ended_reason === 'silence-timed-out' || 
+                         callLog.ended_reason?.includes('error') || 
+                         callLog.ended_reason?.includes('fault') ||
+                         (callLog.ended_reason === 'customer-ended-call' && !callLog.booking_id);
         const startTime = callLog.started_at ? new Date(callLog.started_at) : new Date();
         
         // Format time display

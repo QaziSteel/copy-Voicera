@@ -460,14 +460,24 @@ const CallLogs: React.FC = () => {
                         <Badge 
                           variant="outline" 
                           className={`text-xs ${
-                            call.ended_reason === 'voicemail' || call.ended_reason === 'customer-did-not-give-microphone-permission'
+                            !call.total_call_time || 
+                            call.total_call_time < 10 || 
+                            call.ended_reason === 'silence-timed-out' || 
+                            call.ended_reason?.includes('error') || 
+                            call.ended_reason?.includes('fault') ||
+                            (call.ended_reason === 'customer-ended-call' && !call.booking_id)
                               ? 'bg-gray-50 text-gray-600 border-gray-200'
                               : call.booking_id 
                               ? 'bg-green-50 text-green-600 border-green-200' 
                               : 'bg-blue-50 text-blue-600 border-blue-200'
                           }`}
                         >
-                          {call.ended_reason === 'voicemail' || call.ended_reason === 'customer-did-not-give-microphone-permission'
+                          {!call.total_call_time || 
+                           call.total_call_time < 10 || 
+                           call.ended_reason === 'silence-timed-out' || 
+                           call.ended_reason?.includes('error') || 
+                           call.ended_reason?.includes('fault') ||
+                           (call.ended_reason === 'customer-ended-call' && !call.booking_id)
                             ? 'Dropped'
                             : call.booking_id ? 'Booking' : 'Inquiry'}
                         </Badge>
