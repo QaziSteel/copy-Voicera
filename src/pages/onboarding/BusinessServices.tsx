@@ -192,7 +192,7 @@ export const BusinessServices: React.FC = () => {
         {/* Business Type Sections */}
         <div className="flex flex-col gap-8 w-full">
           {businessTypesFromPrevious.map((businessType) => {
-            const services = servicesByBusinessType[businessType] || ["Service 1", "Service 2"];
+            const services = servicesByBusinessType[businessType] || [];
             
             return (
               <div key={businessType} className="flex flex-col gap-4 w-full">
@@ -203,7 +203,7 @@ export const BusinessServices: React.FC = () => {
                 
                 {/* Service Cards */}
                 <div className="flex flex-col gap-4 w-full">
-                  {services.map((service) => {
+                  {services.length > 0 && services.map((service) => {
                     const isSelected = selectedServices.find(
                       item => item.businessType === businessType && item.service === service
                     );
