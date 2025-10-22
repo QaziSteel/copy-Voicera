@@ -257,10 +257,10 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                           <p className="font-medium text-gray-900">Test Call {call.id}</p>
                           <p className="text-sm text-gray-500">{formatTimeAgo(call.created_at)}</p>
                         </div>
-                        <span className="text-sm text-gray-600">
-                          {formatTestCallDuration(call.duration_seconds)}
-                        </span>
                       </div>
+                      <span className="text-sm text-gray-600">
+                        {formatTestCallDuration(call.duration_seconds)}
+                      </span>
                     </div>
                   ))
                 )}
