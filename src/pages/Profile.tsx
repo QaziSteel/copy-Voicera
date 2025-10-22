@@ -339,7 +339,7 @@ export default function Profile() {
                           setEditedName(currentName);
                           setIsEditingName(true);
                         }}
-                        className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                        className="bg-black text-white px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
                       >
                         Change name
                       </button>
