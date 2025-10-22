@@ -478,11 +478,15 @@ const Dashboard: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          call.booking_id 
+                          call.ended_reason === 'voicemail' || call.ended_reason === 'customer-did-not-give-microphone-permission'
+                            ? 'bg-red-100 text-red-600'
+                            : call.booking_id 
                             ? 'bg-green-100 text-green-600' 
                             : 'bg-blue-100 text-blue-600'
                         }`}>
-                          {call.booking_id ? 'Booking' : 'Information Inquiry'}
+                          {call.ended_reason === 'voicemail' || call.ended_reason === 'customer-did-not-give-microphone-permission'
+                            ? 'Dropped'
+                            : call.booking_id ? 'Booking' : 'Information Inquiry'}
                         </div>
                       </div>
                     </div>
