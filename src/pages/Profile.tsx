@@ -381,7 +381,7 @@ export default function Profile() {
               </h2>
               <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
                 <DialogTrigger asChild>
-                  <Button className="bg-black text-white hover:bg-gray-800">
+                  <Button className="bg-black text-white hover:bg-gray-800 rounded-xl">
                     <UserPlus className="w-4 h-4 mr-2" />
                     Send Invite
                   </Button>
