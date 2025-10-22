@@ -5,6 +5,7 @@ import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 export default function FAQQuestions() {
   const [selectedFAQs, setSelectedFAQs] = useState<string[]>([]);
   const [customQuestion, setCustomQuestion] = useState("");
+  const [customAnswer, setCustomAnswer] = useState("");
   const [customAnswers, setCustomAnswers] = useState<{ [key: string]: string }>(
     {},
   );
@@ -86,10 +87,16 @@ export default function FAQQuestions() {
   };
 
   const handleAddCustomFAQ = () => {
-    if (customQuestion.trim()) {
-      setCustomFAQs((prev) => [...prev, customQuestion.trim()]);
-      setSelectedFAQs((prev) => [...prev, customQuestion.trim()]);
+    if (customQuestion.trim() && customAnswer.trim()) {
+      const question = customQuestion.trim();
+      setCustomFAQs((prev) => [...prev, question]);
+      setSelectedFAQs((prev) => [...prev, question]);
+      setCustomAnswers((prev) => ({
+        ...prev,
+        [question]: customAnswer.trim(),
+      }));
       setCustomQuestion("");
+      setCustomAnswer("");
     }
   };
 
@@ -159,8 +166,16 @@ export default function FAQQuestions() {
               value={customQuestion}
               onChange={(e) => setCustomQuestion(e.target.value)}
               className="w-full p-4 bg-[#F3F4F6] rounded-xl text-lg text-[#6B7280] placeholder-[#6B7280] focus:outline-none focus:text-black"
+            />
+
+            <input
+              type="text"
+              placeholder="Enter your answer..."
+              value={customAnswer}
+              onChange={(e) => setCustomAnswer(e.target.value)}
+              className="w-full p-4 bg-[#F3F4F6] rounded-xl text-lg text-[#6B7280] placeholder-[#6B7280] focus:outline-none focus:text-black"
               onKeyPress={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === "Enter" && customQuestion.trim() && customAnswer.trim()) {
                   handleAddCustomFAQ();
                 }
               }}
@@ -168,7 +183,7 @@ export default function FAQQuestions() {
 
             <button
               onClick={handleAddCustomFAQ}
-              disabled={!customQuestion.trim()}
+              disabled={!customQuestion.trim() || !customAnswer.trim()}
               className="flex items-center justify-center gap-3 px-5 py-[14px] bg-black text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
             >
               <svg
