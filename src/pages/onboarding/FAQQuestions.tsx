@@ -159,7 +159,7 @@ export default function FAQQuestions() {
           ))}
 
           {/* Custom FAQ Input */}
-          <div className="space-y-3">
+          <div className="space-y-3 mt-6">
             <input
               type="text"
               placeholder="Enter your question..."
