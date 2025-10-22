@@ -285,7 +285,6 @@ const Dashboard: React.FC = () => {
                 const successfulBookings = metricsLoading ? 0 : metrics.successfulBookings;
                 const informationInquiries = metricsLoading ? 0 : metrics.informationInquiries;
                 const droppedMissed = metricsLoading ? 0 : metrics.droppedMissed;
-                const unsuccessful = 0; // Set to 0 to match zero state
 
                 return (
                   <div className="space-y-3">
@@ -393,36 +392,6 @@ const Dashboard: React.FC = () => {
                       </div>
                       <span className="text-lg font-semibold text-black">
                         {droppedMissed}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center py-1">
-                      <div className="flex items-center gap-3">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                        >
-                          <path
-                            d="M17.5 2.5L2.5 17.5"
-                            stroke="#EF4444"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M2.5 2.5L17.5 17.5"
-                            stroke="#EF4444"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <span className="text-lg text-black">Unsuccessful</span>
-                      </div>
-                      <span className="text-lg font-semibold text-black">
-                        {unsuccessful}
                       </span>
                     </div>
                   </div>
