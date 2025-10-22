@@ -4,11 +4,11 @@ import { notificationStorage } from "@/lib/notificationStorage";
 
 export interface Notification {
   id: string;
-  type: "system" | "call" | "booking" | "maintenance" | "analysis";
+  type: "system" | "call" | "booking" | "maintenance" | "analysis" | "dropped";
   title: string;
   description: string;
   time: string;
-  iconType: "success" | "info" | "warning" | "error";
+  iconType: "success" | "info" | "warning" | "error" | "dropped";
   actionButton?: {
     text: string;
     action: () => void;

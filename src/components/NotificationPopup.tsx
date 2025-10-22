@@ -1,6 +1,6 @@
 import React from "react";
 import { Notification } from "@/hooks/useNotifications";
-import { CheckCircle, AlertTriangle, Info, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertTriangle, Info, AlertCircle, X } from "lucide-react";
 
 interface NotificationPopupProps {
   notifications: Notification[];
@@ -27,6 +27,8 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({
         return <AlertTriangle className="w-6 h-6 text-orange-500 flex-shrink-0" />;
       case "error":
         return <AlertCircle className="w-6 h-6 text-red-500 flex-shrink-0" />;
+      case "dropped":
+        return <X className="w-6 h-6 text-gray-500 flex-shrink-0" />;
       default:
         return <Info className="w-6 h-6 text-blue-500 flex-shrink-0" />;
     }

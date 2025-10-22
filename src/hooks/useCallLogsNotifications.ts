@@ -20,6 +20,8 @@ export const useCallLogsNotifications = (readTrigger?: number) => {
       .slice(0, 10)
       .map((callLog) => {
         const hasBooking = !!callLog.booking_id;
+        const isDropped = callLog.ended_reason === 'voicemail' || 
+                         callLog.ended_reason === 'customer-did-not-give-microphone-permission';
         const startTime = callLog.started_at ? new Date(callLog.started_at) : new Date();
         
         // Format time display
@@ -37,7 +39,17 @@ export const useCallLogsNotifications = (readTrigger?: number) => {
           ? (canView ? callLog.customer_number : maskPhoneNumber(callLog.customer_number))
           : "unknown number";
 
-        if (hasBooking) {
+        if (isDropped) {
+          // Dropped call notification
+          return {
+            id: callLog.id,
+            type: "dropped" as const,
+            title: "Dropped Call",
+            description: `Missed call from ${displayNumber}`,
+            time: timeDisplay,
+            iconType: "dropped" as const,
+          };
+        } else if (hasBooking) {
           // Booking notification
           return {
             id: callLog.id,
