@@ -62,25 +62,36 @@ export const BusinessServices: React.FC = () => {
   };
 
   const handleNext = () => {
-    // Save all selected services including custom ones
-    const allSelectedServices = [
-      ...selectedServices,
-      ...Object.entries(customServiceInputs).flatMap(([businessType, inputs]) =>
-        inputs
-          .filter(input => input.trim() !== '')
-          .map(input => {
-            const existingService = selectedServices.find(
-              s => s.businessType === businessType && s.service === input.trim()
-            );
-            return existingService || {
-              businessType,
-              service: input.trim(),
-              hours: "01 hr",
-              minutes: "00 min"
-            };
-          })
-      )
-    ];
+    // Collect services from custom inputs that aren't already in selectedServices
+    const customServices = Object.entries(customServiceInputs).flatMap(([businessType, inputs]) =>
+      inputs
+        .filter(input => input.trim() !== '')
+        .map(input => ({
+          businessType,
+          service: input.trim(),
+          hours: "01 hr",
+          minutes: "00 min"
+        }))
+    );
+
+    // Merge and deduplicate services
+    const serviceMap = new Map<string, SelectedService>();
+    
+    // Add predefined selected services first
+    selectedServices.forEach(service => {
+      const key = `${service.businessType}::${service.service}`;
+      serviceMap.set(key, service);
+    });
+    
+    // Add custom services only if they don't already exist
+    customServices.forEach(service => {
+      const key = `${service.businessType}::${service.service}`;
+      if (!serviceMap.has(key)) {
+        serviceMap.set(key, service);
+      }
+    });
+    
+    const allSelectedServices = Array.from(serviceMap.values());
 
     if (allSelectedServices.length > 0) {
       // Save for backward compatibility
@@ -386,13 +397,6 @@ export const BusinessServices: React.FC = () => {
                             placeholder="Enter your service..."
                             value={customInput}
                             onChange={(e) => handleCustomInputChange(businessType, index, e.target.value)}
-                            onBlur={(e) => handleCustomServiceAdd(businessType, e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleCustomServiceAdd(businessType, customInput);
-                              }
-                            }}
                             className="text-lg w-full"
                           />
                         </div>
