@@ -108,7 +108,7 @@ export default function FAQQuestions() {
       onPrevious={handlePrevious}
       onNext={handleNext}
       showPrevious={true}
-      nextDisabled={selectedFAQs.length === 0}
+      nextDisabled={false}
       leftAligned={true}
     >
       <div className="flex flex-col gap-8">
