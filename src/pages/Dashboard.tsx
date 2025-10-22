@@ -482,7 +482,7 @@ const Dashboard: React.FC = () => {
                           call.ended_reason === 'silence-timed-out' || 
                           call.ended_reason?.includes('error') || 
                           call.ended_reason?.includes('fault')
-                            ? 'bg-red-100 text-red-600'
+                            ? 'bg-gray-100 text-gray-600'
                             : call.booking_id 
                             ? 'bg-green-100 text-green-600' 
                             : 'bg-blue-100 text-blue-600'
