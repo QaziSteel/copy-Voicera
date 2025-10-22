@@ -359,7 +359,7 @@ export default function Profile() {
                 <div className="flex-1 space-y-2">
                   <label className="text-base font-semibold text-black">Current Password</label>
                   <div className="bg-gray-100 rounded-xl px-4 py-3 flex justify-between items-center">
-                    <span className="text-gray-500 text-xl">••••••••••••</span>
+                    <span className="text-gray-500">••••••••••••</span>
                     <button
                       onClick={() => setShowChangePasswordModal(true)}
                       className="bg-black text-white px-3 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
