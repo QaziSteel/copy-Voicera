@@ -433,7 +433,7 @@ const Dashboard: React.FC = () => {
 
           {/* Right Column - Recent Calls */}
           <div className="flex-1">
-            <div className="bg-white rounded-2xl p-4">
+            <div className="bg-white rounded-2xl p-4 h-full">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-black mb-1">
                   Recent Calls
