@@ -24,8 +24,6 @@ export interface OnboardingData {
     greeting: string;
   };
   aiAssistantName?: string;
-  aiHandlingUnknown?: string;
-  aiHandlingPhoneNumber?: string;
   aiCallSchedule?: string;
   services?: Array<{
     businessType: string;
@@ -38,13 +36,7 @@ export interface OnboardingData {
     from: string;
     to: string;
   };
-  scheduleFullAction?: string;
   wantsDailySummary?: boolean;
-  wantsEmailConfirmations?: boolean;
-  reminderSettings?: {
-    enabled: boolean;
-    timing?: string;
-  };
   faqData?: {
     questions: string[];
     answers: string[];
@@ -98,12 +90,6 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
   const aiAssistantName = sessionStorage.getItem('aiAssistantName');
   if (aiAssistantName) data.aiAssistantName = aiAssistantName;
 
-  const aiHandlingUnknown = sessionStorage.getItem('aiHandlingUnknown');
-  if (aiHandlingUnknown) data.aiHandlingUnknown = aiHandlingUnknown;
-
-  const aiHandlingPhoneNumber = sessionStorage.getItem('aiHandlingPhoneNumber');
-  if (aiHandlingPhoneNumber) data.aiHandlingPhoneNumber = aiHandlingPhoneNumber;
-
   const aiCallSchedule = sessionStorage.getItem('aiCallSchedule');
   if (aiCallSchedule) data.aiCallSchedule = aiCallSchedule;
 
@@ -134,24 +120,8 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
     }
   }
 
-
-  const scheduleFullAction = sessionStorage.getItem('scheduleFullAction');
-  if (scheduleFullAction) data.scheduleFullAction = scheduleFullAction;
-
   const wantsDailySummary = sessionStorage.getItem('wantsDailySummary');
   if (wantsDailySummary) data.wantsDailySummary = wantsDailySummary === 'true';
-
-  const wantsEmailConfirmations = sessionStorage.getItem('wantsEmailConfirmations');
-  if (wantsEmailConfirmations) data.wantsEmailConfirmations = wantsEmailConfirmations === 'true';
-
-  const reminderSettings = sessionStorage.getItem('reminderSettings');
-  if (reminderSettings) {
-    try {
-      data.reminderSettings = JSON.parse(reminderSettings);
-    } catch (e) {
-      console.warn('Failed to parse reminderSettings from sessionStorage');
-    }
-  }
 
   const faqQuestions = sessionStorage.getItem('faqQuestions');
   const faqAnswers = sessionStorage.getItem('faqAnswers');
@@ -206,16 +176,11 @@ export const saveOnboardingResponse = async (data: OnboardingData, projectId?: s
       ai_voice_style: data.aiVoiceStyle,
       ai_greeting_style: data.aiGreetingStyle,
       ai_assistant_name: data.aiAssistantName,
-      ai_handling_unknown: data.aiHandlingUnknown,
-      ai_handling_phone_number: data.aiHandlingPhoneNumber,
       ai_call_schedule: data.aiCallSchedule,
       services: data.services,
       business_days: data.businessDays,
       business_hours: data.businessHours,
-      schedule_full_action: data.scheduleFullAction,
       wants_daily_summary: data.wantsDailySummary,
-      wants_email_confirmations: data.wantsEmailConfirmations,
-      reminder_settings: data.reminderSettings,
       faq_data: data.faqData,
       calendar_integration_required: data.calendarIntegrationRequired
     })
