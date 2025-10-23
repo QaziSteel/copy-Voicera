@@ -16,6 +16,7 @@ const businessTypes = [
 export const BusinessType: React.FC = () => {
   const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<string[]>([]);
   const [customTypes, setCustomTypes] = useState<string[]>(['']);
+  const [manuallyCheckedCustom, setManuallyCheckedCustom] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
 
   // Load saved data on component mount
@@ -92,6 +93,20 @@ export const BusinessType: React.FC = () => {
     }
     
     setCustomTypes(newCustomTypes);
+    
+    // Auto-check when typing starts
+    if (value.trim().length > 0 && !manuallyCheckedCustom.has(index)) {
+      setManuallyCheckedCustom(prev => new Set(prev).add(index));
+    }
+    
+    // Auto-uncheck if user deletes all text
+    if (value.trim().length === 0) {
+      setManuallyCheckedCustom(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    }
   };
 
   const handleCustomTypeRemove = (index: number) => {
@@ -181,7 +196,7 @@ export const BusinessType: React.FC = () => {
 
           {/* Custom Type Cards */}
           {customTypes.map((customType, index) => {
-            const isSelected = customType.trim().length > 0;
+            const isSelected = customType.trim().length > 0 || manuallyCheckedCustom.has(index);
             
             return (
               <div
@@ -202,7 +217,19 @@ export const BusinessType: React.FC = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (isSelected) {
-                        handleCustomTypeRemove(index);
+                        // If has text, clear it
+                        if (customType.trim().length > 0) {
+                          handleCustomTypeRemove(index);
+                        }
+                        // Remove from manually checked set
+                        setManuallyCheckedCustom(prev => {
+                          const newSet = new Set(prev);
+                          newSet.delete(index);
+                          return newSet;
+                        });
+                      } else {
+                        // Check the box manually
+                        setManuallyCheckedCustom(prev => new Set(prev).add(index));
                       }
                     }}
                   >
