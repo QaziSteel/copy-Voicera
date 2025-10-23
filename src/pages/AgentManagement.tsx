@@ -2045,102 +2045,99 @@ const AgentManagement = () => {
                 {/* Advanced Settings Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
                   <div className="space-y-5">
-                    {/* Single Row - Daily Summary & Calendar Integration */}
-                    <div className="flex gap-5">
-                      {/* Daily Summary Toggle */}
-                      <div className="flex-1 space-y-4">
-                        <label className="block text-lg font-semibold text-black">
-                          Do you want a daily summary of all calls and bookings?
-                        </label>
-                        <div className="flex items-center gap-4">
-                          <span className="text-lg font-semibold text-gray-500">No</span>
-                          <button
-                            onClick={() => setDailySummary(!dailySummary)}
-                            className={`flex p-1 rounded-full transition-colors ${
-                              dailySummary ? "bg-gray-200" : "bg-gray-200"
+                    {/* First Row - Daily Summary Toggle */}
+                    <div className="space-y-4">
+                      <label className="block text-lg font-semibold text-black">
+                        Do you want a daily summary of all calls and bookings?
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <span className="text-lg font-semibold text-gray-500">No</span>
+                        <button
+                          onClick={() => setDailySummary(!dailySummary)}
+                          className={`flex p-1 rounded-full transition-colors ${
+                            dailySummary ? "bg-gray-200" : "bg-gray-200"
+                          }`}
+                        >
+                          <div
+                            className={`w-6 h-6 rounded-full transition-all ${
+                              dailySummary ? "bg-black translate-x-6" : "bg-transparent"
                             }`}
-                          >
-                            <div
-                              className={`w-6 h-6 rounded-full transition-all ${
-                                dailySummary ? "bg-black translate-x-6" : "bg-transparent"
-                              }`}
-                            ></div>
-                            <div
-                              className={`w-6 h-6 rounded-full transition-all ${
-                                !dailySummary ? "bg-black -translate-x-6" : "bg-transparent"
-                              }`}
-                            ></div>
-                          </button>
-                          <span className="text-lg font-semibold text-gray-500">Yes</span>
-                        </div>
-                      </div>
-                      
-                      {/* Calendar Integration */}
-                      <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-3">
-                          Calendar Integration
-                        </label>
-                         <div className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg bg-white">
-                           {googleIntegration ? (
-                             <div className="flex items-center justify-between">
-                               <span className="text-green-600 font-medium">{googleIntegration.user_email}</span>
-                               <button
-                                 onClick={disconnectIntegration}
-                                 disabled={googleLoading}
-                                 className="text-red-600 hover:text-red-800 disabled:opacity-50 font-medium"
-                               >
-                                 Disconnect
-                               </button>
-                             </div>
-                           ) : (
-                             <span className="text-black">Google Calendar</span>
-                           )}
-                         </div>
+                          ></div>
+                          <div
+                            className={`w-6 h-6 rounded-full transition-all ${
+                              !dailySummary ? "bg-black -translate-x-6" : "bg-transparent"
+                            }`}
+                          ></div>
+                        </button>
+                        <span className="text-lg font-semibold text-gray-500">Yes</span>
                       </div>
                     </div>
                     
-                    {/* Sync Account Button Row */}
-                    <div className="flex justify-end">
-                      <button 
-                        onClick={() => selectedAgentId && initiateOAuth(selectedAgentId)}
-                        disabled={googleLoading || !selectedAgentId}
-                        className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <g clipPath="url(#clip0_183_684)">
-                            <path
-                              d="M7.5 12.5L12.5 7.5"
-                              stroke="white"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M8.75 5.94598L11.0984 3.60223C11.8036 2.90843 12.7544 2.52139 13.7437 2.52542C14.7329 2.52945 15.6805 2.92422 16.3801 3.62374C17.0796 4.32326 17.4743 5.27086 17.4784 6.26012C17.4824 7.24938 17.0954 8.20016 16.4016 8.90536L14.0531 11.2499"
-                              stroke="white"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M5.94598 8.75L3.60223 11.0984C2.90843 11.8036 2.52139 12.7544 2.52542 13.7437C2.52945 14.7329 2.92422 15.6805 3.62374 16.3801C4.32326 17.0796 5.27086 17.4743 6.26012 17.4784C7.24938 17.4824 8.20016 17.0954 8.90536 16.4016L11.2499 14.0531"
-                              stroke="white"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </g>
-                          <defs>
-                            <clipPath id="clip0_183_684">
-                              <rect width="20" height="20" fill="white" />
-                            </clipPath>
-                          </defs>
-                        </svg>
-                        <span className="text-base font-medium">
-                          {googleIntegration ? 'Connected' : 'Sync Account'}
-                        </span>
-                      </button>
-                      
+                    {/* Second Row - Calendar Integration with Sync Button */}
+                    <div>
+                      <label className="block text-lg font-semibold text-black mb-3">
+                        Calendar Integration
+                      </label>
+                      <div className="flex items-center gap-4">
+                        {/* Calendar Integration Status Display */}
+                        <div className="flex-1 px-4 py-4 border-2 border-gray-200 rounded-xl text-lg bg-white">
+                          {googleIntegration ? (
+                            <div className="flex items-center justify-between">
+                              <span className="text-green-600 font-medium">{googleIntegration.user_email}</span>
+                              <button
+                                onClick={disconnectIntegration}
+                                disabled={googleLoading}
+                                className="text-red-600 hover:text-red-800 disabled:opacity-50 font-medium"
+                              >
+                                Disconnect
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-black">Google Calendar</span>
+                          )}
+                        </div>
+                        
+                        {/* Sync Account Button - Inline */}
+                        <button 
+                          onClick={() => selectedAgentId && initiateOAuth(selectedAgentId)}
+                          disabled={googleLoading || !selectedAgentId}
+                          className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 whitespace-nowrap"
+                        >
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <g clipPath="url(#clip0_183_684)">
+                              <path
+                                d="M7.5 12.5L12.5 7.5"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M8.75 5.94598L11.0984 3.60223C11.8036 2.90843 12.7544 2.52139 13.7437 2.52542C14.7329 2.52945 15.6805 2.92422 16.3801 3.62374C17.0796 4.32326 17.4743 5.27086 17.4784 6.26012C17.4824 7.24938 17.0954 8.20016 16.4016 8.90536L14.0531 11.2499"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M5.94598 8.75L3.60223 11.0984C2.90843 11.8036 2.52139 12.7544 2.52542 13.7437C2.52945 14.7329 2.92422 15.6805 3.62374 16.3801C4.32326 17.0796 5.27086 17.4743 6.26012 17.4784C7.24938 17.4824 8.20016 17.0954 8.90536 16.4016L11.2499 14.0531"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </g>
+                            <defs>
+                              <clipPath id="clip0_183_684">
+                                <rect width="20" height="20" fill="white" />
+                              </clipPath>
+                            </defs>
+                          </svg>
+                          <span className="text-base font-medium">
+                            {googleIntegration ? 'Connected' : 'Sync Account'}
+                          </span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
