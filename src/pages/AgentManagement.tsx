@@ -2099,7 +2099,7 @@ const AgentManagement = () => {
                         
                         {/* Sync Account Button - Inline */}
                         <button 
-                          onClick={() => selectedAgentId && initiateOAuth(selectedAgentId)}
+                          onClick={() => selectedAgentId && initiateOAuth(`${selectedAgentId}|agent-management`)}
                           disabled={googleLoading || !selectedAgentId}
                           className="flex items-center gap-3 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 whitespace-nowrap"
                         >

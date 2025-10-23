@@ -79,8 +79,38 @@ serve(async (req) => {
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=${encodeURIComponent(error)}`;
-      return Response.redirect(redirectUrl, 302);
+      // Also send postMessage for non-onboarding flows
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ OAuth Error: ${error}</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: '${error}'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
     if (!code || (!agentId && !projectId) || (isOnboardingFlow && !userId)) {
@@ -119,8 +149,38 @@ serve(async (req) => {
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId || 'unknown'}&oauth=error&error=missing_parameters`;
-      return Response.redirect(redirectUrl, 302);
+      // Also send postMessage for non-onboarding flows
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Missing parameters</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'missing_parameters'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
     // Get Google OAuth credentials from Supabase secrets
@@ -131,8 +191,37 @@ serve(async (req) => {
 
     if (!googleClientId || !googleClientSecret || !supabaseUrl || !supabaseServiceKey) {
       console.error('Missing environment variables');
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=server_configuration`;
-      return Response.redirect(redirectUrl, 302);
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Server configuration error</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'server_configuration'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
     // Exchange authorization code for tokens
@@ -153,8 +242,37 @@ serve(async (req) => {
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error('Token exchange failed:', errorText);
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=token_exchange_failed`;
-      return Response.redirect(redirectUrl, 302);
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Token exchange failed</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'token_exchange_failed'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
     const tokenData = await tokenResponse.json();
@@ -169,8 +287,37 @@ serve(async (req) => {
 
     if (!userInfoResponse.ok) {
       console.error('Failed to get user info from Google');
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${state}&oauth=error&error=user_info_failed`;
-      return Response.redirect(redirectUrl, 302);
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Failed to get user info</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'user_info_failed'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
     const userInfo = await userInfoResponse.json();
@@ -200,14 +347,72 @@ serve(async (req) => {
 
       if (agentError || !agentData) {
         console.error('Error fetching agent data:', agentError);
-        const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=agent_not_found`;
-        return Response.redirect(redirectUrl, 302);
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Agent not found</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'agent_not_found'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        });
       }
 
       if (!agentData.project_id || !agentData.user_id) {
         console.error('Missing project_id or user_id for agent:', agentId);
-        const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=project_not_found`;
-        return Response.redirect(redirectUrl, 302);
+        const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Project not found</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'project_not_found'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+        return new Response(htmlResponse, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        });
       }
       
       finalProjectId = agentData.project_id;
@@ -333,8 +538,37 @@ serve(async (req) => {
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=storage_failed`;
-      return Response.redirect(redirectUrl, 302);
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Storage failed</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'storage_failed'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
     // Now store the encrypted tokens using the secure function
@@ -384,8 +618,37 @@ serve(async (req) => {
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       }
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${agentId}&oauth=error&error=token_storage_failed`;
-      return Response.redirect(redirectUrl, 302);
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Token storage failed</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'token_storage_failed'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+      return new Response(htmlResponse, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
     console.log('Google integration stored successfully for project:', finalProjectId);
@@ -429,9 +692,72 @@ serve(async (req) => {
         }
       });
     } else {
-      // For agent management flow, redirect as before
-      const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${finalAgentId}&oauth=success&email=${encodeURIComponent(userInfo.email)}&popup=true`;
-      return Response.redirect(redirectUrl, 302);
+      // For agent management flow, also use postMessage (not redirect)
+      const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Google Calendar Connected</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: #f9fafb;
+        }
+        .success {
+            text-align: center;
+            padding: 2rem;
+        }
+        .checkmark {
+            font-size: 3rem;
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="success">
+        <div class="checkmark">✓</div>
+        <p>Google Calendar Connected Successfully</p>
+        <p style="color: #6b7280;">This window will close automatically...</p>
+    </div>
+    <script>
+        console.log('Sending OAUTH_SUCCESS message to parent window');
+        try {
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'OAUTH_SUCCESS',
+                    email: '${userInfo.email}',
+                    agentId: '${finalAgentId}'
+                }, '*');
+                console.log('Message sent successfully');
+            } else {
+                console.error('No window.opener available');
+            }
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window, user may need to close manually');
+            }
+        }, 1500);
+    </script>
+</body>
+</html>`;
+      
+      return new Response(htmlResponse, {
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8'
+        }
+      });
     }
 
   } catch (error) {
@@ -476,7 +802,37 @@ serve(async (req) => {
       });
     }
     
-    const redirectUrl = `${req.headers.get('origin') || 'https://loving-scooter-37.lovableproject.com'}/agent-management?agentId=${finalAgentId || 'unknown'}&oauth=error&error=unexpected_error`;
-    return Response.redirect(redirectUrl, 302);
+    // Also send postMessage for non-onboarding flows
+    const htmlResponse = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OAuth Error</title>
+</head>
+<body>
+    <p>❌ Unexpected error occurred</p>
+    <p>You can close this window.</p>
+    <script>
+        try {
+            window.opener?.postMessage({
+                type: 'OAUTH_ERROR',
+                error: 'Unexpected error occurred'
+            }, '*');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+        setTimeout(() => {
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Cannot auto-close window');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>`;
+    return new Response(htmlResponse, {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
   }
 });
