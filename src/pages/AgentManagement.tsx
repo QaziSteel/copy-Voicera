@@ -145,7 +145,6 @@ const AgentManagement = () => {
   const [appointmentDuration, setAppointmentDuration] = useState('');
   const [businessDays, setBusinessDays] = useState<string[]>([]);
   const [businessHours, setBusinessHours] = useState({ from: '8:00am', to: '05:00pm' });
-  const [scheduleFullAction, setScheduleFullAction] = useState('');
   
   // FAQs
   const [faqEnabled, setFaqEnabled] = useState(false);
@@ -457,7 +456,6 @@ const AgentManagement = () => {
         // Booking
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
-        setScheduleFullAction(data.schedule_full_action || '');
         
         // FAQs - Convert from onboarding format to Agent Management format
         const faqData = convertOnboardingFAQs(data.faq_data);
@@ -570,7 +568,6 @@ const AgentManagement = () => {
         services: detailedServices as any,
         business_days: businessDays as any,
         business_hours: businessHours as any,
-        schedule_full_action: scheduleFullAction,
         faq_data: { enabled: faqEnabled, questions: faqs } as any,
         wants_daily_summary: dailySummary,
         wants_email_confirmations: emailConfirmations,
@@ -672,7 +669,6 @@ const AgentManagement = () => {
             services: completeAgentData.services,
             business_days: completeAgentData.business_days,
             business_hours: completeAgentData.business_hours,
-            schedule_full_action: completeAgentData.schedule_full_action,
             
             // FAQs
             faq_data: completeAgentData.faq_data,
@@ -726,7 +722,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, scheduleFullAction, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -938,7 +934,7 @@ const AgentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('services, business_days, business_hours, schedule_full_action')
+        .select('services, business_days, business_hours')
         .eq('id', selectedAgentId)
         .single();
 
@@ -949,7 +945,6 @@ const AgentManagement = () => {
         setDetailedServices(servicesData);
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
-        setScheduleFullAction(data.schedule_full_action || '');
         
         toast({
           title: "Changes Discarded",
@@ -1838,39 +1833,6 @@ const AgentManagement = () => {
                       </div>
                     </div>
 
-                    {/* Third Row - Schedule Management */}
-                    <div>
-                      <label className="block text-lg font-semibold text-black mb-4">
-                        If your schedule is full, what should the AI do?
-                      </label>
-                      <div className="relative">
-                        <select 
-                          value={scheduleFullAction}
-                          onChange={(e) => setScheduleFullAction(e.target.value)}
-                          className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
-                        >
-                          <option value="">Select an option</option>
-                          <option value="Offer the next available slot">Offer the next available slot</option>
-                          <option value="Take a message for you">Take a message for you</option>
-                          <option value="Add the customer to a waitlist">Add the customer to a waitlist</option>
-                        </select>
-                        <svg
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                            stroke="#141B34"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
