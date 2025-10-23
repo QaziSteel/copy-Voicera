@@ -88,7 +88,7 @@ const AgentOverview = () => {
       const keysToRemove = [
         'businessName', 'businessTypes', 'primaryLocation', 'contactNumber', 
         'purchasedNumberDetails', 'aiVoiceStyle', 'aiGreetingStyle', 'aiAssistantName', 
-        'aiHandlingUnknown', 'aiCallSchedule', 'services', 'businessDays', 'businessHours', 
+        'aiHandlingUnknown', 'aiCallSchedule', 'services', 'businessServices', 'businessDays', 'businessHours', 
         'scheduleFullAction', 'wantsDailySummary', 'wantsEmailConfirmations', 'reminderSettings', 
         'faqQuestions', 'faqAnswers', 'calendarIntegration', 'calendar_integration_required'
       ];
