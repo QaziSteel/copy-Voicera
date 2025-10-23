@@ -131,7 +131,6 @@ const AgentManagement = () => {
   const [voices, setVoices] = useState<any[]>([]);
   const [selectedVoice, setSelectedVoice] = useState<string>('');
   const [greetingStyle, setGreetingStyle] = useState<any>({});
-  const [handlingUnknown, setHandlingUnknown] = useState('');
   const [answerTime, setAnswerTime] = useState('');
   
   // New states for dropdown options
@@ -155,8 +154,6 @@ const AgentManagement = () => {
   
   // Advanced
   const [dailySummary, setDailySummary] = useState(false);
-  const [emailConfirmations, setEmailConfirmations] = useState(false);
-  const [autoReminders, setAutoReminders] = useState(false);
 
   // Validation state
   const [showValidationDialog, setShowValidationDialog] = useState(false);
@@ -451,7 +448,6 @@ const AgentManagement = () => {
           setCustomAnswerTime(savedSchedule);
         }
         setAnswerTime(savedSchedule);
-        setHandlingUnknown(data.ai_handling_unknown || '');
         
         // Booking
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
@@ -464,18 +460,9 @@ const AgentManagement = () => {
         
         // Advanced
         setDailySummary(data.wants_daily_summary || false);
-        setEmailConfirmations(data.wants_email_confirmations || false);
         
         // Load agent status data into context
         await loadAgentStatus(agentId);
-        
-        // Handle reminder settings (jsonb format)
-        if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
-          const reminderData = data.reminder_settings as { wantsReminders?: boolean };
-          setAutoReminders(reminderData.wantsReminders || false);
-        } else {
-          setAutoReminders(false);
-        }
       }
     } catch (error) {
       console.error('Error loading agent settings:', error);
@@ -563,15 +550,12 @@ const AgentManagement = () => {
         ai_assistant_name: selectedAssistantName === 'custom-value' ? customAssistantName : (selectedAssistantName === 'default' ? `Your ${businessName} Assistant` : aiAssistantName),
         ai_voice_style: selectedVoice,
         ai_greeting_style: greetingOptions.find(g => g.id === selectedGreetingStyle) || greetingStyle,
-        ai_handling_unknown: handlingUnknown,
         ai_call_schedule: selectedAnswerTime === 'custom-schedule' ? customAnswerTime : (selectedAnswerTime === 'custom' ? customAnswerTime : selectedAnswerTime),
         services: detailedServices as any,
         business_days: businessDays as any,
         business_hours: businessHours as any,
         faq_data: { enabled: faqEnabled, questions: faqs } as any,
         wants_daily_summary: dailySummary,
-        wants_email_confirmations: emailConfirmations,
-        reminder_settings: { wantsReminders: autoReminders } as any,
       };
 
       let agentIdForWebhook = selectedAgentId;
@@ -662,7 +646,6 @@ const AgentManagement = () => {
             ai_assistant_name: completeAgentData.ai_assistant_name,
             ai_voice_style: completeAgentData.ai_voice_style,
             ai_greeting_style: completeAgentData.ai_greeting_style,
-            ai_handling_unknown: completeAgentData.ai_handling_unknown,
             ai_call_schedule: completeAgentData.ai_call_schedule,
             
             // Booking
@@ -675,8 +658,6 @@ const AgentManagement = () => {
             
             // Advanced
             wants_daily_summary: completeAgentData.wants_daily_summary,
-            wants_email_confirmations: completeAgentData.wants_email_confirmations,
-            reminder_settings: completeAgentData.reminder_settings,
             
             // Additional metadata
             current_status: completeAgentData.current_status,
@@ -722,7 +703,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, handlingUnknown, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, emailConfirmations, autoReminders, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -869,7 +850,7 @@ const AgentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('ai_assistant_name, ai_voice_style, ai_greeting_style, ai_handling_unknown, ai_call_schedule')
+        .select('ai_assistant_name, ai_voice_style, ai_greeting_style, ai_call_schedule')
         .eq('id', selectedAgentId)
         .single();
 
@@ -911,7 +892,6 @@ const AgentManagement = () => {
           setCustomAnswerTime(savedSchedule);
         }
         setAnswerTime(savedSchedule);
-        setHandlingUnknown(data.ai_handling_unknown || '');
         
         toast({
           title: "Changes Discarded",
@@ -1001,23 +981,14 @@ const AgentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('ai_handling_unknown, wants_daily_summary, wants_email_confirmations, reminder_settings')
+        .select('wants_daily_summary')
         .eq('id', selectedAgentId)
         .single();
 
       if (error) throw error;
       
       if (data) {
-        setHandlingUnknown(data.ai_handling_unknown || '');
         setDailySummary(data.wants_daily_summary || false);
-        setEmailConfirmations(data.wants_email_confirmations || false);
-        
-        if (data.reminder_settings && typeof data.reminder_settings === 'object' && !Array.isArray(data.reminder_settings)) {
-          const reminderData = data.reminder_settings as { wantsReminders?: boolean };
-          setAutoReminders(reminderData.wantsReminders || false);
-        } else {
-          setAutoReminders(false);
-        }
         
         toast({
           title: "Changes Discarded",
@@ -2074,42 +2045,8 @@ const AgentManagement = () => {
                 {/* Advanced Settings Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
                   <div className="space-y-5">
-                    {/* First Row - AI Handling & Daily Summary */}
+                    {/* Single Row - Daily Summary & Calendar Integration */}
                     <div className="flex gap-5">
-                      {/* AI Handling Dropdown */}
-                      <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-3">
-                          How should your AI handle common questions that it can't answer?
-                        </label>
-                         <div className="relative">
-                          <select 
-                            className="w-full px-4 py-4 pr-12 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white truncate"
-                            value={handlingUnknown}
-                            onChange={(e) => setHandlingUnknown(e.target.value)}
-                          >
-                            <option value="">Select what the AI should do</option>
-                            <option value="Politely transfer the call to you (or your voicemail)">Politely transfer the call to you (or your voicemail)</option>
-                            <option value="Take a message and email it to you">Take a message and email it to you</option>
-                            <option value="Offer to call the customer back later">Offer to call the customer back later</option>
-                          </select>
-                          <svg
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                              stroke="#141B34"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                      
                       {/* Daily Summary Toggle */}
                       <div className="flex-1 space-y-4">
                         <label className="block text-lg font-semibold text-black">
@@ -2137,70 +2074,8 @@ const AgentManagement = () => {
                           <span className="text-lg font-semibold text-gray-500">Yes</span>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Second Row - Email Confirmations & Auto Reminders */}
-                    <div className="flex gap-5">
-                      {/* Email Confirmations Toggle */}
-                      <div className="flex-1 space-y-4">
-                        <label className="block text-lg font-semibold text-black">
-                          Should customers receive booking confirmations by Email?
-                        </label>
-                        <div className="flex items-center gap-4">
-                          <span className="text-lg font-semibold text-gray-500">No</span>
-                          <button
-                            onClick={() => setEmailConfirmations(!emailConfirmations)}
-                            className={`flex p-1 rounded-full transition-colors ${
-                              emailConfirmations ? "bg-gray-200" : "bg-gray-200"
-                            }`}
-                          >
-                            <div
-                              className={`w-6 h-6 rounded-full transition-all ${
-                                emailConfirmations ? "bg-black translate-x-6" : "bg-transparent"
-                              }`}
-                            ></div>
-                            <div
-                              className={`w-6 h-6 rounded-full transition-all ${
-                                !emailConfirmations ? "bg-black -translate-x-6" : "bg-transparent"
-                              }`}
-                            ></div>
-                          </button>
-                          <span className="text-lg font-semibold text-gray-500">Yes</span>
-                        </div>
-                      </div>
                       
-                      {/* Auto Reminders Toggle */}
-                      <div className="flex-1 space-y-4">
-                        <label className="block text-lg font-semibold text-black">
-                          Would you like your AI to send automatic reminders before each appointment?
-                        </label>
-                        <div className="flex items-center gap-4">
-                          <span className="text-lg font-semibold text-gray-500">No</span>
-                          <button
-                            onClick={() => setAutoReminders(!autoReminders)}
-                            className={`flex p-1 rounded-full transition-colors ${
-                              autoReminders ? "bg-gray-200" : "bg-transparent"
-                            }`}
-                          >
-                            <div
-                              className={`w-6 h-6 rounded-full transition-all ${
-                                autoReminders ? "bg-black translate-x-6" : "bg-transparent"
-                              }`}
-                            ></div>
-                            <div
-                              className={`w-6 h-6 rounded-full transition-all ${
-                                !autoReminders ? "bg-black -translate-x-6" : "bg-transparent"
-                              }`}
-                            ></div>
-                          </button>
-                          <span className="text-lg font-semibold text-gray-500">Yes</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Third Row - Calendar Integration */}
-                    <div className="flex justify-between items-end gap-5">
-                      {/* Calendar Integration Dropdown */}
+                      {/* Calendar Integration */}
                       <div className="flex-1">
                         <label className="block text-lg font-semibold text-black mb-3">
                           Calendar Integration
@@ -2222,8 +2097,10 @@ const AgentManagement = () => {
                            )}
                          </div>
                       </div>
-                      
-                      {/* Sync Account Button */}
+                    </div>
+                    
+                    {/* Sync Account Button Row */}
+                    <div className="flex justify-end">
                       <button 
                         onClick={() => selectedAgentId && initiateOAuth(selectedAgentId)}
                         disabled={googleLoading || !selectedAgentId}
