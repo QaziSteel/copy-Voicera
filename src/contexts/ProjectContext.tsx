@@ -20,6 +20,7 @@ interface ProjectContextType {
   refreshProjects: () => Promise<void>;
   refreshProjectMembers: () => Promise<void>;
   canViewCustomerData: () => boolean;
+  canCreateAgents: () => boolean;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -153,6 +154,11 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     return currentUserRole === 'owner' || currentUserRole === 'admin';
   };
 
+  const canCreateAgents = (): boolean => {
+    if (!currentUserRole) return false;
+    return currentUserRole === 'owner' || currentUserRole === 'admin';
+  };
+
   useEffect(() => {
     if (user) {
       setLoading(true);
@@ -180,6 +186,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     refreshProjects,
     refreshProjectMembers,
     canViewCustomerData,
+    canCreateAgents,
   };
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;

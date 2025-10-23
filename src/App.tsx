@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProjectProvider } from "@/contexts/ProjectContext";
 import { AgentStatusProvider } from "@/contexts/AgentStatusContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RoleProtectedRoute } from "@/components/RoleProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -67,102 +68,142 @@ const App = () => (
             <Route path="/auth/reset-password" element={<PasswordResetHandler />} />
             <Route path="/onboarding/business-intro" element={
               <ProtectedRoute>
-                <BusinessIntro />
+                <RoleProtectedRoute>
+                  <BusinessIntro />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-name" element={
               <ProtectedRoute>
-                <BusinessName />
+                <RoleProtectedRoute>
+                  <BusinessName />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-type" element={
               <ProtectedRoute>
-                <BusinessType />
+                <RoleProtectedRoute>
+                  <BusinessType />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-services" element={
               <ProtectedRoute>
-                <BusinessServices />
+                <RoleProtectedRoute>
+                  <BusinessServices />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-location" element={
               <ProtectedRoute>
-                <BusinessLocation />
+                <RoleProtectedRoute>
+                  <BusinessLocation />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/contact-number" element={
               <ProtectedRoute>
-                <ContactNumber />
+                <RoleProtectedRoute>
+                  <ContactNumber />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/calendar-integration" element={
               <ProtectedRoute>
-                <CalendarIntegration />
+                <RoleProtectedRoute>
+                  <CalendarIntegration />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/personality-intro" element={
               <ProtectedRoute>
-                <PersonalityIntro />
+                <RoleProtectedRoute>
+                  <PersonalityIntro />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/voice-style" element={
               <ProtectedRoute>
-                <VoiceStyle />
+                <RoleProtectedRoute>
+                  <VoiceStyle />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/greetings" element={
               <ProtectedRoute>
-                <Greetings />
+                <RoleProtectedRoute>
+                  <Greetings />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/assistant-name" element={
               <ProtectedRoute>
-                <AssistantName />
+                <RoleProtectedRoute>
+                  <AssistantName />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/answer-time" element={
               <ProtectedRoute>
-                <AnswerTime />
+                <RoleProtectedRoute>
+                  <AnswerTime />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/booking-intro" element={
               <ProtectedRoute>
-                <BookingIntro />
+                <RoleProtectedRoute>
+                  <BookingIntro />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-days" element={
               <ProtectedRoute>
-                <BusinessDays />
+                <RoleProtectedRoute>
+                  <BusinessDays />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/business-hours" element={
               <ProtectedRoute>
-                <BusinessHours />
+                <RoleProtectedRoute>
+                  <BusinessHours />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/faq-intro" element={
               <ProtectedRoute>
-                <FAQIntro />
+                <RoleProtectedRoute>
+                  <FAQIntro />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/faq-questions" element={
               <ProtectedRoute>
-                <FAQQuestions />
+                <RoleProtectedRoute>
+                  <FAQQuestions />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/integrations" element={
               <ProtectedRoute>
-                <Integrations />
+                <RoleProtectedRoute>
+                  <Integrations />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/summaries" element={
               <ProtectedRoute>
-                <Summaries />
+                <RoleProtectedRoute>
+                  <Summaries />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/onboarding/completion" element={
               <ProtectedRoute>
-                <Completion />
+                <RoleProtectedRoute>
+                  <Completion />
+                </RoleProtectedRoute>
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={

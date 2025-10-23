@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProject } from '@/contexts/ProjectContext';
 import { Header } from '@/components/shared/Header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,6 +35,7 @@ interface Agent {
 const AgentOverview = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canCreateAgents } = useProject();
   const { toast } = useToast();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,11 +248,18 @@ const AgentOverview = () => {
         </svg>
       </div>
       <h3 className="text-xl font-semibold text-black mb-2">No Agents Created Yet</h3>
-      <p className="text-gray-500 mb-6">Create your first AI agent to get started with automated customer service.</p>
-      <Button onClick={handleCreateAgent} className="bg-black text-white hover:bg-gray-800">
-        <Plus className="w-4 h-4 mr-2" />
-        Create Your First Agent
-      </Button>
+      <p className="text-gray-500 mb-6">
+        {canCreateAgents()
+          ? "Create your first AI agent to get started with automated customer service."
+          : "No agents have been created yet. Contact your project owner to create agents."
+        }
+      </p>
+      {canCreateAgents() && (
+        <Button onClick={handleCreateAgent} className="bg-black text-white hover:bg-gray-800">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Your First Agent
+        </Button>
+      )}
     </div>
   );
 
@@ -265,7 +274,7 @@ const AgentOverview = () => {
             <h1 className="text-3xl font-bold text-black mb-2">Agent Management</h1>
             <p className="text-lg text-gray-600">Manage and monitor all your AI agents in one place</p>
           </div>
-          {agents.length > 0 && (
+          {agents.length > 0 && canCreateAgents() && (
             <Button onClick={handleCreateAgent} className="bg-black text-white hover:bg-gray-800">
               <Plus className="w-4 h-4 mr-2" />
               New Agent
