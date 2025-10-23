@@ -554,18 +554,9 @@ export type Database = {
         Args: { _booking_id: string; _user_id: string }
         Returns: boolean
       }
-      check_email_exists: {
-        Args: { _email: string }
-        Returns: boolean
-      }
-      cleanup_expired_invitations: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_orphaned_google_integrations: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_email_exists: { Args: { _email: string }; Returns: boolean }
+      cleanup_expired_invitations: { Args: never; Returns: undefined }
+      cleanup_orphaned_google_integrations: { Args: never; Returns: undefined }
       decrypt_oauth_token: {
         Args: {
           _encrypted_token: string
@@ -588,10 +579,7 @@ export type Database = {
           customer_number: string
         }[]
       }
-      get_booking_project_id: {
-        Args: { booking_id: string }
-        Returns: string
-      }
+      get_booking_project_id: { Args: { booking_id: string }; Returns: string }
       get_call_logs_with_bookings: {
         Args: {
           date_from?: string
@@ -686,10 +674,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      mask_email: {
-        Args: { _email: string }
-        Returns: string
-      }
+      mask_email: { Args: { _email: string }; Returns: string }
       project_owns_phone_number: {
         Args: { _phone_number: string; _user_id: string }
         Returns: boolean
@@ -723,10 +708,7 @@ export type Database = {
         Args: { _phone_number: string; _user_id: string }
         Returns: boolean
       }
-      validate_booking_api_key: {
-        Args: { _api_key: string }
-        Returns: boolean
-      }
+      validate_booking_api_key: { Args: { _api_key: string }; Returns: boolean }
     }
     Enums: {
       project_role: "owner" | "admin" | "member" | "viewer"
