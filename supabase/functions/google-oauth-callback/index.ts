@@ -283,7 +283,6 @@ serve(async (req) => {
         .from('google_integrations')
         .select('id')
         .eq('agent_id', finalAgentId)
-        .eq('is_active', true)
         .maybeSingle();
 
       if (existingAgentIntegration) {
