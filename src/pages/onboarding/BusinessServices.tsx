@@ -195,11 +195,6 @@ export const BusinessServices: React.FC = () => {
         return prev;
       });
     }
-    
-    // Add to selectedServices when typing
-    if (value.trim()) {
-      handleCustomServiceAdd(businessType, value);
-    }
   };
 
   const handleCustomServiceAdd = (businessType: string, serviceName: string) => {
