@@ -33,7 +33,7 @@ export default function Reminders() {
   const timingOptions = ["1 hour before", "24 hours before", "Both"];
 
   const handlePrevious = () => {
-    navigate("/onboarding/confirmations");
+    navigate("/onboarding/summaries");
   };
 
   const handleSubmit = async () => {

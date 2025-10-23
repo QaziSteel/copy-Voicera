@@ -20,7 +20,7 @@ export default function Summaries() {
 
   const handleNext = () => {
     sessionStorage.setItem("wantsDailySummary", wantsDailySummary.toString());
-    navigate("/onboarding/confirmations");
+    navigate("/onboarding/reminders");
   };
 
   const handleToggle = () => {
