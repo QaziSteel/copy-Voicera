@@ -44,7 +44,7 @@ export default function BusinessHours() {
         "businessHours",
         JSON.stringify({ from: fromTime, to: toTime }),
       );
-      navigate("/onboarding/schedule");
+      navigate("/onboarding/faq-intro");
     }
   };
 

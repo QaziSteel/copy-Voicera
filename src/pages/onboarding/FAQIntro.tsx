@@ -9,7 +9,7 @@ export default function FAQIntro() {
   };
 
   const handlePrevious = () => {
-    navigate("/onboarding/schedule");
+    navigate("/onboarding/business-hours");
   };
 
   return (
