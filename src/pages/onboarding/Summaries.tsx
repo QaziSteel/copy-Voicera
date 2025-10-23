@@ -15,7 +15,7 @@ export default function Summaries() {
   }, []);
 
   const handlePrevious = () => {
-    navigate("/onboarding/question-handling");
+    navigate("/onboarding/integrations");
   };
 
   const handleNext = () => {

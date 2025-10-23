@@ -43,7 +43,6 @@ import BusinessHours from "./pages/onboarding/BusinessHours";
 import FAQIntro from "./pages/onboarding/FAQIntro";
 import FAQQuestions from "./pages/onboarding/FAQQuestions";
 import Integrations from "./pages/onboarding/Integrations";
-import QuestionHandling from "./pages/onboarding/QuestionHandling";
 import Summaries from "./pages/onboarding/Summaries";
 import Confirmations from "./pages/onboarding/Confirmations";
 import Reminders from "./pages/onboarding/Reminders";
@@ -156,11 +155,6 @@ const App = () => (
             <Route path="/onboarding/integrations" element={
               <ProtectedRoute>
                 <Integrations />
-              </ProtectedRoute>
-            } />
-            <Route path="/onboarding/question-handling" element={
-              <ProtectedRoute>
-                <QuestionHandling />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/summaries" element={
