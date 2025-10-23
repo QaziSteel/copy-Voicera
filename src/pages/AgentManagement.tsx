@@ -1945,7 +1945,7 @@ const AgentManagement = () => {
                           placeholder="Enter your question"
                           value={newQuestion}
                           onChange={(e) => setNewQuestion(e.target.value)}
-                          className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500 placeholder-gray-500"
+                          className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500 placeholder-gray-500"
                         />
                       </div>
                       
