@@ -28,9 +28,21 @@ serve(async (req) => {
     const appOrigin = stateParts[2] ? decodeURIComponent(stateParts[2]) : null;
 
     const isOnboardingFlow = flow === 'onboarding';
-    const projectId = isOnboardingFlow ? identifier : null;
-    const userId = isOnboardingFlow ? stateParts[3] : null; // Extract userId for onboarding (moved to index 3)
-    const agentId = isOnboardingFlow ? null : identifier;
+    
+    // For onboarding flow, identifier contains "projectId:userId"
+    // For agent flow, identifier is just the agentId
+    let projectId = null;
+    let userId = null;
+    let agentId = null;
+
+    if (isOnboardingFlow) {
+      // Split identifier on ':' to extract projectId and userId
+      const identifierParts = identifier?.split(':') || [];
+      projectId = identifierParts[0] || null;
+      userId = identifierParts[1] || null;
+    } else {
+      agentId = identifier;
+    }
 
     // Fallback origin if not provided
     const redirectOrigin = appOrigin || 'https://lovable.dev';
