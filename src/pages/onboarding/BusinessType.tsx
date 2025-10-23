@@ -106,6 +106,25 @@ export const BusinessType: React.FC = () => {
         newSet.delete(index);
         return newSet;
       });
+      
+      // Remove duplicate empty slots - keep only one at the end
+      const filledTypes = newCustomTypes.filter(ct => ct.trim().length > 0);
+      const emptyCount = newCustomTypes.filter(ct => ct.trim().length === 0).length;
+      
+      if (emptyCount > 1) {
+        // Keep all filled types + one empty slot at the end
+        setCustomTypes([...filledTypes, '']);
+        
+        // Clean up manuallyCheckedCustom for removed indexes
+        const newCheckedSet = new Set<number>();
+        filledTypes.forEach((_, idx) => {
+          if (manuallyCheckedCustom.has(idx)) {
+            newCheckedSet.add(idx);
+          }
+        });
+        setManuallyCheckedCustom(newCheckedSet);
+        return; // Exit early since we've already set the state
+      }
     }
   };
 
