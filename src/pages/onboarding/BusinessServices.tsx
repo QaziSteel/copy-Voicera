@@ -28,6 +28,7 @@ export const BusinessServices: React.FC = () => {
   const [businessTypesFromPrevious, setBusinessTypesFromPrevious] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [customServiceInputs, setCustomServiceInputs] = useState<Record<string, string[]>>({});
+  const [manuallyCheckedCustomServices, setManuallyCheckedCustomServices] = useState<Record<string, Set<number>>>({});
   const navigate = useNavigate();
 
   // Load business types selected on previous page
@@ -136,12 +137,69 @@ export const BusinessServices: React.FC = () => {
       newInputs[index] = value;
       
       // If this is the last item and it now has text, add a new empty slot
-      if (index === currentInputs.length - 1 && value.trim()) {
+      // But only if there isn't already an empty slot at the end
+      const hasEmptySlot = newInputs.some((input, i) => i !== index && input.trim() === '');
+      if (index === currentInputs.length - 1 && value.trim() && !hasEmptySlot) {
         newInputs.push('');
       }
       
       return { ...prev, [businessType]: newInputs };
     });
+    
+    // Auto-check when typing starts
+    if (value.trim().length > 0 && !(manuallyCheckedCustomServices[businessType]?.has(index) ?? false)) {
+      setManuallyCheckedCustomServices(prev => {
+        const newMap = { ...prev };
+        const currentSet = new Set<number>(prev[businessType] || new Set<number>());
+        currentSet.add(index);
+        newMap[businessType] = currentSet;
+        return newMap;
+      });
+    }
+    
+    // Auto-uncheck if user deletes all text
+    if (value.trim().length === 0) {
+      setManuallyCheckedCustomServices(prev => {
+        const newMap = { ...prev };
+        const currentSet = new Set<number>(prev[businessType] || new Set<number>());
+        currentSet.delete(index);
+        newMap[businessType] = currentSet;
+        return newMap;
+      });
+      
+      // Remove duplicate empty slots - keep only one at the end
+      setCustomServiceInputs(prev => {
+        const currentInputs = prev[businessType] || [''];
+        const filledInputs = currentInputs.filter(input => input.trim().length > 0);
+        const emptyCount = currentInputs.filter(input => input.trim().length === 0).length;
+        
+        if (emptyCount > 1) {
+          // Keep all filled inputs + one empty slot at the end
+          const newMap = { ...prev, [businessType]: [...filledInputs, ''] };
+          
+          // Clean up manuallyCheckedCustomServices for removed indexes
+          setManuallyCheckedCustomServices(prevChecked => {
+            const newCheckedMap = { ...prevChecked };
+            const newCheckedSet = new Set<number>();
+            filledInputs.forEach((_, idx) => {
+              if (prevChecked[businessType]?.has(idx)) {
+                newCheckedSet.add(idx);
+              }
+            });
+            newCheckedMap[businessType] = newCheckedSet;
+            return newCheckedMap;
+          });
+          
+          return newMap;
+        }
+        return prev;
+      });
+    }
+    
+    // Add to selectedServices when typing
+    if (value.trim()) {
+      handleCustomServiceAdd(businessType, value);
+    }
   };
 
   const handleCustomServiceAdd = (businessType: string, serviceName: string) => {
@@ -169,6 +227,15 @@ export const BusinessServices: React.FC = () => {
         newInputs.push('');
       }
       return { ...prev, [businessType]: newInputs };
+    });
+    
+    // Remove from manually checked state
+    setManuallyCheckedCustomServices(prev => {
+      const newMap = { ...prev };
+      const currentSet = new Set<number>(prev[businessType] || new Set<number>());
+      currentSet.delete(index);
+      newMap[businessType] = currentSet;
+      return newMap;
     });
     
     // Remove from selected services
@@ -303,7 +370,8 @@ export const BusinessServices: React.FC = () => {
 
                   {/* Custom Service Cards */}
                   {(customServiceInputs[businessType] || ['']).map((customInput, index) => {
-                    const isSelected = customInput.trim().length > 0;
+                    const isSelected = customInput.trim().length > 0 || 
+                                       (manuallyCheckedCustomServices[businessType]?.has(index) ?? false);
                     const customService = isSelected ? selectedServices.find(
                       item => item.businessType === businessType && item.service === customInput.trim()
                     ) : null;
@@ -328,7 +396,27 @@ export const BusinessServices: React.FC = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (isSelected) {
-                                  handleCustomServiceRemove(businessType, index, customInput);
+                                  // If has text, clear it
+                                  if (customInput.trim().length > 0) {
+                                    handleCustomServiceRemove(businessType, index, customInput);
+                                  }
+                                  // Remove from manually checked set
+                                  setManuallyCheckedCustomServices(prev => {
+                                    const newMap = { ...prev };
+                                    const currentSet = new Set<number>(prev[businessType] || new Set<number>());
+                                    currentSet.delete(index);
+                                    newMap[businessType] = currentSet;
+                                    return newMap;
+                                  });
+                                } else {
+                                  // Check the box manually
+                                  setManuallyCheckedCustomServices(prev => {
+                                    const newMap = { ...prev };
+                                    const currentSet = new Set<number>(prev[businessType] || new Set<number>());
+                                    currentSet.add(index);
+                                    newMap[businessType] = currentSet;
+                                    return newMap;
+                                  });
                                 }
                               }}
                             >
