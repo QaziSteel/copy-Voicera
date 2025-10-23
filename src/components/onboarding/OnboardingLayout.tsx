@@ -83,8 +83,6 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       case '/onboarding/integrations':
         return { step: 5, totalSteps: 5, completionPercentage: 0 };
       case '/onboarding/summaries':
-        return { step: 5, totalSteps: 5, completionPercentage: 90 };
-      case '/onboarding/reminders':
         return { step: 5, totalSteps: 5, completionPercentage: 100 };
       default:
         return { step: 1, totalSteps: 5, completionPercentage: 0 };
@@ -142,7 +140,6 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       '/onboarding/faq-questions',
       '/onboarding/integrations',
       '/onboarding/summaries',
-      '/onboarding/reminders',
     ];
 
     return onboardingRoutes.includes(location.pathname);

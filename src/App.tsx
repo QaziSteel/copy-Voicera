@@ -44,7 +44,6 @@ import FAQIntro from "./pages/onboarding/FAQIntro";
 import FAQQuestions from "./pages/onboarding/FAQQuestions";
 import Integrations from "./pages/onboarding/Integrations";
 import Summaries from "./pages/onboarding/Summaries";
-import Reminders from "./pages/onboarding/Reminders";
 import Completion from "./pages/onboarding/Completion";
 import NotFound from "./pages/NotFound";
 
@@ -159,11 +158,6 @@ const App = () => (
             <Route path="/onboarding/summaries" element={
               <ProtectedRoute>
                 <Summaries />
-              </ProtectedRoute>
-            } />
-            <Route path="/onboarding/reminders" element={
-              <ProtectedRoute>
-                <Reminders />
               </ProtectedRoute>
             } />
             <Route path="/onboarding/completion" element={
