@@ -131,13 +131,15 @@ export const BusinessServices: React.FC = () => {
   };
 
   const handleCustomInputChange = (businessType: string, index: number, value: string) => {
+    // Get the old value before updating
+    const oldValue = (customServiceInputs[businessType] || [''])[index] || '';
+    
     setCustomServiceInputs(prev => {
       const currentInputs = prev[businessType] || [''];
       const newInputs = [...currentInputs];
       newInputs[index] = value;
       
       // If this is the last item and it now has text, add a new empty slot
-      // But only if there isn't already an empty slot at the end
       const hasEmptySlot = newInputs.some((input, i) => i !== index && input.trim() === '');
       if (index === currentInputs.length - 1 && value.trim() && !hasEmptySlot) {
         newInputs.push('');
@@ -145,6 +147,45 @@ export const BusinessServices: React.FC = () => {
       
       return { ...prev, [businessType]: newInputs };
     });
+    
+    // Update selectedServices: if service existed with old name, update it to new name
+    // This preserves the duration while allowing the service name to change
+    if (oldValue.trim() && value.trim()) {
+      setSelectedServices(prev => {
+        const existingIndex = prev.findIndex(
+          item => item.businessType === businessType && item.service === oldValue.trim()
+        );
+        
+        if (existingIndex !== -1) {
+          // Update existing service with new name, keep duration
+          const updated = [...prev];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            service: value.trim()
+          };
+          return updated;
+        }
+        return prev;
+      });
+    }
+    
+    // If user starts typing (old was empty, new has text), add new service entry
+    if (!oldValue.trim() && value.trim()) {
+      setSelectedServices(prev => {
+        const exists = prev.find(
+          item => item.businessType === businessType && item.service === value.trim()
+        );
+        if (!exists) {
+          return [...prev, { 
+            businessType, 
+            service: value.trim(), 
+            hours: "01 hr", 
+            minutes: "00 min" 
+          }];
+        }
+        return prev;
+      });
+    }
     
     // Auto-check when typing starts
     if (value.trim().length > 0 && !(manuallyCheckedCustomServices[businessType]?.has(index) ?? false)) {
@@ -167,6 +208,13 @@ export const BusinessServices: React.FC = () => {
         return newMap;
       });
       
+      // Remove from selectedServices when text is completely cleared
+      if (oldValue.trim()) {
+        setSelectedServices(prev => 
+          prev.filter(item => !(item.businessType === businessType && item.service === oldValue.trim()))
+        );
+      }
+      
       // Remove duplicate empty slots - keep only one at the end
       setCustomServiceInputs(prev => {
         const currentInputs = prev[businessType] || [''];
@@ -174,10 +222,8 @@ export const BusinessServices: React.FC = () => {
         const emptyCount = currentInputs.filter(input => input.trim().length === 0).length;
         
         if (emptyCount > 1) {
-          // Keep all filled inputs + one empty slot at the end
           const newMap = { ...prev, [businessType]: [...filledInputs, ''] };
           
-          // Clean up manuallyCheckedCustomServices for removed indexes
           setManuallyCheckedCustomServices(prevChecked => {
             const newCheckedMap = { ...prevChecked };
             const newCheckedSet = new Set<number>();
