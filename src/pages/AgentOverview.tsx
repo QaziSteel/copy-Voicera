@@ -30,12 +30,13 @@ interface Agent {
   purchased_number_details: any;
   current_status: string;
   created_at: string;
+  project_id?: string;
 }
 
 const AgentOverview = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { canCreateAgents } = useProject();
+  const { canCreateAgents, currentProject } = useProject();
   const { toast } = useToast();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,17 +46,27 @@ const AgentOverview = () => {
 
   useEffect(() => {
     loadAgents();
-  }, []);
+  }, [currentProject]);
 
   const loadAgents = async () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      // Get agents for the current project
+      let query = supabase
         .from('onboarding_responses')
-        .select('id, business_name, ai_assistant_name, primary_location, contact_number, assistant_id, purchased_number_details, current_status, created_at')
-        .eq('user_id', user.id)
+        .select('id, business_name, ai_assistant_name, primary_location, contact_number, assistant_id, purchased_number_details, current_status, created_at, project_id')
         .order('created_at', { ascending: false });
+
+      // Filter by current project if one is selected
+      if (currentProject) {
+        query = query.eq('project_id', currentProject.id);
+      } else {
+        // Fallback to personal agents (no project_id)
+        query = query.is('project_id', null).eq('user_id', user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading agents:', error);
