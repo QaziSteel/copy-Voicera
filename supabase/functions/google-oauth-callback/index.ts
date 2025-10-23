@@ -16,181 +16,60 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state'); // This contains agentId|flow
+    const state = url.searchParams.get('state'); // This contains identifier|flow|origin
     const error = url.searchParams.get('error');
 
     console.log('OAuth callback received:', { code: !!code, state, error });
 
-    // Parse state to get identifier and flow
-    const [identifier, flow] = state?.split('|') || [state, 'agent-management'];
+    // Parse state parameter to extract identifier, flow, and origin
+    const stateParts = state?.split('|') || [];
+    const identifier = stateParts[0];
+    const flow = stateParts[1] || 'onboarding';
+    const appOrigin = stateParts[2] ? decodeURIComponent(stateParts[2]) : null;
+
     const isOnboardingFlow = flow === 'onboarding';
-    
-    // For onboarding flow, identifier contains "projectId:userId"
-    // For agent flow, identifier is agent_id
-    let projectId, userId, agentId;
-    
-    if (isOnboardingFlow) {
-      const [extractedProjectId, extractedUserId] = identifier?.split(':') || [];
-      projectId = extractedProjectId;
-      userId = extractedUserId;
-      agentId = null;
-    } else {
-      projectId = null;
-      userId = null;
-      agentId = identifier;
-    }
+    const projectId = isOnboardingFlow ? identifier : null;
+    const userId = isOnboardingFlow ? stateParts[3] : null; // Extract userId for onboarding (moved to index 3)
+    const agentId = isOnboardingFlow ? null : identifier;
+
+    // Fallback origin if not provided
+    const redirectOrigin = appOrigin || 'https://lovable.dev';
 
     console.log('Parsed state:', { identifier, flow, isOnboardingFlow, projectId, userId, agentId });
 
-    // Handle OAuth errors
+    // Handle OAuth errors from Google
     if (error) {
-      console.error('OAuth error:', error);
-      if (isOnboardingFlow) {
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ OAuth Error: ${error}</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: '${error}'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-        
-        return new Response(htmlResponse, {
-          headers: { 
-            'Content-Type': 'text/html; charset=utf-8',
-            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
-          }
-        });
-      }
-      // Also send postMessage for non-onboarding flows
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ OAuth Error: ${error}</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: '${error}'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      console.error('OAuth error from Google:', error);
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent(error)}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
       });
     }
 
-    if (!code || (!agentId && !projectId) || (isOnboardingFlow && !userId)) {
-      console.error('Missing required parameters:', { code: !!code, agentId: !!agentId, projectId: !!projectId, userId: !!userId });
-      if (isOnboardingFlow) {
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Missing required parameters</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'Missing required parameters'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
+    // Validate required parameters
+    if (!code) {
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Missing authorization code')}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-        
-        return new Response(htmlResponse, {
-          headers: { 
-            'Content-Type': 'text/html; charset=utf-8',
-            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
-          }
-        });
-      }
-      // Also send postMessage for non-onboarding flows
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Missing parameters</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'missing_parameters'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      });
+    }
+
+    if ((!agentId && !projectId) || (isOnboardingFlow && !userId)) {
+      console.error('Missing required parameters:', { agentId: !!agentId, projectId: !!projectId, userId: !!userId });
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Missing required parameters')}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
       });
     }
@@ -201,40 +80,14 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!googleClientId || !googleClientSecret || !supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing environment variables');
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Server configuration error</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'server_configuration'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+    if (!googleClientId || !googleClientSecret) {
+      console.error('Missing Google OAuth credentials');
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Server configuration error')}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
       });
     }
@@ -257,38 +110,12 @@ serve(async (req) => {
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error('Token exchange failed:', errorText);
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Token exchange failed</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'token_exchange_failed'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Token exchange failed')}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
       });
     }
@@ -304,39 +131,13 @@ serve(async (req) => {
     });
 
     if (!userInfoResponse.ok) {
-      console.error('Failed to get user info from Google');
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Failed to get user info</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'user_info_failed'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      console.error('Failed to fetch user info');
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Failed to retrieve user info')}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
       });
     }
@@ -358,97 +159,69 @@ serve(async (req) => {
       finalUserId = userId;
       finalAgentId = null; // Create orphaned record
       
+      // Deactivate previous orphaned integrations
+      const { error: deactivateError } = await supabase
+        .from('google_integrations')
+        .update({ is_active: false })
+        .eq('user_id', finalUserId)
+        .eq('project_id', finalProjectId)
+        .is('agent_id', null)
+        .eq('is_active', true);
+      
+      if (deactivateError) {
+        console.error('Error deactivating previous orphans:', deactivateError);
+      }
+      
     } else {
-      // For agent management flow: get project_id and user_id from agent record
-      const { data: agentData, error: agentError } = await supabase
+      // For agent management flow: validate agent exists and get project_id
+      if (!agentId) {
+        console.error('Agent ID is required for agent-management flow');
+        const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Missing agent ID')}&flow=${flow}`;
+        return new Response(null, {
+          status: 302,
+          headers: {
+            ...corsHeaders,
+            'Location': errorRedirect
+          }
+        });
+      }
+
+      const { data: agent, error: agentError } = await supabase
         .from('onboarding_responses')
         .select('project_id, user_id')
         .eq('id', agentId)
         .single();
 
-      if (agentError || !agentData) {
-        console.error('Error fetching agent data:', agentError);
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Agent not found</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'agent_not_found'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-        return new Response(htmlResponse, {
-          headers: { 
-            'Content-Type': 'text/html; charset=utf-8',
-            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      if (agentError) {
+        console.error('Error fetching agent:', agentError);
+        const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Agent not found')}&flow=${flow}`;
+        return new Response(null, {
+          status: 302,
+          headers: {
+            ...corsHeaders,
+            'Location': errorRedirect
           }
         });
       }
 
-      if (!agentData.project_id || !agentData.user_id) {
-        console.error('Missing project_id or user_id for agent:', agentId);
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Project not found</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'project_not_found'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-        return new Response(htmlResponse, {
-          headers: { 
-            'Content-Type': 'text/html; charset=utf-8',
-            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      if (!agent) {
+        console.error('Agent not found:', agentId);
+        const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Agent does not exist')}&flow=${flow}`;
+        return new Response(null, {
+          status: 302,
+          headers: {
+            ...corsHeaders,
+            'Location': errorRedirect
           }
         });
       }
       
-      finalProjectId = agentData.project_id;
-      finalUserId = agentData.user_id;
+      finalProjectId = agent.project_id;
+      finalUserId = agent.user_id;
       finalAgentId = agentId;
     }
 
     // Check for existing integration to potentially reuse refresh token
-    // We need the integration ID to get decrypted tokens via RPC
     const { data: existingIntegration } = await supabase
       .from('google_integrations')
       .select('id, user_id')
@@ -487,25 +260,8 @@ serve(async (req) => {
       hasExisting: !!existingIntegration 
     });
 
-    // For onboarding flow, deactivate previous orphaned integrations
-    if (isOnboardingFlow) {
-      const { error: deactivateError } = await supabase
-        .from('google_integrations')
-        .update({ is_active: false })
-        .eq('user_id', finalUserId)
-        .eq('project_id', finalProjectId)
-        .is('agent_id', null)
-        .eq('is_active', true);
-      
-      if (deactivateError) {
-        console.error('Error deactivating previous orphans:', deactivateError);
-      } else {
-        console.log('Deactivated previous orphaned integrations');
-      }
-    }
-
     // Prepare integration metadata (without tokens)
-    const integrationData = {
+    const integrationData: any = {
       user_id: finalUserId,
       project_id: finalProjectId,
       agent_id: finalAgentId,
@@ -520,91 +276,92 @@ serve(async (req) => {
       integrationData.created_without_agent = new Date().toISOString();
     }
 
-    // Store or update the Google integration
-    const { data: upsertedIntegration, error: integrationError } = await supabase
-      .from('google_integrations')
-      .upsert(integrationData, {
-        onConflict: finalAgentId ? 'agent_id' : undefined // Only use conflict resolution if we have agent_id
-      })
-      .select('id')
-      .single();
+    // Check if we should update or insert
+    if (!isOnboardingFlow && finalAgentId) {
+      // For agent-management flow, try to update first
+      const { data: existingAgentIntegration } = await supabase
+        .from('google_integrations')
+        .select('id')
+        .eq('agent_id', finalAgentId)
+        .eq('is_active', true)
+        .maybeSingle();
 
-    if (integrationError || !upsertedIntegration) {
-      console.error('Error storing Google integration:', integrationError);
-      if (isOnboardingFlow) {
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Failed to store integration</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'Failed to store integration'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
+      if (existingAgentIntegration) {
+        // Update existing integration
+        const { error: updateError } = await supabase
+          .from('google_integrations')
+          .update(integrationData)
+          .eq('id', existingAgentIntegration.id);
+
+        if (updateError) {
+          console.error('Error updating Google integration:', updateError);
+          const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Failed to update integration')}&flow=${flow}`;
+          return new Response(null, {
+            status: 302,
+            headers: {
+              ...corsHeaders,
+              'Location': errorRedirect
             }
-        }, 1000);
-    </script>
-</body>
-</html>`;
+          });
+        }
+
+        // Store encrypted tokens
+        const { error: tokenStoreError } = await supabase
+          .rpc('store_google_tokens', {
+            _integration_id: existingAgentIntegration.id,
+            _access_token: tokenData.access_token,
+            _refresh_token: refreshTokenToUse,
+            _expires_at: expiresAt.toISOString(),
+            _requesting_user_id: finalUserId,
+            _encryption_key: supabaseServiceKey
+          });
+
+        if (tokenStoreError) {
+          console.error('Error storing encrypted tokens:', tokenStoreError);
+          const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Failed to store tokens')}&flow=${flow}`;
+          return new Response(null, {
+            status: 302,
+            headers: {
+              ...corsHeaders,
+              'Location': errorRedirect
+            }
+          });
+        }
+
+        console.log('Google integration updated successfully for project:', finalProjectId);
         
-        return new Response(htmlResponse, {
-          headers: { 
-            'Content-Type': 'text/html; charset=utf-8',
-            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        // Redirect to OAuth bridge page
+        const successRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_SUCCESS&email=${encodeURIComponent(userInfo.email)}&agentId=${finalAgentId}&flow=agent-management`;
+        return new Response(null, {
+          status: 302,
+          headers: {
+            ...corsHeaders,
+            'Location': successRedirect
           }
         });
       }
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Storage failed</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'storage_failed'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+    }
+
+    // Insert new integration
+    const { data: upsertedIntegration, error: insertError } = await supabase
+      .from('google_integrations')
+      .insert(integrationData)
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('Error storing Google integration:', insertError);
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Failed to store integration')}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
       });
     }
 
-    // Now store the encrypted tokens using the secure function
+    // Store encrypted tokens using the secure function
     const { error: tokenStoreError } = await supabase
       .rpc('store_google_tokens', {
         _integration_id: upsertedIntegration.id,
@@ -617,186 +374,35 @@ serve(async (req) => {
 
     if (tokenStoreError) {
       console.error('Error storing encrypted tokens:', tokenStoreError);
-      if (isOnboardingFlow) {
-        const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Failed to store integration tokens</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'Failed to store integration tokens'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-        
-        return new Response(htmlResponse, {
-          headers: { 
-            'Content-Type': 'text/html; charset=utf-8',
-            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
-          }
-        });
-      }
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Token storage failed</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'token_storage_failed'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      const errorRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Failed to store tokens')}&flow=${flow}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': errorRedirect
         }
       });
     }
 
     console.log('Google integration stored successfully for project:', finalProjectId);
-
-    // Handle response based on flow type
+    
+    // Redirect to OAuth bridge page
     if (isOnboardingFlow) {
-      // For onboarding flow, return simple HTML with postMessage
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Google Calendar Connected</title>
-</head>
-<body>
-    <p>✓ Google Calendar Connected Successfully</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_SUCCESS',
-                email: '${userInfo.email}',
-                ${finalAgentId ? `agentId: '${finalAgentId}'` : `projectId: '${finalProjectId}'`}
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      const successRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_SUCCESS&email=${encodeURIComponent(userInfo.email)}&flow=onboarding`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': successRedirect
         }
       });
     } else {
-      // For agent management flow, also use postMessage (not redirect)
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Google Calendar Connected</title>
-    <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background: #f9fafb;
-        }
-        .success {
-            text-align: center;
-            padding: 2rem;
-        }
-        .checkmark {
-            font-size: 3rem;
-            color: #10b981;
-        }
-    </style>
-</head>
-<body>
-    <div class="success">
-        <div class="checkmark">✓</div>
-        <p>Google Calendar Connected Successfully</p>
-        <p style="color: #6b7280;">This window will close automatically...</p>
-    </div>
-    <script>
-        console.log('Sending OAUTH_SUCCESS message to parent window');
-        try {
-            if (window.opener) {
-                window.opener.postMessage({
-                    type: 'OAUTH_SUCCESS',
-                    email: '${userInfo.email}',
-                    agentId: '${finalAgentId}'
-                }, '*');
-                console.log('Message sent successfully');
-            } else {
-                console.error('No window.opener available');
-            }
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window, user may need to close manually');
-            }
-        }, 1500);
-    </script>
-</body>
-</html>`;
-      
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      const successRedirect = `${redirectOrigin}/oauth-bridge#type=OAUTH_SUCCESS&email=${encodeURIComponent(userInfo.email)}&agentId=${finalAgentId}&flow=agent-management`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': successRedirect
         }
       });
     }
@@ -805,80 +411,16 @@ serve(async (req) => {
     console.error('Unexpected error in OAuth callback:', error);
     const url = new URL(req.url);
     const state = url.searchParams.get('state');
-    const [agentId, flow] = state?.split('|') || [state, 'agent-management'];
-    const isOnboardingFlow = flow === 'onboarding';
+    const stateParts = state?.split('|') || [];
+    const appOrigin = stateParts[2] ? decodeURIComponent(stateParts[2]) : 'https://lovable.dev';
+    const flow = stateParts[1] || 'unknown';
     
-    if (isOnboardingFlow) {
-      const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Unexpected error occurred</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'Unexpected error occurred'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-      
-      return new Response(htmlResponse, {
-        headers: { 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
-        }
-      });
-    }
-    
-    // Also send postMessage for non-onboarding flows
-    const htmlResponse = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Error</title>
-</head>
-<body>
-    <p>❌ Unexpected error occurred</p>
-    <p>You can close this window.</p>
-    <script>
-        try {
-            window.opener?.postMessage({
-                type: 'OAUTH_ERROR',
-                error: 'Unexpected error occurred'
-            }, '*');
-        } catch (e) {
-            console.error('Failed to send message:', e);
-        }
-        setTimeout(() => {
-            try {
-                window.close();
-            } catch (e) {
-                console.log('Cannot auto-close window');
-            }
-        }, 1000);
-    </script>
-</body>
-</html>`;
-    return new Response(htmlResponse, {
-      headers: { 
-        'Content-Type': 'text/html; charset=utf-8',
-        'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+    const errorRedirect = `${appOrigin}/oauth-bridge#type=OAUTH_ERROR&error=${encodeURIComponent('Unexpected error occurred')}&flow=${flow}`;
+    return new Response(null, {
+      status: 302,
+      headers: {
+        ...corsHeaders,
+        'Location': errorRedirect
       }
     });
   }

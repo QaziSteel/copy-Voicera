@@ -120,7 +120,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
   };
 
   const initiateOAuth = (identifierAndFlow: string) => {
-    const googleClientId = '526952712398-7277grt2mlsumid92h9d4fiu52kecqvf.apps.googleusercontent.com'; // Your actual Google Client ID
+    const googleClientId = '526952712398-7277grt2mlsumid92h9d4fiu52kecqvf.apps.googleusercontent.com';
     const redirectUri = 'https://nhhdxwgrmcdsapbuvelx.supabase.co/functions/v1/google-oauth-callback';
     const scopes = [
       'https://www.googleapis.com/auth/calendar.events',
@@ -129,6 +129,10 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       'https://www.googleapis.com/auth/calendar'
     ].join(' ');
 
+    // Include origin in state for redirect back to app
+    const appOrigin = window.location.origin;
+    const stateWithOrigin = `${identifierAndFlow}|${encodeURIComponent(appOrigin)}`;
+
     const oauthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     oauthUrl.searchParams.set('client_id', googleClientId);
     oauthUrl.searchParams.set('redirect_uri', redirectUri);
@@ -136,7 +140,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
     oauthUrl.searchParams.set('scope', scopes);
     oauthUrl.searchParams.set('access_type', 'offline');
     oauthUrl.searchParams.set('prompt', 'consent');
-    oauthUrl.searchParams.set('state', identifierAndFlow);
+    oauthUrl.searchParams.set('state', stateWithOrigin);
 
     // Open OAuth URL in a new window (not popup to avoid popup blockers)
     const oauthWindow = window.open(
@@ -154,26 +158,43 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
       return;
     }
 
-    // Listen for postMessage from the OAuth window
+    // Start polling for integration status as backup
+    let pollCount = 0;
+    const maxPolls = 30; // 30 * 2s = 60s max
+    const pollInterval = setInterval(() => {
+      pollCount++;
+      fetchIntegration();
+      if (pollCount >= maxPolls) {
+        clearInterval(pollInterval);
+      }
+    }, 2000);
+
+    // Listen for postMessage from the OAuth bridge page
     const handleMessage = (event: MessageEvent) => {
-      // Accept messages from our domain or the Supabase function domain
-      const allowedOrigins = [
-        window.location.origin,
-        'https://nhhdxwgrmcdsapbuvelx.supabase.co'
-      ];
-      if (!allowedOrigins.includes(event.origin)) return;
+      // Only accept messages from our own domain
+      if (event.origin !== window.location.origin) return;
       
       if (event.data.type === 'OAUTH_SUCCESS') {
+        clearInterval(pollInterval);
         window.removeEventListener('message', handleMessage);
-        oauthWindow.close();
+        try {
+          oauthWindow.close();
+        } catch (e) {
+          // Window might already be closed
+        }
         fetchIntegration();
         toast({
           title: "Success",
           description: `Google Calendar connected for ${event.data.email}`,
         });
       } else if (event.data.type === 'OAUTH_ERROR') {
+        clearInterval(pollInterval);
         window.removeEventListener('message', handleMessage);
-        oauthWindow.close();
+        try {
+          oauthWindow.close();
+        } catch (e) {
+          // Window might already be closed
+        }
         toast({
           title: "OAuth Error",
           description: event.data.error || "Failed to connect Google Calendar",
@@ -184,15 +205,12 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
 
     window.addEventListener('message', handleMessage);
 
-    // Also monitor window closure as fallback
+    // Monitor window closure to clean up
     const checkClosed = setInterval(() => {
       if (oauthWindow.closed) {
         clearInterval(checkClosed);
+        clearInterval(pollInterval);
         window.removeEventListener('message', handleMessage);
-        // Refresh integration status when window closes (in case postMessage didn't work)
-        setTimeout(() => {
-          fetchIntegration();
-        }, 1000);
       }
     }, 1000);
   };

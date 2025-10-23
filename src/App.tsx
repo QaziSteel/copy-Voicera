@@ -23,6 +23,7 @@ import MagicLinkHandler from "@/components/auth/MagicLinkHandler";
 import { EmailConfirmationHandler } from "@/components/auth/EmailConfirmationHandler";
 import ForgotPassword from "@/components/auth/ForgotPassword";
 import PasswordResetHandler from "@/components/auth/PasswordResetHandler";
+import OAuthBridge from "./pages/OAuthBridge";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
@@ -242,6 +243,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/invite" element={<Invite />} />
+            <Route path="/oauth-bridge" element={<OAuthBridge />} />
             <Route path="/" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
