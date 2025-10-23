@@ -76,7 +76,10 @@ serve(async (req) => {
 </html>`;
         
         return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+          }
         });
       }
       // Also send postMessage for non-onboarding flows
@@ -109,7 +112,10 @@ serve(async (req) => {
 </body>
 </html>`;
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
 
@@ -146,7 +152,10 @@ serve(async (req) => {
 </html>`;
         
         return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+          }
         });
       }
       // Also send postMessage for non-onboarding flows
@@ -179,7 +188,10 @@ serve(async (req) => {
 </body>
 </html>`;
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
 
@@ -220,7 +232,10 @@ serve(async (req) => {
 </body>
 </html>`;
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
 
@@ -271,7 +286,10 @@ serve(async (req) => {
 </body>
 </html>`;
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
 
@@ -316,7 +334,10 @@ serve(async (req) => {
 </body>
 </html>`;
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
 
@@ -376,7 +397,10 @@ serve(async (req) => {
 </body>
 </html>`;
         return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+          }
         });
       }
 
@@ -411,7 +435,10 @@ serve(async (req) => {
 </body>
 </html>`;
         return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+          }
         });
       }
       
@@ -535,7 +562,10 @@ serve(async (req) => {
 </html>`;
         
         return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+          }
         });
       }
       const htmlResponse = `<!DOCTYPE html>
@@ -567,7 +597,10 @@ serve(async (req) => {
 </body>
 </html>`;
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
 
@@ -615,7 +648,10 @@ serve(async (req) => {
 </html>`;
         
         return new Response(htmlResponse, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+          }
         });
       }
       const htmlResponse = `<!DOCTYPE html>
@@ -647,7 +683,10 @@ serve(async (req) => {
 </body>
 </html>`;
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
 
@@ -688,7 +727,8 @@ serve(async (req) => {
       
       return new Response(htmlResponse, {
         headers: { 
-          'Content-Type': 'text/html; charset=utf-8'
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
         }
       });
     } else {
@@ -755,7 +795,8 @@ serve(async (req) => {
       
       return new Response(htmlResponse, {
         headers: { 
-          'Content-Type': 'text/html; charset=utf-8'
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
         }
       });
     }
@@ -798,7 +839,10 @@ serve(async (req) => {
 </html>`;
       
       return new Response(htmlResponse, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+        }
       });
     }
     
@@ -832,7 +876,10 @@ serve(async (req) => {
 </body>
 </html>`;
     return new Response(htmlResponse, {
-      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      headers: { 
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline';"
+      }
     });
   }
 });
