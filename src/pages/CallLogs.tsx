@@ -446,7 +446,7 @@ const CallLogs: React.FC = () => {
                     {/* Horizontal Call Log Layout */}
                     <div className="flex items-center justify-between gap-4">
                       {/* Call ID */}
-                      <div className="flex-shrink-0 w-[100px]">
+                      <div className="flex-shrink-0 w-80">
                         <span className="text-sm font-semibold text-foreground">
                           Call {call.id}
                         </span>
