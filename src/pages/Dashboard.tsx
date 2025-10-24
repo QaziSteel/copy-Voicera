@@ -311,7 +311,7 @@ const Dashboard: React.FC = () => {
                           />
                         </svg>
                         <span className="text-lg text-black">
-                          Successful Bookings
+                          Bookings
                         </span>
                       </div>
                       <span className="text-lg font-semibold text-black">
