@@ -461,7 +461,7 @@ const Dashboard: React.FC = () => {
                            call.ended_reason?.includes('error') || 
                            call.ended_reason?.includes('fault')
                             ? 'Dropped'
-                            : call.booking_id ? 'Booking' : 'Information Inquiry'}
+                            : call.booking_id ? 'Booking' : 'Inquiry'}
                         </div>
                       </div>
                     </div>
