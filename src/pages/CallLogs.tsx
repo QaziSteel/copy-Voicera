@@ -444,10 +444,10 @@ const CallLogs: React.FC = () => {
                     className="bg-card border border-border rounded-2xl p-4 hover:shadow-lg transition-shadow"
                   >
                     {/* Horizontal Call Log Layout */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-4">
                       {/* Call ID */}
-                      <div className="flex-shrink-0 w-32">
-                        <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                      <div className="flex-shrink-0">
+                        <span className="text-sm font-semibold text-foreground">
                           Call {call.id}
                         </span>
                       </div>
