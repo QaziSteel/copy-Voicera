@@ -357,7 +357,7 @@ const Dashboard: React.FC = () => {
                           />
                         </svg>
                         <span className="text-lg text-black">
-                          Information Inquires
+                          Inquiry
                         </span>
                       </div>
                       <span className="text-lg font-semibold text-black">
