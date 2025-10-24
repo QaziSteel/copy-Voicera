@@ -388,7 +388,7 @@ const Dashboard: React.FC = () => {
                             strokeLinejoin="round"
                           />
                         </svg>
-                        <span className="text-lg text-black">Dropped/Missed</span>
+                        <span className="text-lg text-black">Dropped</span>
                       </div>
                       <span className="text-lg font-semibold text-black">
                         {droppedMissed}
