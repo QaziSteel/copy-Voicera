@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useProject } from "@/contexts/ProjectContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ import {
 const DailySummary: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currentProject } = useProject();
   const { toast } = useToast();
   const [showSummaryPopup, setShowSummaryPopup] = useState(false);
   const [selectedSummary, setSelectedSummary] =
@@ -34,6 +36,8 @@ const DailySummary: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>("");
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [allEnabledAgents, setAllEnabledAgents] = useState<Array<{ id: string; name: string; phone: string }>>([]);
+  const [loadingAgents, setLoadingAgents] = useState(true);
   const {
     showDateFilter,
     selectedFilter,
@@ -60,22 +64,44 @@ const DailySummary: React.FC = () => {
   // Get real daily summary data from database
   const { dailySummaryEntries, loading, callLogs } = useDailySummary(getDateFilter(), filterVersion);
 
-  // Get unique agents for filter dropdown
-  const uniqueAgents = React.useMemo(() => {
-    const agents = new Map<string, { id: string; name: string; phone: string }>();
-    dailySummaryEntries.forEach(entry => {
-      entry.agentSummaries?.forEach(agentEntry => {
-        if (agentEntry.agent_id && !agents.has(agentEntry.agent_id)) {
-          agents.set(agentEntry.agent_id, {
-            id: agentEntry.agent_id,
-            name: agentEntry.agent_name || 'Unknown',
-            phone: agentEntry.phone_number || '',
-          });
-        }
-      });
-    });
-    return Array.from(agents.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [dailySummaryEntries]);
+  // Fetch all agents with daily summary enabled from database
+  useEffect(() => {
+    const fetchEnabledAgents = async () => {
+      if (!user || !currentProject) return;
+      
+      setLoadingAgents(true);
+      try {
+        const { data, error } = await supabase
+          .from('onboarding_responses')
+          .select('id, ai_assistant_name, contact_number')
+          .eq('project_id', currentProject.id)
+          .eq('wants_daily_summary', true);
+
+        if (error) throw error;
+
+        const agents = (data || [])
+          .map(agent => ({
+            id: agent.id,
+            name: agent.ai_assistant_name || 'Unknown Agent',
+            phone: agent.contact_number || '',
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setAllEnabledAgents(agents);
+      } catch (error) {
+        console.error('Error fetching enabled agents:', error);
+        toast({
+          title: "Failed to load agents",
+          description: "Could not fetch agents with daily summary enabled.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingAgents(false);
+      }
+    };
+
+    fetchEnabledAgents();
+  }, [user, currentProject, toast]);
 
   // Filter entries by selected agent
   const filteredEntries = React.useMemo(() => {
@@ -307,9 +333,12 @@ const DailySummary: React.FC = () => {
               value={selectedAgentId}
               onChange={(e) => setSelectedAgentId(e.target.value)}
               className="bg-white border border-gray-300 text-black px-4 py-2 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black"
+              disabled={loadingAgents}
             >
-              <option value="">All Agents</option>
-              {uniqueAgents.map(agent => (
+              <option value="">
+                {loadingAgents ? 'Loading agents...' : 'All Agents'}
+              </option>
+              {allEnabledAgents.map(agent => (
                 <option key={agent.id} value={agent.id}>
                   {agent.name} ({agent.phone})
                 </option>
