@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,6 +49,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   onSuccess,
   onLoginClick
 }) => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -226,7 +227,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           Already have an account?{' '}
           <button 
             type="button"
-            onClick={onLoginClick}
+            onClick={() => onLoginClick ? onLoginClick() : navigate('/auth')}
             className="font-bold text-foreground hover:underline"
           >
             Login
@@ -263,7 +264,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
         Already have an account?{' '}
         <button 
           type="button"
-          onClick={onLoginClick}
+          onClick={() => onLoginClick ? onLoginClick() : navigate('/auth')}
           className="font-bold text-foreground hover:underline"
         >
           Login
@@ -336,7 +337,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           Already have an account?{' '}
           <button 
             type="button"
-            onClick={onLoginClick}
+            onClick={() => onLoginClick ? onLoginClick() : navigate('/auth')}
             className="font-bold text-foreground hover:underline"
           >
             Login
