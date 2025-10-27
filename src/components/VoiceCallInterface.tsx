@@ -316,8 +316,8 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                         </span>
                       </div>
 
-                      {selectedCallId === call.id && call.transcript_file_path && (
-                        <div className="space-y-2">
+                      {selectedCallId === call.id && (
+                        <div className="ml-4 space-y-2">
                           {transcriptLoading ? (
                             <div className="flex items-center gap-2 text-sm text-gray-500 p-3">
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -340,7 +340,16 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                               </div>
                               <pre className="text-sm text-gray-700 whitespace-pre-wrap">{selectedTranscript}</pre>
                             </div>
-                          ) : null}
+                          ) : call.transcript_file_path ? (
+                            <div className="flex items-center gap-2 text-sm text-gray-500 p-3">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Loading transcript...
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-500 p-3">
+                              Transcript not available yet. It may still be processing.
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
