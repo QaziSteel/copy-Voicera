@@ -454,10 +454,7 @@ const CallLogs: React.FC = () => {
 
                       {/* Status Badges */}
                       <div className="flex gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {call.type === 'outbound' ? 'Outgoing' : 'Incoming'}
-                        </Badge>
-                        <Badge 
+                        <Badge
                           variant="outline" 
                           className={`text-xs ${
                             call.total_call_time < 5 || 
