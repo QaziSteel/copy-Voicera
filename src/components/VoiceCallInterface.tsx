@@ -269,7 +269,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                 </div>
               </div>
             ) : !isCallActive && !isConnecting && (
-              <div className="space-y-3 max-h-[450px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+              <div className="space-y-3 max-h-[450px] overflow-y-auto pr-2.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
                 {testCallLogsLoading ? (
                   <div className="text-sm text-gray-500 text-center py-4">Loading test calls...</div>
                 ) : testCallLogs.length === 0 ? (
