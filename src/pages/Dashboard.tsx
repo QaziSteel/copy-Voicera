@@ -432,49 +432,9 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               ) : showAllCalls ? (
-                <div className="space-y-2">
-                  {callLogs.map((call) => (
-                    <div
-                      key={call.id}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded-xl"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <div>
-                          <div className="text-lg font-semibold text-black">
-                            Call {call.id}
-                          </div>
-                          <div className="text-gray-500">
-                            {call.started_at ? new Date(call.started_at).toLocaleString() : 'Unknown time'}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          call.total_call_time < 5 || 
-                          call.ended_reason === 'silence-timed-out' || 
-                          call.ended_reason?.includes('error') || 
-                          call.ended_reason?.includes('fault')
-                            ? 'bg-gray-100 text-gray-600'
-                            : call.booking_id 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'bg-blue-100 text-blue-600'
-                        }`}>
-                          {call.total_call_time < 5 || 
-                           call.ended_reason === 'silence-timed-out' || 
-                           call.ended_reason?.includes('error') || 
-                           call.ended_reason?.includes('fault')
-                            ? 'Dropped'
-                            : call.booking_id ? 'Booking' : 'Inquiry'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
                 <ScrollArea className="max-h-[400px]">
                   <div className="space-y-2 pr-4">
-                    {callLogs.slice(0, 5).map((call) => (
+                    {callLogs.map((call) => (
                       <div
                         key={call.id}
                         className="flex justify-between items-center p-2 bg-gray-50 rounded-xl"
@@ -513,6 +473,46 @@ const Dashboard: React.FC = () => {
                     ))}
                   </div>
                 </ScrollArea>
+              ) : (
+                <div className="space-y-2">
+                  {callLogs.slice(0, 5).map((call) => (
+                    <div
+                      key={call.id}
+                      className="flex justify-between items-center p-2 bg-gray-50 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div>
+                          <div className="text-lg font-semibold text-black">
+                            Call {call.id}
+                          </div>
+                          <div className="text-gray-500">
+                            {call.started_at ? new Date(call.started_at).toLocaleString() : 'Unknown time'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          call.total_call_time < 5 || 
+                          call.ended_reason === 'silence-timed-out' || 
+                          call.ended_reason?.includes('error') || 
+                          call.ended_reason?.includes('fault')
+                            ? 'bg-gray-100 text-gray-600'
+                            : call.booking_id 
+                            ? 'bg-green-100 text-green-600' 
+                            : 'bg-blue-100 text-blue-600'
+                        }`}>
+                          {call.total_call_time < 5 || 
+                           call.ended_reason === 'silence-timed-out' || 
+                           call.ended_reason?.includes('error') || 
+                           call.ended_reason?.includes('fault')
+                            ? 'Dropped'
+                            : call.booking_id ? 'Booking' : 'Inquiry'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
 
               {/* View All / Show Less Button */}
