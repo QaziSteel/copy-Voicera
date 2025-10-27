@@ -462,23 +462,26 @@ const Dashboard: React.FC = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            call.total_call_time < 5 || 
-                            call.ended_reason === 'silence-timed-out' || 
-                            call.ended_reason?.includes('error') || 
-                            call.ended_reason?.includes('fault')
-                              ? 'bg-gray-100 text-gray-600'
-                              : call.booking_id 
-                              ? 'bg-green-100 text-green-600' 
-                              : 'bg-blue-100 text-blue-600'
-                          }`}>
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs w-20 justify-center ${
+                              call.total_call_time < 5 || 
+                              call.ended_reason === 'silence-timed-out' || 
+                              call.ended_reason?.includes('error') || 
+                              call.ended_reason?.includes('fault')
+                                ? 'bg-gray-50 text-gray-600 border-gray-200'
+                                : call.booking_id 
+                                ? 'bg-green-50 text-green-600 border-green-200' 
+                                : 'bg-blue-50 text-blue-600 border-blue-200'
+                            }`}
+                          >
                             {call.total_call_time < 5 || 
                              call.ended_reason === 'silence-timed-out' || 
                              call.ended_reason?.includes('error') || 
                              call.ended_reason?.includes('fault')
                               ? 'Dropped'
                               : call.booking_id ? 'Booking' : 'Inquiry'}
-                          </div>
+                          </Badge>
                         </div>
                       </div>
                     ))}
