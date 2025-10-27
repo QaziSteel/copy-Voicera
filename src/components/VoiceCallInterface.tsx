@@ -185,8 +185,8 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
         {/* Left Column - Test Conversation & Live Transcript */}
         <div className="lg:col-span-3 space-y-6">
           {/* Test Conversation Section */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-between flex-shrink-0">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4 h-full">
+            <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-black mb-1">Test Conversation</h2>
                 <p className="text-sm text-gray-600">Start a test call to begin conversation</p>
@@ -250,7 +250,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
 
             {/* Call Status */}
             {isCallActive && (
-              <div className="text-center flex-shrink-0">
+              <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="text-sm text-green-600 font-medium">
@@ -262,14 +262,14 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
 
             {/* Live Transcript or Previous Test Calls List */}
             {(isCallActive || isConnecting) && transcript ? (
-              <div className="flex-1 min-h-0 flex flex-col gap-2">
-                <h3 className="text-lg font-medium text-black flex-shrink-0">Live Transcript</h3>
-                <div className="bg-gray-50 rounded-lg p-4 flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium text-black">Live Transcript</h3>
+                <div className="bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
                   <pre className="text-sm text-gray-700 whitespace-pre-wrap">{transcript}</pre>
                 </div>
               </div>
             ) : !isCallActive && !isConnecting && (
-              <div className="flex-1 min-h-0 space-y-3 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+              <div className="space-y-3 max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
                 {testCallLogsLoading ? (
                   <div className="text-sm text-gray-500 text-center py-4">Loading test calls...</div>
                 ) : testCallLogs.length === 0 ? (
@@ -352,7 +352,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
         </div>
 
         {/* Right Column - Call Controls & Test Scenarios */}
-        <div className="lg:col-span-2 space-y-6 h-full">
+        <div className="lg:col-span-2 space-y-6">
           {/* Call Controls Section */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
             <h2 className="text-xl font-semibold text-black">Call Controls</h2>
