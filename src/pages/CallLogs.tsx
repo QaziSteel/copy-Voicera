@@ -453,7 +453,7 @@ const CallLogs: React.FC = () => {
                       </div>
 
                       {/* Status Badges */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-shrink-0 w-32">
                         <Badge
                           variant="outline" 
                           className={`text-xs ${
