@@ -432,7 +432,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               ) : showAllCalls ? (
-                <ScrollArea className="max-h-[280px]">
+                <ScrollArea className="h-[600px]">
                   <div className="space-y-2 pr-4">
                     {callLogs.map((call) => (
                       <div
