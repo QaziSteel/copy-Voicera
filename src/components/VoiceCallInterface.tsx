@@ -317,7 +317,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                       </div>
 
                       {selectedCallId === call.id && (
-                        <div className="ml-4 space-y-2">
+                        <div className="space-y-2">
                           {transcriptLoading ? (
                             <div className="flex items-center gap-2 text-sm text-gray-500 p-3">
                               <Loader2 className="h-4 w-4 animate-spin" />
