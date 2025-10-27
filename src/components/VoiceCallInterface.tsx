@@ -222,9 +222,16 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
               </div>
             )}
 
-            {/* Previous Test Calls List */}
-            {!isCallActive && !isConnecting && (
-            <div className="space-y-3 max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+            {/* Live Transcript or Previous Test Calls List */}
+            {(isCallActive || isConnecting) && transcript ? (
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium text-black">Live Transcript</h3>
+                <div className="bg-gray-50 rounded-lg p-4 max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+                  <pre className="text-sm text-gray-700 whitespace-pre-wrap">{transcript}</pre>
+                </div>
+              </div>
+            ) : !isCallActive && !isConnecting && (
+              <div className="space-y-3 max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
                 {testCallLogsLoading ? (
                   <div className="text-sm text-gray-500 text-center py-4">Loading test calls...</div>
                 ) : testCallLogs.length === 0 ? (
@@ -267,16 +274,6 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
               </div>
             )}
           </div>
-
-          {/* Live Transcript */}
-          {transcript && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-2">
-              <h3 className="text-lg font-medium text-black">Live Transcript</h3>
-              <div className="bg-gray-50 rounded-lg p-4 max-h-32 overflow-y-auto">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap">{transcript}</pre>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right Column - Call Controls & Test Scenarios */}
