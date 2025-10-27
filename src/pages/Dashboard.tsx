@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { DateFilterPopup } from "@/components/DateFilterPopup";
@@ -42,6 +42,16 @@ const Dashboard: React.FC = () => {
   
   // State for showing all calls
   const [showAllCalls, setShowAllCalls] = useState(false);
+
+  // Measure the height of the initial 5-call list to reuse for the scroll area
+  const listPreviewRef = useRef<HTMLDivElement | null>(null);
+  const [listHeight, setListHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (listPreviewRef.current) {
+      setListHeight(listPreviewRef.current.offsetHeight);
+    }
+  }, [callLogs]);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -432,7 +442,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               ) : showAllCalls ? (
-                <ScrollArea className="max-h-[400px]">
+                <ScrollArea className="w-full" style={{ height: listHeight ?? undefined }}>
                   <div className="space-y-2 pr-4">
                     {callLogs.map((call) => (
                       <div
@@ -474,7 +484,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </ScrollArea>
               ) : (
-                <div className="space-y-2">
+                <div ref={listPreviewRef} className="space-y-2">
                   {callLogs.slice(0, 5).map((call) => (
                     <div
                       key={call.id}
