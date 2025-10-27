@@ -185,7 +185,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
         {/* Left Column - Test Conversation & Live Transcript */}
         <div className="lg:col-span-3 space-y-6">
           {/* Test Conversation Section */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4 min-h-[600px] max-h-[800px]">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4 h-full">
             <div className="flex items-center justify-between flex-shrink-0">
               <div>
                 <h2 className="text-xl font-semibold text-black mb-1">Test Conversation</h2>
@@ -352,7 +352,7 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
         </div>
 
         {/* Right Column - Call Controls & Test Scenarios */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 h-full">
           {/* Call Controls Section */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
             <h2 className="text-xl font-semibold text-black">Call Controls</h2>
