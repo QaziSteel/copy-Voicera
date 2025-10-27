@@ -454,26 +454,26 @@ const CallLogs: React.FC = () => {
 
                       {/* Status Badges */}
                       <div className="flex gap-2">
-                        <Badge
-                          variant="outline" 
-                          className={`text-xs ${
-                            call.total_call_time < 5 || 
-                            call.ended_reason === 'silence-timed-out' || 
-                            call.ended_reason?.includes('error') || 
-                            call.ended_reason?.includes('fault')
-                              ? 'bg-gray-50 text-gray-600 border-gray-200'
-                              : call.booking_id 
-                              ? 'bg-green-50 text-green-600 border-green-200' 
-                              : 'bg-blue-50 text-blue-600 border-blue-200'
-                          }`}
-                        >
-                          {call.total_call_time < 5 || 
-                           call.ended_reason === 'silence-timed-out' || 
-                           call.ended_reason?.includes('error') || 
-                           call.ended_reason?.includes('fault')
-                            ? 'Dropped'
-                            : call.booking_id ? 'Booking' : 'Inquiry'}
-                        </Badge>
+                <Badge
+                  variant="outline" 
+                  className={`text-xs w-20 justify-center ${
+                    call.total_call_time < 5 || 
+                    call.ended_reason === 'silence-timed-out' || 
+                    call.ended_reason?.includes('error') || 
+                    call.ended_reason?.includes('fault')
+                      ? 'bg-gray-50 text-gray-600 border-gray-200'
+                      : call.booking_id 
+                      ? 'bg-green-50 text-green-600 border-green-200' 
+                      : 'bg-blue-50 text-blue-600 border-blue-200'
+                  }`}
+                >
+                  {call.total_call_time < 5 || 
+                   call.ended_reason === 'silence-timed-out' || 
+                   call.ended_reason?.includes('error') || 
+                   call.ended_reason?.includes('fault')
+                    ? 'Dropped'
+                    : call.booking_id ? 'Booking' : 'Inquiry'}
+                </Badge>
                       </div>
 
                       {/* Phone Number */}
