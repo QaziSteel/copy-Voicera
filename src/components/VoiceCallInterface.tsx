@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { useVapiCall } from '@/hooks/useVapiCall';
 import { useTestCallLogs } from '@/hooks/useTestCallLogs';
-import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX, Play, Pause, Square } from 'lucide-react';
+import { Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX, Play, Pause, Square, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VoiceCallInterfaceProps {
   agentData?: any;
@@ -16,6 +17,9 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
   testScenarios
 }) => {
   const [currentTestCallId, setCurrentTestCallId] = useState<string | null>(null);
+  const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
+  const [selectedTranscript, setSelectedTranscript] = useState<string | null>(null);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
   
   // Check if assistant_id exists in agentData
   const hasAssistantId = agentData?.assistant_id;
@@ -37,7 +41,41 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
   
   const { testCallLogs, loading: testCallLogsLoading, createTestCallLog, updateTestCallLog, refetch: refetchTestCallLogs } = useTestCallLogs(agentData?.id || '');
 
+  const fetchTranscript = useCallback(async (transcriptFilePath: string) => {
+    setTranscriptLoading(true);
+    try {
+      const { data, error } = await supabase.storage
+        .from('call-transcripts')
+        .download(transcriptFilePath);
+
+      if (error) throw error;
+
+      const text = await data.text();
+      setSelectedTranscript(text);
+    } catch (error) {
+      console.error('Error fetching transcript:', error);
+      setSelectedTranscript('Error loading transcript. Please try again.');
+    } finally {
+      setTranscriptLoading(false);
+    }
+  }, []);
+
+  const handleCallRecordClick = useCallback((callId: string, transcriptFilePath: string | null) => {
+    if (selectedCallId === callId) {
+      setSelectedCallId(null);
+      setSelectedTranscript(null);
+    } else {
+      setSelectedCallId(callId);
+      setSelectedTranscript(null);
+      if (transcriptFilePath) {
+        fetchTranscript(transcriptFilePath);
+      }
+    }
+  }, [selectedCallId, fetchTranscript]);
+
   const handleStartCall = async () => {
+    setSelectedCallId(null);
+    setSelectedTranscript(null);
     if (!hasAssistantId) {
       console.error('No assistant ID found for this agent');
       return;
@@ -255,19 +293,56 @@ export const VoiceCallInterface: React.FC<VoiceCallInterfaceProps> = ({
                   </div>
                 ) : (
                   testCallLogs.map((call) => (
-                    <div key={call.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg w-full">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                          <Phone className="w-4 h-4 text-white" />
+                    <div key={call.id} className="space-y-2">
+                      <div
+                        onClick={() => handleCallRecordClick(call.id, call.transcript_file_path)}
+                        className={`flex items-center justify-between p-3 rounded-lg transition-colors cursor-pointer ${
+                          selectedCallId === call.id 
+                            ? 'bg-blue-50 border-2 border-blue-300' 
+                            : 'bg-gray-50 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <Phone className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">Test Call {call.id.slice(0, 8)}</p>
+                            <p className="text-sm text-gray-500">{formatTimeAgo(call.created_at)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900">Test Call {call.id}</p>
-                          <p className="text-sm text-gray-500">{formatTimeAgo(call.created_at)}</p>
-                        </div>
+                        <span className="text-sm text-gray-600">
+                          {formatTestCallDuration(call.duration_seconds)}
+                        </span>
                       </div>
-                      <span className="text-sm text-gray-600">
-                        {formatTestCallDuration(call.duration_seconds)}
-                      </span>
+
+                      {selectedCallId === call.id && call.transcript_file_path && (
+                        <div className="ml-4 space-y-2">
+                          {transcriptLoading ? (
+                            <div className="flex items-center gap-2 text-sm text-gray-500 p-3">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Loading transcript...
+                            </div>
+                          ) : selectedTranscript ? (
+                            <div className="bg-gray-50 rounded-lg p-4 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-400">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-sm font-semibold text-gray-900">Transcript</h4>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedCallId(null);
+                                    setSelectedTranscript(null);
+                                  }}
+                                  className="text-xs text-gray-500 hover:text-gray-700 font-medium"
+                                >
+                                  Hide
+                                </button>
+                              </div>
+                              <pre className="text-sm text-gray-700 whitespace-pre-wrap">{selectedTranscript}</pre>
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
