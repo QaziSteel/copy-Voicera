@@ -8,6 +8,7 @@ import NotificationPopup from "@/components/NotificationPopup";
 import { Header } from "@/components/shared/Header";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
 import { useCallLogs } from "@/hooks/useCallLogs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -38,6 +39,9 @@ const Dashboard: React.FC = () => {
   // Get real dashboard metrics from database
   const { metrics, loading: metricsLoading } = useDashboardMetrics(getDateFilter(), filterVersion);
   const { callLogs, loading: callLogsLoading } = useCallLogs('', getDateFilter(), filterVersion);
+  
+  // State for showing all calls
+  const [showAllCalls, setShowAllCalls] = useState(false);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -427,6 +431,48 @@ const Dashboard: React.FC = () => {
                     />
                   </div>
                 </div>
+              ) : showAllCalls ? (
+                <ScrollArea className="h-[600px]">
+                  <div className="space-y-2 pr-4">
+                    {callLogs.map((call) => (
+                      <div
+                        key={call.id}
+                        className="flex justify-between items-center p-2 bg-gray-50 rounded-xl"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div>
+                            <div className="text-lg font-semibold text-black">
+                              Call {call.id}
+                            </div>
+                            <div className="text-gray-500">
+                              {call.started_at ? new Date(call.started_at).toLocaleString() : 'Unknown time'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            call.total_call_time < 5 || 
+                            call.ended_reason === 'silence-timed-out' || 
+                            call.ended_reason?.includes('error') || 
+                            call.ended_reason?.includes('fault')
+                              ? 'bg-gray-100 text-gray-600'
+                              : call.booking_id 
+                              ? 'bg-green-100 text-green-600' 
+                              : 'bg-blue-100 text-blue-600'
+                          }`}>
+                            {call.total_call_time < 5 || 
+                             call.ended_reason === 'silence-timed-out' || 
+                             call.ended_reason?.includes('error') || 
+                             call.ended_reason?.includes('fault')
+                              ? 'Dropped'
+                              : call.booking_id ? 'Booking' : 'Inquiry'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
               ) : (
                 <div className="space-y-2">
                   {callLogs.slice(0, 5).map((call) => (
@@ -466,6 +512,18 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* View All / Show Less Button */}
+              {callLogs.length > 5 && (
+                <div className="mt-4 flex justify-center">
+                  <button
+                    onClick={() => setShowAllCalls(!showAllCalls)}
+                    className="bg-black text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    {showAllCalls ? 'Show Less' : 'View All'}
+                  </button>
                 </div>
               )}
             </div>
