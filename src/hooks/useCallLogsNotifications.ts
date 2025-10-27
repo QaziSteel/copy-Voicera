@@ -66,7 +66,7 @@ export const useCallLogsNotifications = (readTrigger?: number) => {
           return {
             id: callLog.id,
             type: "call" as const,
-            title: "New Inquiry Call",
+            title: "Inquiry Call",
             description: `Call received from ${displayNumber}`,
             time: timeDisplay,
             iconType: "info" as const,
