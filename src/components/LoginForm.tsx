@@ -85,7 +85,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-semibold text-foreground">Voicera AI</h1>
+          <h1 className="text-4xl font-bold mb-2">Voicera AI</h1>
         </div>
 
         {/* Login Card */}
