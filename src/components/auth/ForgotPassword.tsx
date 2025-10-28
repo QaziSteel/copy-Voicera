@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import voiceraLogoFull from '@/assets/voicera-logo-full.png';
 import {
   Dialog,
   DialogContent,
@@ -139,8 +140,12 @@ export const ForgotPassword: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-foreground">Voicera AI</h1>
+        <div className="flex justify-center mb-8">
+          <img 
+            src={voiceraLogoFull} 
+            alt="Voicera AI Logo" 
+            className="h-12 object-contain"
+          />
         </div>
 
         {/* Forgot Password Card */}

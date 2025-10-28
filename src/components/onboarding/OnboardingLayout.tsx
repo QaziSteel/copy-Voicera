@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useProject } from '@/contexts/ProjectContext';
 import { supabase } from '@/integrations/supabase/client';
 import { LogOut, ArrowLeft } from 'lucide-react';
+import voiceraLogoFull from '@/assets/voicera-logo-full.png';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -219,7 +220,13 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         </div>
         
         {/* App Title - Centered */}
-        <h1 className="text-3xl md:text-2xl sm:text-xl font-bold text-black text-center">Voicera AI</h1>
+        <div className="flex justify-center">
+          <img 
+            src={voiceraLogoFull} 
+            alt="Voicera AI Logo" 
+            className="h-10 md:h-8 sm:h-7 object-contain"
+          />
+        </div>
         
         {/* Logout Button - Right */}
         <div className="flex justify-end">

@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import voiceraLogoFull from '@/assets/voicera-logo-full.png';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -84,8 +85,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">Voicera AI</h1>
+        <div className="flex justify-center mb-8">
+          <img 
+            src={voiceraLogoFull} 
+            alt="Voicera AI Logo" 
+            className="h-12 object-contain"
+          />
         </div>
 
         {/* Login Card */}

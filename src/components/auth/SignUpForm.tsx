@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
+import voiceraLogoFull from '@/assets/voicera-logo-full.png';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -349,8 +350,12 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
   return <>
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">Voicera AI</h1>
+        <div className="flex justify-center mb-8">
+          <img 
+            src={voiceraLogoFull} 
+            alt="Voicera AI Logo" 
+            className="h-12 object-contain"
+          />
         </div>
 
         <Card className="p-8 rounded-3xl border-2">
