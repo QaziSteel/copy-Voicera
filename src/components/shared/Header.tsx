@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAgentLiveStatus } from '@/hooks/useAgentLiveStatus';
 import NotificationPopup from '@/components/NotificationPopup';
-import voiceraLogoFull from '@/assets/voicera-logo-full.png';
+import voiceraIcon from '@/assets/voicera-icon.png';
 
 interface HeaderProps {
   currentPage?: 'dashboard' | 'call-logs' | 'daily-summary' | 'agent-management' | 'profile' | 'test-agent';
@@ -56,12 +56,13 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-3 md:px-6 lg:px-12 py-3">
       <div className="relative flex justify-between items-center">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <img 
-            src={voiceraLogoFull} 
+            src={voiceraIcon} 
             alt="Voicera AI Logo" 
             className="h-10 object-contain"
           />
+          <span className="text-2xl font-bold text-black">Voicera AI</span>
         </div>
         
         {/* Navigation Tabs - Absolutely Centered */}
