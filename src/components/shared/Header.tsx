@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
           <img 
             src={voiceraIcon} 
             alt="Voicera AI Logo" 
-            className="h-10 object-contain"
+            className="h-10 object-contain rounded-lg"
           />
           <span className="text-2xl font-bold text-black">Voicera AI</span>
         </div>
