@@ -353,7 +353,7 @@ export default function Completion() {
           <img 
             src={voiceraLogoFull} 
             alt="Voicera AI Logo" 
-            className="h-20 object-contain"
+            className="h-14 object-contain"
           />
         </div>
         <div className="flex-1 flex justify-end">

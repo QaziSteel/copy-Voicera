@@ -354,7 +354,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({
           <img 
             src={voiceraLogoFull} 
             alt="Voicera AI Logo" 
-            className="h-20 object-contain"
+            className="h-12 object-contain"
           />
         </div>
 

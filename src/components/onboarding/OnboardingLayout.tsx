@@ -224,7 +224,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
           <img 
             src={voiceraLogoFull} 
             alt="Voicera AI Logo" 
-            className="h-20 object-contain"
+            className="h-10 md:h-8 sm:h-7 object-contain"
           />
         </div>
         
