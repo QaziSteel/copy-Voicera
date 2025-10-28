@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProject } from "@/contexts/ProjectContext";
 import { usePhoneNumbers } from "@/hooks/usePhoneNumbers";
 import { Loader2 } from "lucide-react";
-import voiceraLogoFull from '@/assets/voicera-logo-full.png';
+import voiceraIcon from '@/assets/voicera-icon.svg';
 
 export default function Completion() {
   const navigate = useNavigate();
@@ -350,11 +350,14 @@ export default function Completion() {
       <div className="w-full flex justify-between items-center px-8 py-6">
         <div className="flex-1"></div>
         <div className="flex justify-center">
-          <img 
-            src={voiceraLogoFull} 
-            alt="Voicera AI Logo" 
-            className="h-14 object-contain"
-          />
+          <div className="flex items-center gap-3">
+            <img 
+              src={voiceraIcon} 
+              alt="Voicera AI Logo" 
+              className="h-10 object-contain rounded-lg"
+            />
+            <span className="text-2xl font-bold text-foreground">Voicera AI</span>
+          </div>
         </div>
         <div className="flex-1 flex justify-end">
           <button className="flex items-center gap-3 px-4 py-2 bg-muted rounded-xl">
