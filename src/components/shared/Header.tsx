@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAgentLiveStatus } from '@/hooks/useAgentLiveStatus';
 import NotificationPopup from '@/components/NotificationPopup';
-import voiceraIcon from '@/assets/voicera-icon.png';
+import voiceraIcon from '@/assets/voicera-icon.svg';
 
 interface HeaderProps {
   currentPage?: 'dashboard' | 'call-logs' | 'daily-summary' | 'agent-management' | 'profile' | 'test-agent';
