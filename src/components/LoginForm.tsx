@@ -89,7 +89,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignUpClick }) => {
           <img 
             src={voiceraLogoFull} 
             alt="Voicera AI Logo" 
-            className="h-12 object-contain"
+            className="h-20 object-contain"
           />
         </div>
 
