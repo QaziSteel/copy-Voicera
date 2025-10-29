@@ -5,7 +5,7 @@ export default function BookingIntro() {
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/onboarding/answer-time");
+    navigate("/onboarding/assistant-name");
   };
 
   const handleNext = () => {

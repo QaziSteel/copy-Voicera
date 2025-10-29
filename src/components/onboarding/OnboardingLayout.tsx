@@ -67,8 +67,6 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         return { step: 2, totalSteps: 5, completionPercentage: 30 };
       case '/onboarding/assistant-name':
         return { step: 2, totalSteps: 5, completionPercentage: 36 };
-      case '/onboarding/answer-time':
-        return { step: 2, totalSteps: 5, completionPercentage: 42 };
       case '/onboarding/booking-intro':
         return { step: 3, totalSteps: 5, completionPercentage: 0 };
       case '/onboarding/services':
@@ -160,7 +158,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       const keysToRemove = [
         'businessName', 'businessTypes', 'primaryLocation', 'contactNumber', 
         'purchasedNumberDetails', 'aiVoiceStyle', 'aiGreetingStyle', 'aiAssistantName', 
-        'aiHandlingUnknown', 'aiCallSchedule', 'services', 'businessDays', 'businessHours', 
+        'aiHandlingUnknown', 'services', 'businessDays', 'businessHours', 
         'scheduleFullAction', 'wantsDailySummary', 'wantsEmailConfirmations', 'reminderSettings', 
         'faqQuestions', 'faqAnswers', 'calendarIntegration', 'calendar_integration_required'
       ];

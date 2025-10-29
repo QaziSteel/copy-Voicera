@@ -56,7 +56,6 @@ Deno.serve(async (req) => {
         ai_greeting_style,
         ai_handling_unknown,
         ai_handling_phone_number,
-        ai_call_schedule,
         appointment_duration,
         schedule_full_action,
         services,

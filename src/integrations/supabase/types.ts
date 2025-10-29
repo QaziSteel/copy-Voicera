@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_status_logs: {
+        Row: {
+          agent_id: string | null
+          change_reason: string
+          created_at: string | null
+          id: string
+          new_status: string
+          previous_status: string
+          schedule_at_change: string | null
+          webhook_success: boolean
+        }
+        Insert: {
+          agent_id?: string | null
+          change_reason: string
+          created_at?: string | null
+          id?: string
+          new_status: string
+          previous_status: string
+          schedule_at_change?: string | null
+          webhook_success: boolean
+        }
+        Update: {
+          agent_id?: string | null
+          change_reason?: string
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          previous_status?: string
+          schedule_at_change?: string | null
+          webhook_success?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_status_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           appointment_date: string
@@ -180,7 +221,6 @@ export type Database = {
       onboarding_responses: {
         Row: {
           ai_assistant_name: string | null
-          ai_call_schedule: string | null
           ai_greeting_style: Json | null
           ai_voice_style: string | null
           assistant_id: string | null
@@ -194,6 +234,7 @@ export type Database = {
           current_status: string
           faq_data: Json | null
           id: string
+          last_manual_override_at: string | null
           primary_location: string | null
           project_id: string | null
           purchased_number_details: Json | null
@@ -204,7 +245,6 @@ export type Database = {
         }
         Insert: {
           ai_assistant_name?: string | null
-          ai_call_schedule?: string | null
           ai_greeting_style?: Json | null
           ai_voice_style?: string | null
           assistant_id?: string | null
@@ -218,6 +258,7 @@ export type Database = {
           current_status?: string
           faq_data?: Json | null
           id?: string
+          last_manual_override_at?: string | null
           primary_location?: string | null
           project_id?: string | null
           purchased_number_details?: Json | null
@@ -228,7 +269,6 @@ export type Database = {
         }
         Update: {
           ai_assistant_name?: string | null
-          ai_call_schedule?: string | null
           ai_greeting_style?: Json | null
           ai_voice_style?: string | null
           assistant_id?: string | null
@@ -242,6 +282,7 @@ export type Database = {
           current_status?: string
           faq_data?: Json | null
           id?: string
+          last_manual_override_at?: string | null
           primary_location?: string | null
           project_id?: string | null
           purchased_number_details?: Json | null

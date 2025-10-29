@@ -35,7 +35,7 @@ import { PersonalityIntro } from "./pages/onboarding/PersonalityIntro";
 import { VoiceStyle } from "./pages/onboarding/VoiceStyle";
 import { Greetings } from "./pages/onboarding/Greetings";
 import AssistantName from "./pages/onboarding/AssistantName";
-import AnswerTime from "./pages/onboarding/AnswerTime";
+
 import BookingIntro from "./pages/onboarding/BookingIntro";
 
 import BusinessDays from "./pages/onboarding/BusinessDays";
@@ -141,13 +141,6 @@ const App = () => (
               <ProtectedRoute>
                 <RoleProtectedRoute>
                   <AssistantName />
-                </RoleProtectedRoute>
-              </ProtectedRoute>
-            } />
-            <Route path="/onboarding/answer-time" element={
-              <ProtectedRoute>
-                <RoleProtectedRoute>
-                  <AnswerTime />
                 </RoleProtectedRoute>
               </ProtectedRoute>
             } />

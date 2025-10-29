@@ -24,7 +24,6 @@ export interface OnboardingData {
     greeting: string;
   };
   aiAssistantName?: string;
-  aiCallSchedule?: string;
   services?: Array<{
     businessType: string;
     type: string;
@@ -89,9 +88,6 @@ export const collectOnboardingDataFromSession = (): OnboardingData => {
 
   const aiAssistantName = sessionStorage.getItem('aiAssistantName');
   if (aiAssistantName) data.aiAssistantName = aiAssistantName;
-
-  const aiCallSchedule = sessionStorage.getItem('aiCallSchedule');
-  if (aiCallSchedule) data.aiCallSchedule = aiCallSchedule;
 
   const services = sessionStorage.getItem('services');
   if (services) {
@@ -176,7 +172,6 @@ export const saveOnboardingResponse = async (data: OnboardingData, projectId?: s
       ai_voice_style: data.aiVoiceStyle,
       ai_greeting_style: data.aiGreetingStyle,
       ai_assistant_name: data.aiAssistantName,
-      ai_call_schedule: data.aiCallSchedule,
       services: data.services,
       business_days: data.businessDays,
       business_hours: data.businessHours,

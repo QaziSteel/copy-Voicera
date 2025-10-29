@@ -131,13 +131,10 @@ const AgentManagement = () => {
   const [voices, setVoices] = useState<any[]>([]);
   const [selectedVoice, setSelectedVoice] = useState<string>('');
   const [greetingStyle, setGreetingStyle] = useState<any>({});
-  const [answerTime, setAnswerTime] = useState('');
   
   // New states for dropdown options
   const [selectedAssistantName, setSelectedAssistantName] = useState('default');
   const [customAssistantName, setCustomAssistantName] = useState('');
-  const [selectedAnswerTime, setSelectedAnswerTime] = useState('business');
-  const [customAnswerTime, setCustomAnswerTime] = useState('');
   const [selectedGreetingStyle, setSelectedGreetingStyle] = useState('warm-reassuring');
   
   // Booking
@@ -173,21 +170,6 @@ const AgentManagement = () => {
     
     return baseOptions;
   }, [businessName, customAssistantName, selectedAssistantName]);
-
-  const scheduleOptions = React.useMemo(() => {
-    const baseOptions = [
-      { id: '24/7', label: '24/7 - Always answer calls' },
-      { id: 'business', label: 'During business hours' },
-      { id: 'custom', label: 'Custom schedule' }
-    ];
-    
-    // If there's a custom schedule, add it as an option
-    if (customAnswerTime.trim() && (selectedAnswerTime === 'custom' || selectedAnswerTime === 'custom-schedule')) {
-      baseOptions.splice(-1, 0, { id: 'custom-schedule', label: customAnswerTime });
-    }
-    
-    return baseOptions;
-  }, [customAnswerTime, selectedAnswerTime]);
 
   // Map legacy greeting IDs to new ones
   const mapLegacyGreetingId = (oldId: string): string => {
@@ -438,17 +420,6 @@ const AgentManagement = () => {
         }
         setGreetingStyle(savedGreeting || {});
         
-        // Initialize answer time
-        const savedSchedule = data.ai_call_schedule || '';
-        if (['24/7', 'business'].includes(savedSchedule)) {
-          setSelectedAnswerTime(savedSchedule);
-          setCustomAnswerTime('');
-        } else {
-          setSelectedAnswerTime('custom-schedule');
-          setCustomAnswerTime(savedSchedule);
-        }
-        setAnswerTime(savedSchedule);
-        
         // Booking
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
         setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
@@ -550,7 +521,6 @@ const AgentManagement = () => {
         ai_assistant_name: selectedAssistantName === 'custom-value' ? customAssistantName : (selectedAssistantName === 'default' ? `Your ${businessName} Assistant` : aiAssistantName),
         ai_voice_style: selectedVoice,
         ai_greeting_style: greetingOptions.find(g => g.id === selectedGreetingStyle) || greetingStyle,
-        ai_call_schedule: selectedAnswerTime === 'custom-schedule' ? customAnswerTime : (selectedAnswerTime === 'custom' ? customAnswerTime : selectedAnswerTime),
         services: detailedServices as any,
         business_days: businessDays as any,
         business_hours: businessHours as any,
@@ -646,7 +616,6 @@ const AgentManagement = () => {
             ai_assistant_name: completeAgentData.ai_assistant_name,
             ai_voice_style: completeAgentData.ai_voice_style,
             ai_greeting_style: completeAgentData.ai_greeting_style,
-            ai_call_schedule: completeAgentData.ai_call_schedule,
             
             // Booking
             services: completeAgentData.services,
@@ -703,7 +672,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, answerTime, detailedServices, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedAnswerTime, customAnswerTime, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, detailedServices, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -850,7 +819,7 @@ const AgentManagement = () => {
     try {
       const { data, error } = await supabase
         .from('onboarding_responses')
-        .select('ai_assistant_name, ai_voice_style, ai_greeting_style, ai_call_schedule')
+        .select('ai_assistant_name, ai_voice_style, ai_greeting_style')
         .eq('id', selectedAgentId)
         .single();
 
@@ -881,17 +850,6 @@ const AgentManagement = () => {
           setSelectedGreetingStyle('warm');
         }
         setGreetingStyle(savedGreeting || {});
-        
-        // Reset answer time
-        const savedSchedule = data.ai_call_schedule || '';
-        if (['24/7', 'business'].includes(savedSchedule)) {
-          setSelectedAnswerTime(savedSchedule);
-          setCustomAnswerTime('');
-        } else {
-          setSelectedAnswerTime('custom-schedule');
-          setCustomAnswerTime(savedSchedule);
-        }
-        setAnswerTime(savedSchedule);
         
         toast({
           title: "Changes Discarded",
@@ -1548,75 +1506,8 @@ const AgentManagement = () => {
                       </div>
                     </div>
 
-                    {/* Second Row - Answering Hours & Greeting Style */}
+                    {/* Second Row - Greeting Style */}
                     <div className="space-y-5">
-                      <div>
-                        <label className="block text-lg font-semibold text-black mb-3">
-                          Answering Hours
-                        </label>
-                        <div className="relative">
-                          {selectedAnswerTime === 'custom' ? (
-                            <input
-                              type="text"
-                              value={customAnswerTime}
-                              onChange={(e) => setCustomAnswerTime(e.target.value)}
-                              placeholder="Enter custom schedule (e.g., Mon-Fri 9am-5pm)"
-                              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-700 bg-white"
-                              autoFocus
-                              onBlur={() => {
-                                if (customAnswerTime.trim()) {
-                                  setSelectedAnswerTime('custom-schedule');
-                                } else {
-                                  setSelectedAnswerTime('24/7');
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && customAnswerTime.trim()) {
-                                  setSelectedAnswerTime('custom-schedule');
-                                  e.currentTarget.blur();
-                                }
-                              }}
-                            />
-                          ) : (
-                            <>
-                              <select 
-                                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-gray-500 appearance-none bg-white"
-                                value={selectedAnswerTime === 'custom' && customAnswerTime.trim() ? 'custom-schedule' : selectedAnswerTime}
-                                onChange={(e) => {
-                                  if (e.target.value === 'custom') {
-                                    setSelectedAnswerTime('custom');
-                                    setCustomAnswerTime('');
-                                  } else {
-                                    setSelectedAnswerTime(e.target.value);
-                                  }
-                                }}
-                              >
-                                {scheduleOptions.map((option) => (
-                                  <option key={option.id} value={option.id}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <svg
-                                className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                              >
-                                <path
-                                  d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"
-                                  stroke="#141B34"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
                       <div>
                         <label className="block text-lg font-semibold text-black mb-3">
                           AI greeting style
