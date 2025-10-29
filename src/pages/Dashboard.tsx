@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { DateFilterPopup } from "@/components/DateFilterPopup";
@@ -8,7 +8,6 @@ import NotificationPopup from "@/components/NotificationPopup";
 import { Header } from "@/components/shared/Header";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
 import { useCallLogs } from "@/hooks/useCallLogs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
 const Dashboard: React.FC = () => {
@@ -40,19 +39,6 @@ const Dashboard: React.FC = () => {
   // Get real dashboard metrics from database
   const { metrics, loading: metricsLoading } = useDashboardMetrics(getDateFilter(), filterVersion);
   const { callLogs, loading: callLogsLoading } = useCallLogs('', getDateFilter(), filterVersion);
-  
-  // State for showing all calls
-  const [showAllCalls, setShowAllCalls] = useState(false);
-
-  // Measure the height of the initial 5-call list to reuse for the scroll area
-  const listPreviewRef = useRef<HTMLDivElement | null>(null);
-  const [listHeight, setListHeight] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (listPreviewRef.current) {
-      setListHeight(listPreviewRef.current.offsetHeight);
-    }
-  }, [callLogs]);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -442,53 +428,8 @@ const Dashboard: React.FC = () => {
                     />
                   </div>
                 </div>
-              ) : showAllCalls ? (
-                <ScrollArea className="w-full" style={{ height: listHeight ?? undefined }}>
-                  <div className="space-y-2 pr-4">
-                    {callLogs.map((call) => (
-                      <div
-                        key={call.id}
-                        className="flex justify-between items-center p-2 bg-gray-50 rounded-xl"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <div>
-                            <div className="text-lg font-semibold text-black">
-                              Call {call.id}
-                            </div>
-                            <div className="text-gray-500">
-                              {call.started_at ? new Date(call.started_at).toLocaleString() : 'Unknown time'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs w-20 justify-center ${
-                              call.total_call_time < 5 || 
-                              call.ended_reason === 'silence-timed-out' || 
-                              call.ended_reason?.includes('error') || 
-                              call.ended_reason?.includes('fault')
-                                ? 'bg-gray-50 text-gray-600 border-gray-200'
-                                : call.booking_id 
-                                ? 'bg-green-50 text-green-600 border-green-200' 
-                                : 'bg-blue-50 text-blue-600 border-blue-200'
-                            }`}
-                          >
-                            {call.total_call_time < 5 || 
-                             call.ended_reason === 'silence-timed-out' || 
-                             call.ended_reason?.includes('error') || 
-                             call.ended_reason?.includes('fault')
-                              ? 'Dropped'
-                              : call.booking_id ? 'Booking' : 'Inquiry'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
               ) : (
-                <div ref={listPreviewRef} className="space-y-2">
+                <div className="space-y-2">
                   {callLogs.slice(0, 5).map((call) => (
                     <div
                       key={call.id}
@@ -496,7 +437,7 @@ const Dashboard: React.FC = () => {
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <div>
+                        <div>
                           <div className="text-lg font-semibold text-black">
                             Call {call.id}
                           </div>
@@ -532,14 +473,14 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
 
-              {/* View All / Show Less Button */}
+              {/* View All Button */}
               {callLogs.length > 5 && (
                 <div className="mt-4 flex justify-center">
                   <button
-                    onClick={() => setShowAllCalls(!showAllCalls)}
+                    onClick={() => navigate('/call-logs')}
                     className="bg-black text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
                   >
-                    {showAllCalls ? 'Show Less' : 'View All'}
+                    View All
                   </button>
                 </div>
               )}
