@@ -145,7 +145,7 @@ export const ForgotPassword: React.FC = () => {
             <img 
               src={voiceraLogo} 
               alt="Voicera AI Logo" 
-              className="h-12 object-contain"
+              className="h-18 object-contain"
             />
           </div>
         </div>
