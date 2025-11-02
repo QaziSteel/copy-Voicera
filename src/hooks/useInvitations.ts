@@ -19,6 +19,14 @@ export function useInvitations() {
   const [loading, setLoading] = useState(false);
 
   const fetchInvites = useCallback(async () => {
+    // Check if user is authenticated before fetching
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.log('No active session, skipping invitation fetch');
+      setInvites([]);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('list-user-invitations');
@@ -26,7 +34,10 @@ export function useInvitations() {
       setInvites(data?.invitations || []);
     } catch (err: any) {
       console.error('Failed to load invitations', err);
-      toast.error(err?.message || 'Failed to load invitations');
+      // Only show toast error if it's not an auth error
+      if (!err?.message?.includes('authentication') && !err?.message?.includes('401')) {
+        toast.error(err?.message || 'Failed to load invitations');
+      }
     } finally {
       setLoading(false);
     }
