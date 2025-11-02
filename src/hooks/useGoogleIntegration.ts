@@ -120,7 +120,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
   };
 
   const initiateOAuth = (identifierAndFlow: string) => {
-    const googleClientId = '526952712398-7277grt2mlsumid92h9d4fiu52kecqvf.apps.googleusercontent.com';
+    const googleClientId = '211468873375-357bkis7o9nhsun3i1jtcp79hg29m2f2.apps.googleusercontent.com';
     const redirectUri = 'https://xefbqgucxzgkhxgctqxn.supabase.co/functions/v1/google-oauth-callback';
     const scopes = [
       'https://www.googleapis.com/auth/calendar.events',
