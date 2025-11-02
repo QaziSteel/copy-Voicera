@@ -89,8 +89,8 @@ serve(async (req) => {
     // Get Google OAuth credentials from Supabase secrets
     const googleClientId = Deno.env.get('GOOGLE_CLIENT_ID');
     const googleClientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseUrl = Deno.env.get('SUP_URL');
+    const supabaseServiceKey = Deno.env.get('SUP_SERVICE_ROLE_KEY');
 
     if (!googleClientId || !googleClientSecret) {
       console.error('Missing Google OAuth credentials');

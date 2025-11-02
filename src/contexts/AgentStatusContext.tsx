@@ -46,7 +46,7 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
     }
 
     try {
-      const response = await fetch('https://teamhypergrowth.app.n8n.cloud/webhook/9053f9bc-bd58-44b6-b83e-17b2174446f6', {
+      const response = await fetch('https://voiceraai.app.n8n.cloud/webhook/9053f9bc-bd58-44b6-b83e-17b2174446f6', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

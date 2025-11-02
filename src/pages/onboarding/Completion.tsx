@@ -16,7 +16,7 @@ export default function Completion() {
   const [isGoingLive, setIsGoingLive] = useState(false);
 
   // You can configure this webhook URL as needed
-  const WEBHOOK_URL = "https://teamhypergrowth.app.n8n.cloud/webhook/8db104dd-28a3-49ca-8fde-d76ce84a889b"; // Replace with your webhook URL
+  const WEBHOOK_URL = "https://voiceraai.app.n8n.cloud/webhook/8db104dd-28a3-49ca-8fde-d76ce84a889b"; // Replace with your webhook URL
 
   const handleGoLive = async () => {
     setIsGoingLive(true);

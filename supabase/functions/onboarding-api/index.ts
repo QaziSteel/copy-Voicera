@@ -14,8 +14,8 @@ Deno.serve(async (req) => {
   try {
     // Initialize Supabase client with service role key to bypass RLS
     const supabase = createClient(
-      'https://nhhdxwgrmcdsapbuvelx.supabase.co',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      'https://xefbqgucxzgkhxgctqxn.supabase.co',
+      Deno.env.get('SUP_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
           autoRefreshToken: false,

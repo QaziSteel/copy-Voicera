@@ -24,7 +24,7 @@ serve(async (req) => {
     }
 
     const providedKey = authHeader.replace('Bearer ', '');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const serviceRoleKey = Deno.env.get('SUP_SERVICE_ROLE_KEY');
     
     if (providedKey !== serviceRoleKey) {
       console.log('Invalid service role key provided');
@@ -36,8 +36,8 @@ serve(async (req) => {
 
     // Initialize Supabase client with service role key
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUP_URL') ?? '',
+      Deno.env.get('SUP_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { email } = await req.json();
@@ -88,7 +88,7 @@ serve(async (req) => {
       .rpc('get_google_integration_tokens', {
         _integration_id: integration.id,
         _requesting_user_id: integration.user_id,
-        _encryption_key: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        _encryption_key: Deno.env.get('SUP_SERVICE_ROLE_KEY') ?? ''
       })
       .single();
 
@@ -149,7 +149,7 @@ serve(async (req) => {
           _access_token: accessToken,
           _expires_at: tokenExpiresAt,
           _requesting_user_id: integration.user_id,
-          _encryption_key: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+          _encryption_key: Deno.env.get('SUP_SERVICE_ROLE_KEY') ?? ''
         });
 
       if (updateError) {

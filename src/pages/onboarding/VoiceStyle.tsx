@@ -74,7 +74,7 @@ export const VoiceStyle: React.FC = () => {
     setPlayingVoice(voiceId);
     
     // Start playing the audio
-    const audioUrl = `https://nhhdxwgrmcdsapbuvelx.supabase.co/storage/v1/object/public/voice-samples/${voice.storage_path}`;
+    const audioUrl = `https://xefbqgucxzgkhxgctqxn.supabase.co/storage/v1/object/public/voice-samples/${voice.storage_path}`;
     
     try {
       await audioPlayer.play(audioUrl);
@@ -101,7 +101,7 @@ export const VoiceStyle: React.FC = () => {
     setSelectedVoiceForPlayer(previousVoice);
     setPlayingVoice(previousVoice.voice_id);
     
-    const audioUrl = `https://nhhdxwgrmcdsapbuvelx.supabase.co/storage/v1/object/public/voice-samples/${previousVoice.storage_path}`;
+    const audioUrl = `https://xefbqgucxzgkhxgctqxn.supabase.co/storage/v1/object/public/voice-samples/${previousVoice.storage_path}`;
     try {
       await audioPlayer.play(audioUrl);
     } catch (error) {
@@ -120,7 +120,7 @@ export const VoiceStyle: React.FC = () => {
     setSelectedVoiceForPlayer(nextVoice);
     setPlayingVoice(nextVoice.voice_id);
     
-    const audioUrl = `https://nhhdxwgrmcdsapbuvelx.supabase.co/storage/v1/object/public/voice-samples/${nextVoice.storage_path}`;
+    const audioUrl = `https://xefbqgucxzgkhxgctqxn.supabase.co/storage/v1/object/public/voice-samples/${nextVoice.storage_path}`;
     try {
       await audioPlayer.play(audioUrl);
     } catch (error) {
@@ -135,7 +135,7 @@ export const VoiceStyle: React.FC = () => {
     if (audioPlayer.isPlaying) {
       audioPlayer.pause();
     } else {
-      const audioUrl = `https://nhhdxwgrmcdsapbuvelx.supabase.co/storage/v1/object/public/voice-samples/${selectedVoiceForPlayer.storage_path}`;
+      const audioUrl = `https://xefbqgucxzgkhxgctqxn.supabase.co/storage/v1/object/public/voice-samples/${selectedVoiceForPlayer.storage_path}`;
       try {
         await audioPlayer.play(audioUrl);
       } catch (error) {

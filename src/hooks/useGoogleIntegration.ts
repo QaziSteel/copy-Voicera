@@ -121,7 +121,7 @@ export const useGoogleIntegration = (agentId: string | null, onboardingMode: boo
 
   const initiateOAuth = (identifierAndFlow: string) => {
     const googleClientId = '526952712398-7277grt2mlsumid92h9d4fiu52kecqvf.apps.googleusercontent.com';
-    const redirectUri = 'https://nhhdxwgrmcdsapbuvelx.supabase.co/functions/v1/google-oauth-callback';
+    const redirectUri = 'https://xefbqgucxzgkhxgctqxn.supabase.co/functions/v1/google-oauth-callback';
     const scopes = [
       'https://www.googleapis.com/auth/calendar.events',
       'https://www.googleapis.com/auth/userinfo.profile',

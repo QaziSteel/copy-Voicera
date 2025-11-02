@@ -95,7 +95,7 @@ const isFAQData = (value: any): value is { enabled: boolean; questions: FAQ[] } 
 
 const AgentManagement = () => {
   // Webhook URL for agent updates - configure this with your endpoint
-  const AGENT_UPDATE_WEBHOOK_URL = "https://teamhypergrowth.app.n8n.cloud/webhook/efddc61b-44b7-4ab3-a109-384150513f2b"; // Replace with your webhook URL
+  const AGENT_UPDATE_WEBHOOK_URL = "https://voiceraai.app.n8n.cloud/webhook/efddc61b-44b7-4ab3-a109-384150513f2b"; // Replace with your webhook URL
   
   // Force rebuild - removed isTestMode references
   const navigate = useNavigate();

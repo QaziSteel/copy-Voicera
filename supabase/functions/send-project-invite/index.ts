@@ -67,8 +67,8 @@ serve(async (req) => {
 
     // Create Supabase admin client
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('SUP_URL') ?? '',
+      Deno.env.get('SUP_SERVICE_ROLE_KEY') ?? '',
       {
         auth: {
           autoRefreshToken: false,
@@ -180,7 +180,7 @@ serve(async (req) => {
     const inviterEmail = inviter?.email || '';
 
     // Construct invitation URL with token (use environment variable or fallback)
-    const baseUrl = Deno.env.get('APP_BASE_URL') ?? 'https://nhhdxwgrmcdsapbuvelx.lovable.app';
+    const baseUrl = Deno.env.get('APP_BASE_URL') ?? 'https://app.voiceraai.co.uk';
     const invitationUrl = `${baseUrl}/invite?token=${invitationToken}`;
 
     console.log('Sending invitation email with token-based URL:', invitationUrl);
@@ -243,7 +243,7 @@ serve(async (req) => {
 
     // Send invitation email using Resend
     const emailResponse = await resend.emails.send({
-      from: 'VoiceRA <invitations@resend.dev>',
+      from: 'Voicera AI <invitations@app.voiceraai.co.uk>',
       to: [normalizedEmail],
       subject: `You're invited to join ${projectName}!`,
       html: htmlContent,
