@@ -203,7 +203,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
       {/* Header Section */}
-      <div className="grid grid-cols-3 items-center px-8 md:px-6 sm:px-4 py-6 md:py-5 sm:py-4 mb-8 md:mb-6 sm:mb-4">
+      <div className="grid grid-cols-3 items-start px-8 md:px-6 sm:px-4 py-6 md:py-5 sm:py-4 mb-8 md:mb-6 sm:mb-4">
         {/* Back to Dashboard Button - Left */}
         <div className="flex justify-start">
           {shouldShowBackButton() && (

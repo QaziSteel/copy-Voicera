@@ -347,7 +347,7 @@ export default function Completion() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center">
       {/* Header */}
-      <div className="w-full flex justify-between items-center px-8 py-6">
+      <div className="w-full flex justify-between items-start px-8 py-6">
         <div className="flex-1"></div>
         <div className="flex justify-center">
           <div className="flex items-center">
