@@ -307,11 +307,21 @@ const AgentManagement = () => {
       setLoading(true);
       setAgentsLoading(true);
       
-      const { data, error } = await supabase
+      // Load agents - both personal (no project) and project agents
+      let query = supabase
         .from('onboarding_responses')
-        .select('id, business_name, ai_assistant_name, created_at')
-        .eq('user_id', user.id)
+        .select('id, business_name, ai_assistant_name, created_at, project_id')
         .order('created_at', { ascending: false });
+
+      // If user has a current project, show project agents + personal agents
+      // Otherwise just show personal agents
+      if (currentProject?.id) {
+        query = query.or(`project_id.eq.${currentProject.id},and(project_id.is.null,user_id.eq.${user.id})`);
+      } else {
+        query = query.eq('user_id', user.id).is('project_id', null);
+      }
+
+      const { data, error } = await query;
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading user agents:', error);
@@ -350,7 +360,7 @@ const AgentManagement = () => {
       setAgentsLoading(false);
       setLoading(false);
     }
-  }, [toast, location]);
+  }, [toast, location, currentProject, user.id]);
 
   const loadAgentSettings = useCallback(async (agentId: string) => {
     try {
