@@ -60,9 +60,23 @@ interface FAQ {
 const isStringArray = (value: any): value is string[] => 
   Array.isArray(value) && value.every(item => typeof item === 'string');
 
-const isBusinessHours = (value: any): value is { from: string; to: string } =>
+// Type guard for old format: { from: string; to: string }
+const isOldBusinessHours = (value: any): value is { from: string; to: string } =>
   typeof value === 'object' && value !== null && 
-  typeof value.from === 'string' && typeof value.to === 'string';
+  typeof value.from === 'string' && typeof value.to === 'string' &&
+  !Object.keys(value).some(key => key !== 'from' && key !== 'to');
+
+// Type guard for new format: Record<string, { from: string; to: string }>
+const isNewBusinessHours = (value: any): value is Record<string, { from: string; to: string }> =>
+  typeof value === 'object' && value !== null &&
+  Object.values(value).every((v: any) => 
+    typeof v === 'object' && v !== null &&
+    typeof v.from === 'string' && typeof v.to === 'string'
+  );
+
+// Legacy type guard for backward compatibility
+const isBusinessHours = (value: any): value is { from: string; to: string } | Record<string, { from: string; to: string }> =>
+  isOldBusinessHours(value) || isNewBusinessHours(value);
 
 // Convert onboarding FAQ format to Agent Management format
 const convertOnboardingFAQs = (faqData: any): { enabled: boolean; questions: FAQ[] } => {
@@ -140,7 +154,24 @@ const AgentManagement = () => {
   // Booking
   const [appointmentDuration, setAppointmentDuration] = useState('');
   const [businessDays, setBusinessDays] = useState<string[]>([]);
-  const [businessHours, setBusinessHours] = useState({ from: '8:00am', to: '05:00pm' });
+  const [dayHours, setDayHours] = useState<Record<string, { from: string; to: string }>>({});
+  
+  // Days of week constant matching BusinessDays.tsx
+  const daysOfWeek = [
+    { short: "Sun", full: "Sunday" },
+    { short: "Mon", full: "Monday" },
+    { short: "Tues", full: "Tuesday" },
+    { short: "Wed", full: "Wednesday" },
+    { short: "Thur", full: "Thursday" },
+    { short: "Fri", full: "Friday" },
+    { short: "Sat", full: "Saturday" },
+  ];
+  
+  // Generate time options for 24-hour format
+  const timeOptions = Array.from({ length: 24 }, (_, i) => {
+    const hour = i.toString().padStart(2, '0');
+    return `${hour}:00`;
+  });
   
   // FAQs
   const [faqEnabled, setFaqEnabled] = useState(false);
@@ -432,7 +463,29 @@ const AgentManagement = () => {
         
         // Booking
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
-        setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
+        
+        // Handle business hours - convert old format to new format if needed
+        if (data.business_hours) {
+          if (isNewBusinessHours(data.business_hours)) {
+            // Already in new format
+            setDayHours(data.business_hours);
+          } else if (isOldBusinessHours(data.business_hours)) {
+            // Convert old format to new format - apply to all selected days
+            const loadedDays = isStringArray(data.business_days) ? data.business_days : [];
+            const convertedHours: Record<string, { from: string; to: string }> = {};
+            loadedDays.forEach(day => {
+              convertedHours[day] = {
+                from: data.business_hours.from,
+                to: data.business_hours.to
+              };
+            });
+            setDayHours(convertedHours);
+          } else {
+            setDayHours({});
+          }
+        } else {
+          setDayHours({});
+        }
         
         // FAQs - Convert from onboarding format to Agent Management format
         const faqData = convertOnboardingFAQs(data.faq_data);
@@ -533,7 +586,7 @@ const AgentManagement = () => {
         ai_greeting_style: greetingOptions.find(g => g.id === selectedGreetingStyle) || greetingStyle,
         services: detailedServices as any,
         business_days: businessDays as any,
-        business_hours: businessHours as any,
+        business_hours: dayHours as any,
         faq_data: { enabled: faqEnabled, questions: faqs } as any,
         wants_daily_summary: dailySummary,
       };
@@ -682,7 +735,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, detailedServices, appointmentDuration, businessDays, businessHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, detailedServices, appointmentDuration, businessDays, dayHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -693,6 +746,35 @@ const AgentManagement = () => {
     urlParams.set('agentId', agentId);
     navigate(`${location.pathname}?${urlParams.toString()}`, { replace: true });
   }, [loadAgentSettings, navigate, location]);
+
+  // Handle day toggle - remove hours when day is deselected
+  const handleDayToggle = useCallback((dayShort: string) => {
+    setBusinessDays((prev) => {
+      if (prev.includes(dayShort)) {
+        // Remove day and its hours
+        setDayHours((prevHours) => {
+          const newDayHours = { ...prevHours };
+          delete newDayHours[dayShort];
+          return newDayHours;
+        });
+        return prev.filter((d) => d !== dayShort);
+      } else {
+        // Add day - hours will be set separately
+        return [...prev, dayShort];
+      }
+    });
+  }, []);
+
+  // Handle time change for a specific day
+  const handleTimeChange = useCallback((day: string, field: 'from' | 'to', value: string) => {
+    setDayHours((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value,
+      },
+    }));
+  }, []);
 
   const addFaq = useCallback(() => {
     if (!newQuestion.trim() || !newAnswer.trim()) {
@@ -892,7 +974,29 @@ const AgentManagement = () => {
         const servicesData = Array.isArray(data.services) ? data.services : [];
         setDetailedServices(servicesData);
         setBusinessDays(isStringArray(data.business_days) ? data.business_days : []);
-        setBusinessHours(isBusinessHours(data.business_hours) ? data.business_hours : { from: '', to: '' });
+        
+        // Handle business hours - convert old format to new format if needed
+        if (data.business_hours) {
+          if (isNewBusinessHours(data.business_hours)) {
+            // Already in new format
+            setDayHours(data.business_hours);
+          } else if (isOldBusinessHours(data.business_hours)) {
+            // Convert old format to new format - apply to all selected days
+            const loadedDays = isStringArray(data.business_days) ? data.business_days : [];
+            const convertedHours: Record<string, { from: string; to: string }> = {};
+            loadedDays.forEach(day => {
+              convertedHours[day] = {
+                from: data.business_hours.from,
+                to: data.business_hours.to
+              };
+            });
+            setDayHours(convertedHours);
+          } else {
+            setDayHours({});
+          }
+        } else {
+          setDayHours({});
+        }
         
         toast({
           title: "Changes Discarded",
@@ -1603,107 +1707,132 @@ const AgentManagement = () => {
                 {/* Form Container */}
                 <div className="bg-white rounded-2xl border border-gray-200 p-5">
                   <div className="space-y-5">
-                    {/* First Row - Business Days & Hours */}
-                    <div className="flex gap-5">
-                      <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-3">
-                          Select your business days
-                        </label>
-                        <div className="flex gap-3">
-                          {["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"].map(
-                            (day) => (
-                              <button
-                                key={day}
-                                onClick={() => {
-                                  if (businessDays.includes(day)) {
-                                    setBusinessDays(businessDays.filter(d => d !== day));
-                                  } else {
-                                    setBusinessDays([...businessDays, day]);
-                                  }
-                                }}
-                                className={`px-4 py-3 border-2 rounded-xl text-lg transition-colors ${
-                                  businessDays.includes(day)
-                                    ? 'border-black bg-black text-white'
-                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                                }`}
-                              >
-                                {day}
-                              </button>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1">
-                        <label className="block text-lg font-semibold text-black mb-3">
-                          Enter your business hours
-                        </label>
-                        <div className="flex gap-3">
-                          <div className="flex-1 relative">
-                            <input
-                              type="text"
-                              placeholder="From"
-                              value={businessHours.from}
-                              onChange={(e) => setBusinessHours({...businessHours, from: e.target.value})}
-                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
-                            />
-                            <svg
-                              className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                            >
-                              <path
-                                d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M12 6.75V12H17.25"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                          <div className="flex-1 relative">
-                            <input
-                              type="text"
-                              placeholder="To"
-                              value={businessHours.to}
-                              onChange={(e) => setBusinessHours({...businessHours, to: e.target.value})}
-                              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg text-gray-500 placeholder-gray-500"
-                            />
-                            <svg
-                              className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                            >
-                              <path
-                                d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M12 6.75V12H17.25"
-                                stroke="#6B7280"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                        </div>
+                    {/* Business Days Selection */}
+                    <div className="flex flex-col gap-3">
+                      <label className="block text-lg font-semibold text-black">
+                        Select your business days and hours
+                      </label>
+                      <p className="text-base italic text-[#737373] leading-6">
+                        Choose the days your business is open and set the hours for each day.
+                      </p>
+                      <div className="grid grid-cols-7 gap-3 w-full">
+                        {daysOfWeek.map((day) => (
+                          <button
+                            key={day.short}
+                            onClick={() => handleDayToggle(day.short)}
+                            className={`w-full px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
+                              businessDays.includes(day.short)
+                                ? "border-black bg-black text-white"
+                                : "border-[#E5E7EB] text-[#6B7280] hover:border-gray-400"
+                            }`}
+                          >
+                            {day.short}
+                          </button>
+                        ))}
                       </div>
                     </div>
+
+                    {/* Hours Selection for Selected Days */}
+                    {businessDays.length > 0 && (
+                      <div className="flex flex-col gap-4 w-full">
+                        <h3 className="text-base font-semibold text-black">
+                          Set hours for each day:
+                        </h3>
+                        {businessDays.map((dayShort) => {
+                          const dayFull = daysOfWeek.find((d) => d.short === dayShort)?.full || dayShort;
+                          const hours = dayHours[dayShort] || { from: "", to: "" };
+                          
+                          return (
+                            <div key={dayShort} className="flex flex-col gap-2">
+                              <p className="text-sm font-medium text-[#6B7280]">{dayFull}</p>
+                              <div className="flex gap-2 w-full">
+                                {/* From Time */}
+                                <div className="flex-1">
+                                  <Select 
+                                    value={hours.from} 
+                                    onValueChange={(value) => handleTimeChange(dayShort, 'from', value)}
+                                  >
+                                    <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
+                                      <SelectValue placeholder="From" className="text-[#6B7280]" />
+                                      <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+                                          stroke="#6B7280"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
+                                        <path
+                                          d="M12 6.75V12H17.25"
+                                          stroke="#6B7280"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
+                                      </svg>
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
+                                      {timeOptions.map((time) => (
+                                        <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
+                                          {time}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* To Time */}
+                                <div className="flex-1">
+                                  <Select 
+                                    value={hours.to} 
+                                    onValueChange={(value) => handleTimeChange(dayShort, 'to', value)}
+                                  >
+                                    <SelectTrigger className="flex items-center justify-between p-4 border-2 border-[#E5E7EB] rounded-xl bg-transparent text-lg h-auto [&>*:last-child]:hidden">
+                                      <SelectValue placeholder="To" className="text-[#6B7280]" />
+                                      <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+                                          stroke="#6B7280"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
+                                        <path
+                                          d="M12 6.75V12H17.25"
+                                          stroke="#6B7280"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
+                                      </svg>
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
+                                      {timeOptions.map((time) => (
+                                        <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
+                                          {time}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
 
                   </div>
                 </div>
