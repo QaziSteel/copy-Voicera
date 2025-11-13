@@ -39,7 +39,6 @@ import AssistantName from "./pages/onboarding/AssistantName";
 import BookingIntro from "./pages/onboarding/BookingIntro";
 
 import BusinessDays from "./pages/onboarding/BusinessDays";
-import BusinessHours from "./pages/onboarding/BusinessHours";
 
 
 import FAQIntro from "./pages/onboarding/FAQIntro";
@@ -155,13 +154,6 @@ const App = () => (
               <ProtectedRoute>
                 <RoleProtectedRoute>
                   <BusinessDays />
-                </RoleProtectedRoute>
-              </ProtectedRoute>
-            } />
-            <Route path="/onboarding/business-hours" element={
-              <ProtectedRoute>
-                <RoleProtectedRoute>
-                  <BusinessHours />
                 </RoleProtectedRoute>
               </ProtectedRoute>
             } />

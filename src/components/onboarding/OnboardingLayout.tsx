@@ -72,8 +72,6 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       case '/onboarding/services':
         return { step: 3, totalSteps: 5, completionPercentage: 48 };
       case '/onboarding/business-days':
-        return { step: 3, totalSteps: 5, completionPercentage: 54 };
-      case '/onboarding/business-hours':
         return { step: 3, totalSteps: 5, completionPercentage: 60 };
       case '/onboarding/faq-intro':
         return { step: 4, totalSteps: 5, completionPercentage: 0 };
@@ -134,7 +132,6 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       '/onboarding/booking-intro',
       '/onboarding/services',
       '/onboarding/business-days',
-      '/onboarding/business-hours',
       '/onboarding/faq-intro',
       '/onboarding/faq-questions',
       '/onboarding/integrations',
