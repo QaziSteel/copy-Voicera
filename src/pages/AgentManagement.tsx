@@ -1720,7 +1720,7 @@ const AgentManagement = () => {
                           <button
                             key={day.short}
                             onClick={() => handleDayToggle(day.short)}
-                            className={`w-full px-4 py-2.5 border-2 rounded-xl text-lg transition-colors ${
+                            className={`w-full px-3 py-2 border-2 rounded-xl text-base transition-colors ${
                               businessDays.includes(day.short)
                                 ? "border-black bg-black text-white"
                                 : "border-[#E5E7EB] text-[#6B7280] hover:border-gray-400"
