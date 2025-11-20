@@ -50,8 +50,47 @@ export const BusinessServices: React.FC = () => {
     const savedServices = sessionStorage.getItem("businessServices");
     if (savedServices) {
       try {
-        const parsedServices = JSON.parse(savedServices);
+        const parsedServices: SelectedService[] = JSON.parse(savedServices);
         setSelectedServices(parsedServices);
+
+        const customInputs: Record<string, string[]> = {};
+        const customChecked: Record<string, Set<number>> = {};
+
+        parsedServices.forEach(({ businessType, service }) => {
+          const presetServices = servicesByBusinessType[businessType] || [];
+          const isPresetService = presetServices.includes(service);
+
+          if (!isPresetService) {
+            if (!customInputs[businessType]) {
+              customInputs[businessType] = [];
+              customChecked[businessType] = new Set<number>();
+            }
+
+            const index = customInputs[businessType].push(service) - 1;
+            customChecked[businessType]?.add(index);
+          }
+        });
+
+        if (Object.keys(customInputs).length > 0) {
+          const hydratedInputs = Object.entries(customInputs).reduce<Record<string, string[]>>(
+            (acc, [businessType, inputs]) => {
+              acc[businessType] = [...inputs, ''];
+              return acc;
+            },
+            {}
+          );
+          setCustomServiceInputs(prev => ({ ...prev, ...hydratedInputs }));
+        }
+
+        if (Object.keys(customChecked).length > 0) {
+          setManuallyCheckedCustomServices(prev => {
+            const updated = { ...prev };
+            Object.entries(customChecked).forEach(([businessType, indexes]) => {
+              updated[businessType] = new Set(indexes);
+            });
+            return updated;
+          });
+        }
       } catch (error) {
         console.error("Error parsing saved services:", error);
       }
