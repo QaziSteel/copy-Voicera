@@ -70,9 +70,9 @@ export const MagicLinkHandler: React.FC = () => {
       } else {
         toast({
           title: "Success",
-          description: "Account created successfully! Redirecting to onboarding..."
+          description: "Account created successfully! Redirecting to subscription..."
         });
-        navigate('/onboarding/business-intro');
+        navigate('/subscription');
       }
     } catch (error) {
       toast({

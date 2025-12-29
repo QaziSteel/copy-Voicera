@@ -4,27 +4,66 @@ import { SignUpForm } from '@/components/auth/SignUpForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { hasCompletedOnboarding } from '@/lib/onboarding';
+import { supabase } from '@/integrations/supabase/client';
 
 const UserRedirect = () => {
+  const { user } = useAuth();
+  const [subscriptionActive, setSubscriptionActive] = useState<boolean | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkOnboarding = async () => {
+    const checkStatus = async () => {
+      if (!user) return;
+
       try {
-        console.log('UserRedirect: Checking onboarding status...');
-        const completed = await hasCompletedOnboarding();
-        console.log('UserRedirect: Onboarding completed:', completed);
-        setOnboardingComplete(completed);
+        console.log('UserRedirect: Checking subscription status...');
+        // First check subscription
+        const { data: subscription } = await supabase
+          .from("subscriptions")
+          .select("status, current_period_end")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        const hasActiveSubscription = subscription?.status === "active" && 
+          (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+        
+        console.log('UserRedirect: Subscription active:', hasActiveSubscription);
+        setSubscriptionActive(hasActiveSubscription);
+
+        // Only check onboarding if subscription is active
+        if (hasActiveSubscription) {
+          console.log('UserRedirect: Checking onboarding status...');
+          const completed = await hasCompletedOnboarding();
+          console.log('UserRedirect: Onboarding completed:', completed);
+          setOnboardingComplete(completed);
+        }
       } catch (error) {
-        console.error('UserRedirect: Error checking onboarding:', error);
-        // Default to not completed to ensure users go to onboarding
-        setOnboardingComplete(false);
+        console.error('UserRedirect: Error checking status:', error);
+        setSubscriptionActive(false);
       }
     };
 
-    checkOnboarding();
-  }, []);
+    checkStatus();
+  }, [user]);
 
+  if (subscriptionActive === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Checking status...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no active subscription, redirect to paywall
+  if (subscriptionActive === false) {
+    console.log('UserRedirect: Redirecting to subscription');
+    return <Navigate to="/subscription" replace />;
+  }
+
+  // If subscription active, check onboarding
   if (onboardingComplete === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">

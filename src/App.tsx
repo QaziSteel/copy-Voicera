@@ -24,6 +24,9 @@ import { EmailConfirmationHandler } from "@/components/auth/EmailConfirmationHan
 import ForgotPassword from "@/components/auth/ForgotPassword";
 import PasswordResetHandler from "@/components/auth/PasswordResetHandler";
 import OAuthBridge from "./pages/OAuthBridge";
+import SubscriptionPaywall from "./pages/SubscriptionPaywall";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess";
+import SubscriptionCancel from "./pages/SubscriptionCancel";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
@@ -66,6 +69,21 @@ const App = () => (
             <Route path="/auth/confirm" element={<EmailConfirmationHandler />} />
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
             <Route path="/auth/reset-password" element={<PasswordResetHandler />} />
+            <Route path="/subscription" element={
+              <ProtectedRoute>
+                <SubscriptionPaywall />
+              </ProtectedRoute>
+            } />
+            <Route path="/subscription/success" element={
+              <ProtectedRoute>
+                <SubscriptionSuccess />
+              </ProtectedRoute>
+            } />
+            <Route path="/subscription/cancel" element={
+              <ProtectedRoute>
+                <SubscriptionCancel />
+              </ProtectedRoute>
+            } />
             <Route path="/onboarding/business-intro" element={
               <ProtectedRoute>
                 <RoleProtectedRoute>
