@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const MagicLinkHandler: React.FC = () => {
-  const { user, signUp, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -59,7 +60,10 @@ export const MagicLinkHandler: React.FC = () => {
     setLoading(true);
 
     try {
-      const { error } = await signUp(user?.email || '', password, user?.user_metadata?.full_name);
+      // User is already authenticated via magic link, just set the password
+      const { error } = await supabase.auth.updateUser({
+        password: password
+      });
       
       if (error) {
         toast({
@@ -70,7 +74,7 @@ export const MagicLinkHandler: React.FC = () => {
       } else {
         toast({
           title: "Success",
-          description: "Account created successfully! Redirecting to subscription..."
+          description: "Password set successfully! Redirecting to subscription..."
         });
         navigate('/subscription');
       }

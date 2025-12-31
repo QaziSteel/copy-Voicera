@@ -27,6 +27,7 @@ import OAuthBridge from "./pages/OAuthBridge";
 import SubscriptionPaywall from "./pages/SubscriptionPaywall";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import SubscriptionCancel from "./pages/SubscriptionCancel";
+import Billing from "./pages/Billing";
 import BusinessIntro from "./pages/onboarding/BusinessIntro";
 import BusinessName from "./pages/onboarding/BusinessName";
 import { BusinessType } from "./pages/onboarding/BusinessType";
@@ -243,6 +244,11 @@ const App = () => (
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/billing" element={
+              <ProtectedRoute>
+                <Billing />
               </ProtectedRoute>
             } />
             <Route path="/invite" element={<Invite />} />

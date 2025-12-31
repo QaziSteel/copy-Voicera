@@ -50,68 +50,36 @@ serve(async (req) => {
       throw new Error("User not authenticated");
     }
 
-    // Get or create Stripe customer
+    // Get Stripe customer ID from subscription
     const { data: subscription } = await supabaseClient
       .from("subscriptions")
       .select("stripe_customer_id")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    let customerId = subscription?.stripe_customer_id;
-
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: {
-          supabase_user_id: user.id,
-        },
-      });
-      customerId = customer.id;
-
-      // Save customer ID to database
-      await supabaseClient.from("subscriptions").upsert({
-        user_id: user.id,
-        stripe_customer_id: customerId,
-        status: "incomplete",
-      });
-    }
-
-    // Create checkout session
-    const priceId = Deno.env.get("STRIPE_PRICE_ID");
-    if (!priceId) {
-      throw new Error("STRIPE_PRICE_ID not configured");
+    if (!subscription?.stripe_customer_id) {
+      throw new Error("No Stripe customer found. Please subscribe first.");
     }
 
     const baseUrl = Deno.env.get("SITE_URL") || "https://app.voiceraai.co.uk";
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: "subscription",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${baseUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/subscription/cancel`,
-      metadata: {
-        user_id: user.id,
-      },
+    // Create billing portal session
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: subscription.stripe_customer_id,
+      return_url: `${baseUrl}/billing`,
     });
 
     return new Response(
-      JSON.stringify({ sessionId: session.id, url: session.url }),
+      JSON.stringify({ url: portalSession.url }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
   } catch (error) {
-    console.error("Error creating checkout session:", error);
+    console.error("Error creating portal session:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Failed to create checkout session" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Failed to create portal session" }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,

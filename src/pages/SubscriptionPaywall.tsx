@@ -4,15 +4,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Check } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, Rocket, ArrowRight } from "lucide-react";
 
 export default function SubscriptionPaywall() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   useEffect(() => {
     checkSubscriptionStatus();
@@ -89,62 +94,51 @@ export default function SubscriptionPaywall() {
 
   if (checkingSubscription) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl">Subscribe to Continue</CardTitle>
-          <CardDescription className="text-lg mt-2">
-            Get started with your monthly subscription to access all features
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium">Full Access</p>
-                <p className="text-sm text-muted-foreground">
-                  Access to all features and tools
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium">Monthly Updates</p>
-                <p className="text-sm text-muted-foreground">
-                  Regular updates and new features
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium">Priority Support</p>
-                <p className="text-sm text-muted-foreground">
-                  Get help when you need it
-                </p>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-muted flex flex-col">
+      {/* Header */}
+      <div className="w-full flex justify-between items-center px-8 py-6">
+        <div className="flex-1"></div>
+        <div className="flex-1 flex justify-center">
+          <h1 className="text-2xl font-bold">Voicera AI</h1>
+        </div>
+        <div className="flex-1 flex justify-end">
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="bg-muted text-muted-foreground rounded-xl flex items-center gap-2"
+          >
+            <ArrowRight className="w-4 h-4" />
+            <span>Logout</span>
+          </Button>
+        </div>
+      </div>
 
-          <div className="pt-4 border-t">
-            <div className="text-center mb-4">
-              <p className="text-4xl font-bold">$29</p>
-              <p className="text-muted-foreground">per month</p>
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-8 pb-8">
+        <Card className="w-full max-w-md bg-card border-2 border-border rounded-3xl p-8">
+          <CardContent className="flex flex-col items-center space-y-6">
+            {/* Rocket Icon */}
+            <div className="w-16 h-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+              <Rocket className="w-8 h-8 text-foreground" />
             </div>
+
+            {/* Price */}
+            <div className="text-center">
+              <p className="text-5xl font-bold">£149/month</p>
+            </div>
+
+            {/* Pay Now Button */}
             <Button
               onClick={handleSubscribe}
               disabled={loading}
-              className="w-full"
-              size="lg"
+              className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-xl h-12 text-base font-medium"
             >
               {loading ? (
                 <>
@@ -152,12 +146,14 @@ export default function SubscriptionPaywall() {
                   Processing...
                 </>
               ) : (
-                "Subscribe Now"
+                <>
+                  Pay now <ArrowRight className="w-4 h-4 ml-2" />
+                </>
               )}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

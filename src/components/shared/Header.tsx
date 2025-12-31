@@ -53,6 +53,11 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
     navigate('/profile');
   };
 
+  const handleSubscriptionsClick = () => {
+    setDropdownOpen(false);
+    navigate('/billing');
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-3 md:px-6 lg:px-12 py-3">
       <div className="relative flex justify-between items-center">
@@ -234,6 +239,35 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
                       />
                     </svg>
                     Profile Settings
+                  </button>
+                  <button
+                    onClick={handleSubscriptionsClick}
+                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M2 4C2 2.89543 2.89543 2 4 2H12C13.1046 2 14 2.89543 14 4V12C14 13.1046 13.1046 14 12 14H4C2.89543 14 2 13.1046 2 12V4Z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 6H10"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 10H10"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Subscriptions
                   </button>
                   <button
                     onClick={handleLogout}
