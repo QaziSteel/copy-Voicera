@@ -10,6 +10,18 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
 
+// Helper function to safely convert Stripe timestamp to ISO string
+function stripeTimestampToISO(timestamp: number | null | undefined): string | null {
+  if (timestamp == null) {
+    return null;
+  }
+  const date = new Date(timestamp * 1000);
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
+
 serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
 
@@ -20,8 +32,8 @@ serve(async (req) => {
   try {
     const body = await req.text();
 
-    // Verify webhook signature
-    const event = stripe.webhooks.constructEvent(
+    // Verify webhook signature - USE ASYNC VERSION FOR DENO
+    const event = await stripe.webhooks.constructEventAsync(
       body,
       signature,
       webhookSecret
@@ -42,26 +54,56 @@ serve(async (req) => {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.user_id;
 
+        console.log("Processing checkout.session.completed", {
+          userId,
+          subscriptionId: session.subscription,
+          customerId: session.customer,
+        });
+
         if (userId && session.subscription) {
           // Fetch full subscription details
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
           );
 
-          // Update or insert subscription record
-          await supabaseClient.from("subscriptions").upsert({
-            user_id: userId,
-            stripe_customer_id: session.customer as string,
-            stripe_subscription_id: subscription.id,
-            stripe_price_id: subscription.items.data[0]?.price.id,
+          console.log("Retrieved subscription from Stripe:", {
+            subscriptionId: subscription.id,
             status: subscription.status,
-            current_period_start: new Date(
-              subscription.current_period_start * 1000
-            ).toISOString(),
-            current_period_end: new Date(
-              subscription.current_period_end * 1000
-            ).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
+            priceId: subscription.items.data[0]?.price.id,
+            periodStart: subscription.current_period_start,
+            periodEnd: subscription.current_period_end,
+          });
+
+          // Update or insert subscription record
+          const { data, error } = await supabaseClient
+            .from("subscriptions")
+            .upsert(
+              {
+                user_id: userId,
+                stripe_customer_id: session.customer as string,
+                stripe_subscription_id: subscription.id,
+                stripe_price_id: subscription.items.data[0]?.price.id,
+                status: subscription.status,
+                current_period_start: stripeTimestampToISO(subscription.current_period_start),
+                current_period_end: stripeTimestampToISO(subscription.current_period_end),
+                cancel_at_period_end: subscription.cancel_at_period_end,
+              },
+              {
+                onConflict: "user_id",
+              }
+            )
+            .select();
+
+          if (error) {
+            console.error("Error upserting subscription:", error);
+            throw error;
+          }
+
+          console.log("Successfully upserted subscription:", data);
+        } else {
+          console.warn("Missing userId or subscription in session:", {
+            userId,
+            hasSubscription: !!session.subscription,
           });
         }
         break;
@@ -72,28 +114,54 @@ serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
+        console.log("Processing subscription update/deleted:", {
+          subscriptionId: subscription.id,
+          customerId,
+          status: subscription.status,
+          periodStart: subscription.current_period_start,
+          periodEnd: subscription.current_period_end,
+        });
+
         // Find user by customer ID
-        const { data: existingSub } = await supabaseClient
+        const { data: existingSub, error: findError } = await supabaseClient
           .from("subscriptions")
           .select("user_id")
           .eq("stripe_customer_id", customerId)
           .maybeSingle();
 
+        if (findError) {
+          console.error("Error finding subscription by customer ID:", findError);
+          throw findError;
+        }
+
         if (existingSub) {
-          await supabaseClient.from("subscriptions").upsert({
-            user_id: existingSub.user_id,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscription.id,
-            stripe_price_id: subscription.items.data[0]?.price.id,
-            status: subscription.status,
-            current_period_start: new Date(
-              subscription.current_period_start * 1000
-            ).toISOString(),
-            current_period_end: new Date(
-              subscription.current_period_end * 1000
-            ).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
-          });
+          const { data, error: upsertError } = await supabaseClient
+            .from("subscriptions")
+            .upsert(
+              {
+                user_id: existingSub.user_id,
+                stripe_customer_id: customerId,
+                stripe_subscription_id: subscription.id,
+                stripe_price_id: subscription.items.data[0]?.price.id,
+                status: subscription.status,
+                current_period_start: stripeTimestampToISO(subscription.current_period_start),
+                current_period_end: stripeTimestampToISO(subscription.current_period_end),
+                cancel_at_period_end: subscription.cancel_at_period_end,
+              },
+              {
+                onConflict: "user_id",
+              }
+            )
+            .select();
+
+          if (upsertError) {
+            console.error("Error upserting subscription:", upsertError);
+            throw upsertError;
+          }
+
+          console.log("Successfully updated subscription:", data);
+        } else {
+          console.warn("No existing subscription found for customer:", customerId);
         }
         break;
       }
