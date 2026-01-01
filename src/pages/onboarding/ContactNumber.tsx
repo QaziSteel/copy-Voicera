@@ -27,6 +27,7 @@ export default function ContactNumber() {
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [showPurchaseSuccessPopup, setShowPurchaseSuccessPopup] = useState(false);
+  const [showCallForwardingPopup, setShowCallForwardingPopup] = useState(false);
   const [isNumberPurchased, setIsNumberPurchased] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -222,6 +223,12 @@ export default function ContactNumber() {
 
   const handlePurchaseSuccess = () => {
     setShowPurchaseSuccessPopup(false);
+    // Show call forwarding instructions popup
+    setShowCallForwardingPopup(true);
+  };
+
+  const handleCallForwardingContinue = () => {
+    setShowCallForwardingPopup(false);
     navigate("/onboarding/calendar-integration");
   };
 
@@ -361,6 +368,37 @@ export default function ContactNumber() {
           <AlertDialogFooter className="flex justify-center">
             <Button 
               onClick={handlePurchaseSuccess} 
+              className="rounded-xl w-full"
+            >
+              Continue to Next Step
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Call Forwarding Instructions Popup */}
+      <AlertDialog open={showCallForwardingPopup} onOpenChange={setShowCallForwardingPopup}>
+        <AlertDialogContent className="rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-black text-center">
+              Forward Calls to Your AI Agent
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              <div className="space-y-4 mt-4">
+                <p className="text-center">
+                  To route your calls to your AI agent, follow these simple steps:
+                </p>
+                <ol className="list-decimal list-inside space-y-2 text-left">
+                  <li>Open your Phone app and go to Settings.</li>
+                  <li>Tap Call Forwarding → Always Forward.</li>
+                  <li>Enter your AI agent number <span className="font-semibold text-black">{selectedNumber}</span> and activate.</li>
+                </ol>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex justify-center">
+            <Button 
+              onClick={handleCallForwardingContinue} 
               className="rounded-xl w-full"
             >
               Continue to Next Step

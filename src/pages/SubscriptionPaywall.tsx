@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Rocket, ArrowRight } from "lucide-react";
+import voiceraLogo from '@/assets/voicera-logo-full.png';
 
 export default function SubscriptionPaywall() {
   const { user, signOut } = useAuth();
@@ -106,7 +107,13 @@ export default function SubscriptionPaywall() {
       <div className="w-full flex justify-between items-center px-8 py-6">
         <div className="flex-1"></div>
         <div className="flex-1 flex justify-center">
-          <h1 className="text-2xl font-bold">Voicera AI</h1>
+          <div className="flex items-center">
+            <img 
+              src={voiceraLogo} 
+              alt="Voicera AI Logo" 
+              className="h-[120px] object-contain"
+            />
+          </div>
         </div>
         <div className="flex-1 flex justify-end">
           <Button
@@ -131,7 +138,7 @@ export default function SubscriptionPaywall() {
 
             {/* Price */}
             <div className="text-center">
-              <p className="text-5xl font-bold">£149/month</p>
+              <p className="text-[46px] font-bold">£149/month</p>
             </div>
 
             {/* Pay Now Button */}
