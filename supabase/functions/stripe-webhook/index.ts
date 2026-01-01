@@ -362,10 +362,15 @@ serve(async (req) => {
           const isActuallyCancelled = subscription.status === "canceled" || 
                                      (event.type === "customer.subscription.deleted");
           
-          // Only set agents offline when subscription is actually cancelled (period has ended)
+          // Check if payment failed (all retries exhausted)
+          const isPaymentFailed = subscription.status === "unpaid" || 
+                                 subscription.status === "incomplete_expired";
+          
+          // Set agents offline when subscription is cancelled OR payment failed
           // NOT when cancel_at_period_end = true (subscription still active until period ends)
-          if (isActuallyCancelled) {
-            console.log("Subscription cancelled and period ended - setting all agents offline");
+          if (isActuallyCancelled || isPaymentFailed) {
+            const reason = isActuallyCancelled ? "cancelled and period ended" : "payment failed";
+            console.log(`Subscription ${reason} - setting all agents offline`);
             await setAllAgentsOffline(existingSub.user_id, supabaseClient);
           }
         } else {

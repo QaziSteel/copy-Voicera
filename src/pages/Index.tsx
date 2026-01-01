@@ -65,6 +65,9 @@ const UserRedirect = () => {
             .maybeSingle();
 
           const hasActiveSubscription = subscription?.status === "active" && 
+            subscription.status !== "unpaid" &&
+            subscription.status !== "past_due" &&
+            subscription.status !== "incomplete_expired" &&
             (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
           
           setSubscriptionActive(hasActiveSubscription);

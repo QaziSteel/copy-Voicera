@@ -110,8 +110,11 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
           return;
         }
 
-        // Check if subscription is active
+        // Check if subscription is active (exclude unpaid, past_due, and incomplete_expired)
         const isActive = subscription?.status === "active" && 
+                        subscription.status !== "unpaid" &&
+                        subscription.status !== "past_due" &&
+                        subscription.status !== "incomplete_expired" &&
                         (subscription.current_period_end === null || 
                          new Date(subscription.current_period_end) > new Date());
 
