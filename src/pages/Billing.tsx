@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/shared/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { Loader2, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface SubscriptionData {
@@ -18,10 +18,18 @@ interface SubscriptionData {
   stripe_subscription_id: string;
 }
 
-interface PaymentHistoryItem {
-  date: Date;
-  status: "paid" | "upcoming";
-  label: string;
+interface Invoice {
+  id: string;
+  stripe_invoice_id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paid_at: string | null;
+  invoice_pdf_url: string | null;
+  hosted_invoice_url: string | null;
+  period_start: string | null;
+  period_end: string | null;
+  created_at: string;
 }
 
 export default function Billing() {
@@ -30,13 +38,14 @@ export default function Billing() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
-  const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryItem[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [openingPortal, setOpeningPortal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchSubscription();
+      fetchInvoices();
     }
   }, [user]);
 
@@ -56,7 +65,6 @@ export default function Billing() {
 
       if (data) {
         setSubscription(data);
-        calculatePaymentHistory(data);
       }
     } catch (error) {
       console.error("Error fetching subscription:", error);
@@ -70,47 +78,81 @@ export default function Billing() {
     }
   };
 
-  const calculatePaymentHistory = (sub: SubscriptionData) => {
-    const history: PaymentHistoryItem[] = [];
-    const now = new Date();
-    
-    // Get subscription start date
-    const startDate = new Date(sub.created_at);
-    const currentPeriodEnd = new Date(sub.current_period_end);
-    
-    // Calculate past payments (monthly intervals from start)
-    let paymentDate = new Date(startDate);
-    paymentDate.setMonth(paymentDate.getMonth() + 1); // First payment is 1 month after start
-    
-    while (paymentDate < now && paymentDate <= currentPeriodEnd) {
-      history.push({
-        date: new Date(paymentDate),
-        status: "paid",
-        label: formatDate(paymentDate),
-      });
-      paymentDate.setMonth(paymentDate.getMonth() + 1);
-    }
-    
-    // Add current/upcoming payment
-    if (currentPeriodEnd > now) {
-      history.push({
-        date: currentPeriodEnd,
-        status: "upcoming",
-        label: formatDate(currentPeriodEnd),
+  const fetchInvoices = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("paid_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setInvoices(data || []);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load payment history",
+        variant: "destructive",
       });
     }
-    
-    // Sort by date (newest first)
-    history.sort((a, b) => b.date.getTime() - a.date.getTime());
-    
-    setPaymentHistory(history);
   };
 
-  const formatDate = (date: Date): string => {
+  const formatCurrency = (amount: number, currency: string = "gbp"): string => {
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
+  };
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return "N/A";
     return new Intl.DateTimeFormat("en-GB", {
       day: "numeric",
       month: "long",
-    }).format(date);
+      year: "numeric",
+    }).format(new Date(dateString));
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "paid":
+        return (
+          <Badge className="bg-green-100 text-green-800 border-green-200">
+            Paid
+          </Badge>
+        );
+      case "open":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+            Pending
+          </Badge>
+        );
+      case "void":
+        return (
+          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+            Void
+          </Badge>
+        );
+      case "uncollectible":
+        return (
+          <Badge className="bg-red-100 text-red-800 border-red-200">
+            Failed
+          </Badge>
+        );
+      default:
+        return (
+          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+            {status}
+          </Badge>
+        );
+    }
   };
 
   const handlePaymentMethod = async () => {
@@ -180,7 +222,7 @@ export default function Billing() {
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Billing</h1>
-          <p className="text-muted-foreground">View your subscription for the app here</p>
+          <p className="text-muted-foreground">View your subscription and payment history</p>
         </div>
 
         {/* Action Buttons */}
@@ -216,45 +258,68 @@ export default function Billing() {
           </Button>
         </div>
 
-        {/* Subscription History */}
-        {subscription ? (
-          <div className="space-y-3">
-            {paymentHistory.length > 0 ? (
-              paymentHistory.map((item, index) => (
-                <Card key={index} className="bg-card border">
+        {/* Payment History */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Payment History</h2>
+          {invoices.length > 0 ? (
+            <div className="space-y-3">
+              {invoices.map((invoice) => (
+                <Card key={invoice.id} className="bg-card border">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-medium">
-                        {item.label}
-                      </span>
-                      <Badge
-                        className={
-                          item.status === "paid"
-                            ? "bg-green-100 text-green-800 border-green-200"
-                            : "bg-gray-100 text-gray-800 border-gray-200"
-                        }
-                      >
-                        {item.status === "paid" ? "Paid" : "Upcoming"}
-                      </Badge>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-lg font-semibold">
+                            {formatCurrency(invoice.amount, invoice.currency)}
+                          </span>
+                          {getStatusBadge(invoice.status)}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {invoice.paid_at ? formatDate(invoice.paid_at) : formatDate(invoice.created_at)}
+                        </p>
+                        {invoice.period_start && invoice.period_end && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Period: {formatDate(invoice.period_start)} - {formatDate(invoice.period_end)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        {invoice.hosted_invoice_url && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(invoice.hosted_invoice_url!, "_blank")}
+                            className="flex items-center gap-2"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            View Invoice
+                          </Button>
+                        )}
+                        {invoice.invoice_pdf_url && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(invoice.invoice_pdf_url!, "_blank")}
+                            className="flex items-center gap-2"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            PDF
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))
-            ) : (
-              <Card className="bg-card border">
-                <CardContent className="p-4">
-                  <p className="text-muted-foreground">No payment history available</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        ) : (
-          <Card className="bg-card border">
-            <CardContent className="p-4">
-              <p className="text-muted-foreground">No active subscription found</p>
-            </CardContent>
-          </Card>
-        )}
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-card border">
+              <CardContent className="p-4">
+                <p className="text-muted-foreground">No payment history available</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </main>
     </div>
   );

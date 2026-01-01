@@ -109,6 +109,111 @@ serve(async (req) => {
         break;
       }
 
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        console.log("Processing invoice.payment_succeeded", {
+          invoiceId: invoice.id,
+          customerId,
+          subscriptionId: invoice.subscription,
+          amount: invoice.amount_paid,
+          status: invoice.status,
+        });
+
+        // Find user by customer ID
+        const { data: existingSub, error: findError } = await supabaseClient
+          .from("subscriptions")
+          .select("user_id")
+          .eq("stripe_customer_id", customerId)
+          .maybeSingle();
+
+        if (findError) {
+          console.error("Error finding subscription by customer ID:", findError);
+          throw findError;
+        }
+
+        if (existingSub) {
+          // Upsert invoice record
+          const { data, error: upsertError } = await supabaseClient
+            .from("invoices")
+            .upsert(
+              {
+                user_id: existingSub.user_id,
+                stripe_invoice_id: invoice.id,
+                stripe_subscription_id: invoice.subscription as string | null,
+                stripe_customer_id: customerId,
+                amount: invoice.amount_paid,
+                currency: invoice.currency,
+                status: invoice.status,
+                paid_at: stripeTimestampToISO(invoice.status_transitions?.paid_at),
+                invoice_pdf_url: invoice.invoice_pdf,
+                hosted_invoice_url: invoice.hosted_invoice_url,
+                period_start: stripeTimestampToISO(invoice.period_start),
+                period_end: stripeTimestampToISO(invoice.period_end),
+              },
+              {
+                onConflict: "stripe_invoice_id",
+              }
+            )
+            .select();
+
+          if (upsertError) {
+            console.error("Error upserting invoice:", upsertError);
+            throw upsertError;
+          }
+
+          console.log("Successfully upserted invoice:", data);
+        } else {
+          console.warn("No subscription found for customer:", customerId);
+        }
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        console.log("Processing invoice.payment_failed", {
+          invoiceId: invoice.id,
+          customerId,
+          subscriptionId: invoice.subscription,
+        });
+
+        // Find user by customer ID
+        const { data: existingSub } = await supabaseClient
+          .from("subscriptions")
+          .select("user_id")
+          .eq("stripe_customer_id", customerId)
+          .maybeSingle();
+
+        if (existingSub) {
+          // Update invoice status to failed
+          await supabaseClient
+            .from("invoices")
+            .upsert(
+              {
+                user_id: existingSub.user_id,
+                stripe_invoice_id: invoice.id,
+                stripe_subscription_id: invoice.subscription as string | null,
+                stripe_customer_id: customerId,
+                amount: invoice.amount_due,
+                currency: invoice.currency,
+                status: invoice.status,
+                paid_at: null,
+                invoice_pdf_url: invoice.invoice_pdf,
+                hosted_invoice_url: invoice.hosted_invoice_url,
+                period_start: stripeTimestampToISO(invoice.period_start),
+                period_end: stripeTimestampToISO(invoice.period_end),
+              },
+              {
+                onConflict: "stripe_invoice_id",
+              }
+            );
+        }
+        break;
+      }
+
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
