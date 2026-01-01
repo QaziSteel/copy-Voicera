@@ -120,6 +120,8 @@ serve(async (req) => {
           status: subscription.status,
           periodStart: subscription.current_period_start,
           periodEnd: subscription.current_period_end,
+          itemsPeriodStart: subscription.items.data[0]?.current_period_start,
+          itemsPeriodEnd: subscription.items.data[0]?.current_period_end,
         });
 
         // Find user by customer ID
@@ -135,6 +137,14 @@ serve(async (req) => {
         }
 
         if (existingSub) {
+          // Get period dates from subscription object or fallback to items
+          const periodStart = subscription.current_period_start ?? 
+                             subscription.items.data[0]?.current_period_start ?? 
+                             null;
+          const periodEnd = subscription.current_period_end ?? 
+                           subscription.items.data[0]?.current_period_end ?? 
+                           null;
+
           const { data, error: upsertError } = await supabaseClient
             .from("subscriptions")
             .upsert(
@@ -144,8 +154,8 @@ serve(async (req) => {
                 stripe_subscription_id: subscription.id,
                 stripe_price_id: subscription.items.data[0]?.price.id,
                 status: subscription.status,
-                current_period_start: stripeTimestampToISO(subscription.current_period_start),
-                current_period_end: stripeTimestampToISO(subscription.current_period_end),
+                current_period_start: stripeTimestampToISO(periodStart),
+                current_period_end: stripeTimestampToISO(periodEnd),
                 cancel_at_period_end: subscription.cancel_at_period_end,
               },
               {
