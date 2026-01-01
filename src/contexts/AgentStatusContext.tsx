@@ -79,6 +79,64 @@ export const AgentStatusProvider: React.FC<AgentStatusProviderProps> = ({ childr
     if (isTogglingStatus) return;
 
     const newStatus = isAgentLive ? 'Offline' : 'Live';
+    
+    // If trying to go live, check subscription first
+    if (newStatus === 'Live') {
+      try {
+        // Check if user has active subscription
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast({
+            title: "Error",
+            description: "Please log in to continue",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const { data: subscription, error: subError } = await supabase
+          .from("subscriptions")
+          .select("status, current_period_end")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (subError && subError.code !== "PGRST116") {
+          console.error("Error checking subscription:", subError);
+          toast({
+            title: "Error",
+            description: "Failed to verify subscription. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Check if subscription is active
+        const isActive = subscription?.status === "active" && 
+                        (subscription.current_period_end === null || 
+                         new Date(subscription.current_period_end) > new Date());
+
+        if (!isActive) {
+          toast({
+            title: "Subscription Required",
+            description: "You need an active subscription to make agents live. Please subscribe to continue.",
+            variant: "destructive",
+          });
+          // Redirect to subscription page
+          window.location.href = "/subscription";
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking subscription:", error);
+        toast({
+          title: "Error",
+          description: "Failed to verify subscription. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Continue with existing toggle logic
     setIsTogglingStatus(true);
 
     try {

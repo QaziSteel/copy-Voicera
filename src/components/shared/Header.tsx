@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProject } from '@/contexts/ProjectContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAgentLiveStatus } from '@/hooks/useAgentLiveStatus';
 import NotificationPopup from '@/components/NotificationPopup';
@@ -13,6 +14,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { currentUserRole } = useProject();
   const { notifications, showNotifications, openNotifications, closeNotifications, notificationCount, unreadCount } = useNotifications();
   const { hasLiveAgent } = useAgentLiveStatus();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -240,35 +242,37 @@ export const Header: React.FC<HeaderProps> = ({ currentPage = 'dashboard' }) => 
                     </svg>
                     Profile Settings
                   </button>
-                  <button
-                    onClick={handleSubscriptionsClick}
-                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M2 4C2 2.89543 2.89543 2 4 2H12C13.1046 2 14 2.89543 14 4V12C14 13.1046 13.1046 14 12 14H4C2.89543 14 2 13.1046 2 12V4Z"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M6 6H10"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M6 10H10"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Subscriptions
-                  </button>
+                  {currentUserRole === 'owner' && (
+                    <button
+                      onClick={handleSubscriptionsClick}
+                      className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path
+                          d="M2 4C2 2.89543 2.89543 2 4 2H12C13.1046 2 14 2.89543 14 4V12C14 13.1046 13.1046 14 12 14H4C2.89543 14 2 13.1046 2 12V4Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M6 6H10"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M6 10H10"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Subscriptions
+                    </button>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-3"

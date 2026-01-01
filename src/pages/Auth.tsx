@@ -10,35 +10,58 @@ const UserRedirect = () => {
   const { user } = useAuth();
   const [subscriptionActive, setSubscriptionActive] = useState<boolean | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const [isOwner, setIsOwner] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkStatus = async () => {
       if (!user) return;
 
       try {
-        console.log('UserRedirect: Checking subscription status...');
-        // First check subscription
-        const { data: subscription } = await supabase
-          .from("subscriptions")
-          .select("status, current_period_end")
+        // First check if user is a project owner (check if they have owner role in any project)
+        const { data: projectMembers, error: roleError } = await supabase
+          .from("project_members")
+          .select("role")
           .eq("user_id", user.id)
-          .maybeSingle();
+          .eq("role", "owner")
+          .limit(1);
 
-        const hasActiveSubscription = subscription?.status === "active" && 
-          (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
-        
-        console.log('UserRedirect: Subscription active:', hasActiveSubscription);
-        setSubscriptionActive(hasActiveSubscription);
+        const userIsOwner = projectMembers && projectMembers.length > 0;
+        setIsOwner(userIsOwner);
 
-        // Only check onboarding if subscription is active
-        if (hasActiveSubscription) {
-          console.log('UserRedirect: Checking onboarding status...');
+        // Only check subscription if user is owner
+        if (userIsOwner) {
+          console.log('UserRedirect: User is owner, checking subscription status...');
+          const { data: subscription } = await supabase
+            .from("subscriptions")
+            .select("status, current_period_end")
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+          const hasActiveSubscription = subscription?.status === "active" && 
+            (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+          
+          console.log('UserRedirect: Subscription active:', hasActiveSubscription);
+          setSubscriptionActive(hasActiveSubscription);
+
+          // Only check onboarding if subscription is active
+          if (hasActiveSubscription) {
+            console.log('UserRedirect: Checking onboarding status...');
+            const completed = await hasCompletedOnboarding();
+            console.log('UserRedirect: Onboarding completed:', completed);
+            setOnboardingComplete(completed);
+          } else {
+            setOnboardingComplete(null);
+          }
+        } else {
+          // Not an owner, skip subscription check and go to onboarding/dashboard
+          console.log('UserRedirect: User is not owner, skipping subscription check');
+          setSubscriptionActive(true); // Treat as "active" to skip paywall
           const completed = await hasCompletedOnboarding();
-          console.log('UserRedirect: Onboarding completed:', completed);
           setOnboardingComplete(completed);
         }
       } catch (error) {
         console.error('UserRedirect: Error checking status:', error);
+        setIsOwner(false);
         setSubscriptionActive(false);
       }
     };
@@ -46,7 +69,7 @@ const UserRedirect = () => {
     checkStatus();
   }, [user]);
 
-  if (subscriptionActive === null) {
+  if (isOwner === null || (isOwner && subscriptionActive === null)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -57,13 +80,13 @@ const UserRedirect = () => {
     );
   }
 
-  // If no active subscription, redirect to paywall
-  if (subscriptionActive === false) {
-    console.log('UserRedirect: Redirecting to subscription');
+  // If owner and no active subscription, redirect to paywall
+  if (isOwner && subscriptionActive === false) {
+    console.log('UserRedirect: Owner with no subscription, redirecting to subscription');
     return <Navigate to="/subscription" replace />;
   }
 
-  // If subscription active, check onboarding
+  // If subscription active (or not owner), check onboarding
   if (onboardingComplete === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">

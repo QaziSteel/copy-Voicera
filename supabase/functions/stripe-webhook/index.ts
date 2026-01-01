@@ -9,6 +9,7 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
 });
 
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
+const OFFLINE_WEBHOOK_URL = "https://voiceraai.app.n8n.cloud/webhook/9053f9bc-bd58-44b6-b83e-17b2174446f6";
 
 // Helper function to safely convert Stripe timestamp to ISO string
 function stripeTimestampToISO(timestamp: number | null | undefined): string | null {
@@ -20,6 +21,85 @@ function stripeTimestampToISO(timestamp: number | null | undefined): string | nu
     return null;
   }
   return date.toISOString();
+}
+
+// Helper function to set all agents offline when subscription is cancelled
+async function setAllAgentsOffline(userId: string, supabaseClient: any) {
+  try {
+    // Get all agents for this user (both project and personal agents)
+    const { data: agents, error: agentsError } = await supabaseClient
+      .from("onboarding_responses")
+      .select("id, contact_number, assistant_id, purchased_number_details, current_status")
+      .eq("user_id", userId)
+      .eq("current_status", "live"); // Only get live agents
+
+    if (agentsError) {
+      console.error("Error fetching agents:", agentsError);
+      return;
+    }
+
+    if (!agents || agents.length === 0) {
+      console.log("No live agents found for user:", userId);
+      return;
+    }
+
+    console.log(`Found ${agents.length} live agent(s) to set offline`);
+
+    // Call offline webhook for each agent and update database
+    const offlinePromises = agents.map(async (agent: any) => {
+      // Extract external ID from purchased_number_details
+      let externalId = null;
+      if (agent.purchased_number_details && typeof agent.purchased_number_details === 'object') {
+        externalId = agent.purchased_number_details.id || null;
+      }
+
+      if (!agent.contact_number || !agent.assistant_id || !externalId) {
+        console.warn(`Skipping agent ${agent.id} - missing required fields`);
+        return;
+      }
+
+      // Call offline webhook
+      try {
+        const webhookResponse = await fetch(OFFLINE_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone_number: agent.contact_number,
+            assistant_id: agent.assistant_id,
+            status: 'Offline',
+            id: externalId
+          })
+        });
+
+        if (!webhookResponse.ok) {
+          console.error(`Webhook failed for agent ${agent.id}:`, webhookResponse.status);
+        } else {
+          console.log(`Offline webhook called successfully for agent ${agent.id}`);
+        }
+      } catch (webhookError) {
+        console.error(`Error calling offline webhook for agent ${agent.id}:`, webhookError);
+      }
+
+      // Update database status to offline
+      const { error: updateError } = await supabaseClient
+        .from("onboarding_responses")
+        .update({ current_status: "offline" })
+        .eq("id", agent.id);
+
+      if (updateError) {
+        console.error(`Error updating agent ${agent.id} status:`, updateError);
+      } else {
+        console.log(`Agent ${agent.id} status updated to offline`);
+      }
+    });
+
+    await Promise.all(offlinePromises);
+    console.log(`All agents set offline for user: ${userId}`);
+  } catch (error) {
+    console.error("Error setting agents offline:", error);
+  }
 }
 
 serve(async (req) => {
@@ -275,6 +355,19 @@ serve(async (req) => {
           }
 
           console.log("Successfully updated subscription:", data);
+
+          // Check if subscription was actually cancelled (not just scheduled for cancellation)
+          // When user cancels, cancel_at_period_end = true but status stays "active" until period ends
+          // Stripe will send another webhook when period ends with status = "canceled"
+          const isActuallyCancelled = subscription.status === "canceled" || 
+                                     (event.type === "customer.subscription.deleted");
+          
+          // Only set agents offline when subscription is actually cancelled (period has ended)
+          // NOT when cancel_at_period_end = true (subscription still active until period ends)
+          if (isActuallyCancelled) {
+            console.log("Subscription cancelled and period ended - setting all agents offline");
+            await setAllAgentsOffline(existingSub.user_id, supabaseClient);
+          }
         } else {
           console.warn("No existing subscription found for customer:", customerId);
         }
