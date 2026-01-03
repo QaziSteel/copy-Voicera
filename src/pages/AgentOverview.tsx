@@ -44,6 +44,9 @@ const AgentOverview = () => {
   const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Webhook URL for agent deletion - to delete external resources
+  const AGENT_DELETE_WEBHOOK_URL = "https://voiceraai.app.n8n.cloud/webhook/Delete_Resources";
+
   useEffect(() => {
     loadAgents();
   }, [currentProject]);
@@ -193,6 +196,61 @@ const AgentOverview = () => {
           variant: "destructive",
         });
         return;
+      }
+
+      // Call webhook to delete external resources after successful deletion
+      try {
+        // Extract phone number details from purchased_number_details
+        const purchasedDetails = agentToDelete.purchased_number_details;
+        const externalId = purchasedDetails?.id || null;
+        const phoneNumberSid = purchasedDetails?.twilioAccountSid || null;
+
+        const webhookPayload = {
+          event: "agent_deleted",
+          user_id: user?.id,
+          user_email: user?.email,
+          agent_id: agentToDelete.id,
+          assistant_id: agentToDelete.assistant_id, // Required
+          contact_number: agentToDelete.contact_number, // Required - phone number
+          // All agent data
+          agent_data: {
+            id: agentToDelete.id,
+            business_name: agentToDelete.business_name,
+            ai_assistant_name: agentToDelete.ai_assistant_name,
+            primary_location: agentToDelete.primary_location,
+            contact_number: agentToDelete.contact_number,
+            assistant_id: agentToDelete.assistant_id,
+            purchased_number_details: agentToDelete.purchased_number_details,
+            current_status: agentToDelete.current_status,
+            created_at: agentToDelete.created_at,
+            project_id: agentToDelete.project_id,
+            // Extracted phone number details
+            external_id: externalId,
+            phone_number_sid: phoneNumberSid,
+          },
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('Sending agent deletion webhook to:', AGENT_DELETE_WEBHOOK_URL);
+        console.log('Webhook payload:', webhookPayload);
+
+        const webhookResponse = await fetch(AGENT_DELETE_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookPayload),
+        });
+
+        if (!webhookResponse.ok) {
+          console.error(`Webhook failed with status: ${webhookResponse.status}`);
+          // Don't throw error - deletion was successful, webhook is for cleanup
+        } else {
+          console.log('Agent deletion webhook sent successfully');
+        }
+      } catch (webhookError) {
+        console.error('Error calling agent deletion webhook:', webhookError);
+        // Don't show error toast - deletion was successful, webhook is for cleanup
       }
 
       // Update local state
