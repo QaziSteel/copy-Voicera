@@ -767,6 +767,21 @@ const AgentManagement = () => {
 
   // Handle time change for a specific day
   const handleTimeChange = useCallback((day: string, field: 'from' | 'to', value: string) => {
+    const currentHours = dayHours[day] || { from: "", to: "" };
+    
+    // Validation: Ensure "From" time is not >= "To" time
+    if (field === 'from') {
+      // If "To" time is set and new "From" time is >= "To" time, don't allow it
+      if (currentHours.to && value >= currentHours.to) {
+        return; // Prevent invalid selection
+      }
+    } else if (field === 'to') {
+      // If "From" time is set and new "To" time is <= "From" time, don't allow it
+      if (currentHours.from && value <= currentHours.from) {
+        return; // Prevent invalid selection
+      }
+    }
+    
     setDayHours((prev) => ({
       ...prev,
       [day]: {
@@ -774,7 +789,26 @@ const AgentManagement = () => {
         [field]: value,
       },
     }));
-  }, []);
+  }, [dayHours]);
+
+  // Helper function to check if a time option should be disabled
+  const isTimeDisabled = useCallback((day: string, field: 'from' | 'to', time: string): boolean => {
+    const hours = dayHours[day] || { from: "", to: "" };
+    
+    if (field === 'from') {
+      // Disable "From" times that are >= "To" time (if "To" is set)
+      if (hours.to && time >= hours.to) {
+        return true;
+      }
+    } else if (field === 'to') {
+      // Disable "To" times that are <= "From" time (if "From" is set)
+      if (hours.from && time <= hours.from) {
+        return true;
+      }
+    }
+    
+    return false;
+  }, [dayHours]);
 
   const addFaq = useCallback(() => {
     if (!newQuestion.trim() || !newAnswer.trim()) {
@@ -1778,11 +1812,19 @@ const AgentManagement = () => {
                                       </svg>
                                     </SelectTrigger>
                                     <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
-                                      {timeOptions.map((time) => (
-                                        <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
-                                          {time}
-                                        </SelectItem>
-                                      ))}
+                                      {timeOptions.map((time) => {
+                                        const disabled = isTimeDisabled(dayShort, 'from', time);
+                                        return (
+                                          <SelectItem 
+                                            key={time} 
+                                            value={time} 
+                                            disabled={disabled}
+                                            className={`text-lg py-3 px-4 hover:bg-[#F3F4F6] ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                          >
+                                            {time}
+                                          </SelectItem>
+                                        );
+                                      })}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -1819,11 +1861,19 @@ const AgentManagement = () => {
                                       </svg>
                                     </SelectTrigger>
                                     <SelectContent className="bg-white border border-[#E5E7EB] rounded-xl shadow-lg max-h-60 z-50">
-                                      {timeOptions.map((time) => (
-                                        <SelectItem key={time} value={time} className="text-lg py-3 px-4 hover:bg-[#F3F4F6]">
-                                          {time}
-                                        </SelectItem>
-                                      ))}
+                                      {timeOptions.map((time) => {
+                                        const disabled = isTimeDisabled(dayShort, 'to', time);
+                                        return (
+                                          <SelectItem 
+                                            key={time} 
+                                            value={time} 
+                                            disabled={disabled}
+                                            className={`text-lg py-3 px-4 hover:bg-[#F3F4F6] ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                          >
+                                            {time}
+                                          </SelectItem>
+                                        );
+                                      })}
                                     </SelectContent>
                                   </Select>
                                 </div>
