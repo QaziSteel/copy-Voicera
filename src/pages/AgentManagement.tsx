@@ -49,6 +49,7 @@ interface SelectedBusinessType {
 import { useNotifications } from "@/hooks/useNotifications";
 import NotificationPopup from "@/components/NotificationPopup";
 import { Header } from "@/components/shared/Header";
+import { LocationMapPicker } from "@/components/onboarding/LocationMapPicker";
 
 interface FAQ {
   id: string;
@@ -1173,29 +1174,28 @@ const AgentManagement = () => {
             />
           </div>
 
-          {/* Second Row - Primary Location & Contact Number */}
-          <div className="flex flex-col md:flex-row gap-3 md:gap-5">
-            <div className="flex-1">
-              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Primary Location</label>
-              <input 
-                type="text" 
-                value={businessLocation}
-                onChange={(e) => setBusinessLocation(e.target.value)}
-                className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-200 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-500"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Contact Number</label>
-              <input 
-                type="text" 
-                value={contactNumber}
-                readOnly
-                className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-100 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-600 bg-gray-50 cursor-not-allowed"
-              />
-            </div>
+          {/* Second Row - Primary Location (full width map picker) */}
+          <div>
+            <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Primary Location</label>
+            <LocationMapPicker
+              value={{ address: businessLocation }}
+              onChange={(value) => setBusinessLocation(value.address)}
+              placeholder="Search address or click map"
+            />
           </div>
 
-          {/* Third Row - Business Types */}
+          {/* Third Row - Contact Number */}
+          <div>
+            <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Contact Number</label>
+            <input 
+              type="text" 
+              value={contactNumber}
+              readOnly
+              className="w-full px-3 md:px-4 py-2 md:py-3 lg:py-4 border-2 border-gray-100 rounded-lg md:rounded-xl text-sm md:text-base lg:text-lg text-gray-600 bg-gray-50 cursor-not-allowed"
+            />
+          </div>
+
+          {/* Fourth Row - Business Types */}
           <div>
             <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Business Types</label>
             <div className="space-y-3">
