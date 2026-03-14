@@ -194,18 +194,24 @@ export function LocationMapPicker({
 
   return (
     <div className="flex flex-col gap-3 w-full">
+      {/* Search row: below page label, above map, normal flow */}
+      <div className="w-full">
+        <label className="block text-sm font-medium text-foreground mb-1.5">
+          Search for an address
+        </label>
+        <div
+          ref={autocompleteHostRef}
+          className="w-full overflow-visible [&::part(input)]:w-full [&::part(input)]:p-3 [&::part(input)]:text-base [&::part(input)]:font-medium [&::part(input)]:border-2 [&::part(input)]:border-muted [&::part(input)]:rounded-lg [&::part(input)]:bg-background [&::part(input)]:focus:outline-none [&::part(input)]:focus:border-primary"
+          style={{ minHeight: "48px" }}
+        />
+      </div>
+
+      {/* Map row */}
       <div
         ref={mapWrapperRef}
         className="relative overflow-visible rounded-xl"
         style={MAP_CONTAINER_STYLE}
       >
-        {/* Autocomplete as sibling of map so dropdown is not clipped by map container */}
-        <div
-          ref={autocompleteHostRef}
-          className="absolute top-3 left-3 right-12 z-20 overflow-visible [&::part(input)]:w-full [&::part(input)]:p-3 [&::part(input)]:text-base [&::part(input)]:font-medium [&::part(input)]:border-2 [&::part(input)]:border-muted [&::part(input)]:rounded-lg [&::part(input)]:bg-background [&::part(input)]:focus:outline-none [&::part(input)]:focus:border-primary"
-          style={{ minHeight: "48px" }}
-        />
-        {/* Custom fullscreen: works when default control fails in tabs/nested layout */}
         <button
           type="button"
           onClick={toggleFullscreen}
@@ -234,9 +240,23 @@ export function LocationMapPicker({
           )}
         </GoogleMap>
       </div>
+
+      {/* Selected location: read-only display below the map */}
+      <div className="w-full">
+        <label className="block text-sm font-medium text-foreground mb-1.5">
+          Selected location
+        </label>
+        <input
+          type="text"
+          readOnly
+          value={value?.address ?? ""}
+          placeholder="No location selected"
+          className="w-full px-3 py-2.5 text-base border-2 border-muted rounded-lg bg-muted/30 text-foreground placeholder:text-muted-foreground cursor-default"
+        />
+      </div>
+
       <p className="text-sm text-muted-foreground">
-        Search for an address above or click on the map to set your business
-        location.
+        Search above or click on the map to set your business location.
       </p>
     </div>
   );
