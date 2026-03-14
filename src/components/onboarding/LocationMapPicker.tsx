@@ -4,6 +4,7 @@ import {
   GoogleMap,
   Marker,
 } from "@react-google-maps/api";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 const LIBRARIES: ("places")[] = ["places"];
 const DEFAULT_CENTER = { lat: 39.5, lng: -98 };
@@ -31,6 +32,8 @@ export function LocationMapPicker({
 }: LocationMapPickerProps) {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const mapWrapperRef = useRef<HTMLDivElement | null>(null);
   const autocompleteHostRef = useRef<HTMLDivElement | null>(null);
   const placeAutocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
   const onChangeRef = useRef(onChange);
@@ -75,6 +78,22 @@ export function LocationMapPicker({
     },
     [onChange]
   );
+
+  const toggleFullscreen = useCallback(() => {
+    const wrapper = mapWrapperRef.current;
+    if (!wrapper) return;
+    if (!document.fullscreenElement) {
+      wrapper.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
 
   // Mount Places API (New) PlaceAutocompleteElement when script is loaded
   useEffect(() => {
@@ -175,7 +194,27 @@ export function LocationMapPicker({
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      <div className="relative" style={MAP_CONTAINER_STYLE}>
+      <div
+        ref={mapWrapperRef}
+        className="relative overflow-visible rounded-xl"
+        style={MAP_CONTAINER_STYLE}
+      >
+        {/* Autocomplete as sibling of map so dropdown is not clipped by map container */}
+        <div
+          ref={autocompleteHostRef}
+          className="absolute top-3 left-3 right-12 z-20 overflow-visible [&::part(input)]:w-full [&::part(input)]:p-3 [&::part(input)]:text-base [&::part(input)]:font-medium [&::part(input)]:border-2 [&::part(input)]:border-muted [&::part(input)]:rounded-lg [&::part(input)]:bg-background [&::part(input)]:focus:outline-none [&::part(input)]:focus:border-primary"
+          style={{ minHeight: "48px" }}
+        />
+        {/* Custom fullscreen: works when default control fails in tabs/nested layout */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="absolute top-3 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-lg border-2 border-muted bg-background text-foreground shadow hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
+          title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+        >
+          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "100%", borderRadius: "12px" }}
           mapContainerClassName="absolute inset-0 rounded-xl"
@@ -187,14 +226,9 @@ export function LocationMapPicker({
             disableDefaultUI: false,
             zoomControl: true,
             mapTypeControl: true,
-            fullscreenControl: true,
+            fullscreenControl: false,
           }}
         >
-          <div
-            ref={autocompleteHostRef}
-            className="absolute top-3 left-3 right-3 z-10 [&::part(input)]:w-full [&::part(input)]:p-3 [&::part(input)]:text-base [&::part(input)]:font-medium [&::part(input)]:border-2 [&::part(input)]:border-muted [&::part(input)]:rounded-lg [&::part(input)]:bg-background [&::part(input)]:focus:outline-none [&::part(input)]:focus:border-primary"
-            style={{ minHeight: "48px" }}
-          />
           {value?.lat != null && value?.lng != null && (
             <Marker position={{ lat: value.lat, lng: value.lng }} />
           )}
