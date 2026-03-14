@@ -1,9 +1,8 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   useJsApiLoader,
   GoogleMap,
   Marker,
-  Autocomplete,
 } from "@react-google-maps/api";
 
 const LIBRARIES: ("places")[] = ["places"];
@@ -32,7 +31,12 @@ export function LocationMapPicker({
 }: LocationMapPickerProps) {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const autocompleteHostRef = useRef<HTMLDivElement | null>(null);
+  const placeAutocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
+  const onChangeRef = useRef(onChange);
+  const mapRef = useRef(map);
+  onChangeRef.current = onChange;
+  mapRef.current = map;
 
   const { isLoaded, loadError: scriptError } = useJsApiLoader({
     id: "google-map-script",
@@ -72,30 +76,69 @@ export function LocationMapPicker({
     [onChange]
   );
 
-  const onAutocompleteLoad = useCallback(
-    (autocomplete: google.maps.places.Autocomplete) => {
-      autocompleteRef.current = autocomplete;
-    },
-    []
-  );
+  // Mount Places API (New) PlaceAutocompleteElement when script is loaded
+  useEffect(() => {
+    if (!isLoaded || !autocompleteHostRef.current || !window.google?.maps?.places) return;
 
-  const onPlaceChanged = useCallback(() => {
-    const autocomplete = autocompleteRef.current;
-    if (!autocomplete) return;
-    const place = autocomplete.getPlace();
-    const location = place.geometry?.location;
-    if (location && place.formatted_address) {
-      const lat = location.lat();
-      const lng = location.lng();
-      onChange({
-        address: place.formatted_address,
-        lat,
-        lng,
-      });
-      map?.panTo({ lat, lng });
-      map?.setZoom(15);
-    }
-  }, [onChange, map]);
+    let element: google.maps.places.PlaceAutocompleteElement | null = null;
+
+    const init = async () => {
+      try {
+        const places = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
+        if (!places?.PlaceAutocompleteElement) return;
+
+        element = new places.PlaceAutocompleteElement({
+          // Optional: restrict to addresses
+          // includedPrimaryTypes: ["address"],
+        });
+        autocompleteHostRef.current?.appendChild(element);
+        placeAutocompleteRef.current = element;
+
+        element.addEventListener("gmp-select", async (e: Event) => {
+          const detail = (e as CustomEvent<{ placePrediction?: { toPlace: () => Promise<google.maps.places.Place> } }>)?.detail ?? e as { placePrediction?: { toPlace: () => Promise<google.maps.places.Place> } };
+          const placePrediction = detail?.placePrediction;
+          if (!placePrediction?.toPlace) return;
+          try {
+            const place = await placePrediction.toPlace();
+            await place.fetchFields({
+              fields: ["formattedAddress", "location"],
+            });
+            const address = place.formattedAddress ?? "";
+            const loc = place.location;
+            let lat: number | undefined;
+            let lng: number | undefined;
+            if (loc) {
+              if (typeof (loc as { lat: () => number }).lat === "function") {
+                lat = (loc as google.maps.LatLng).lat();
+                lng = (loc as google.maps.LatLng).lng();
+              } else {
+                lat = (loc as { lat: number }).lat;
+                lng = (loc as { lng: number }).lng;
+              }
+            }
+            onChangeRef.current({ address, lat, lng });
+            if (lat != null && lng != null) {
+              mapRef.current?.panTo({ lat, lng });
+              mapRef.current?.setZoom(15);
+            }
+          } catch (err) {
+            console.error("Place fetchFields error:", err);
+          }
+        });
+      } catch (err) {
+        console.error("PlaceAutocompleteElement init error:", err);
+      }
+    };
+
+    init();
+
+    return () => {
+      if (element && autocompleteHostRef.current?.contains(element)) {
+        autocompleteHostRef.current.removeChild(element);
+      }
+      placeAutocompleteRef.current = null;
+    };
+  }, [isLoaded]);
 
   if (!apiKey) {
     return (
@@ -147,24 +190,11 @@ export function LocationMapPicker({
             fullscreenControl: true,
           }}
         >
-          <div className="absolute top-3 left-3 right-3 z-10">
-            <Autocomplete
-              key={value?.address ?? "empty"}
-              onLoad={onAutocompleteLoad}
-              onPlaceChanged={onPlaceChanged}
-              options={{
-                fields: ["formatted_address", "geometry"],
-                types: ["address"],
-              }}
-            >
-              <input
-                type="text"
-                placeholder={placeholder}
-                defaultValue={value?.address}
-                className="w-full p-3 pr-10 text-base font-medium text-foreground bg-background border-2 border-muted rounded-lg shadow-md placeholder-muted-foreground focus:outline-none focus:border-primary transition-colors"
-              />
-            </Autocomplete>
-          </div>
+          <div
+            ref={autocompleteHostRef}
+            className="absolute top-3 left-3 right-3 z-10 [&::part(input)]:w-full [&::part(input)]:p-3 [&::part(input)]:text-base [&::part(input)]:font-medium [&::part(input)]:border-2 [&::part(input)]:border-muted [&::part(input)]:rounded-lg [&::part(input)]:bg-background [&::part(input)]:focus:outline-none [&::part(input)]:focus:border-primary"
+            style={{ minHeight: "48px" }}
+          />
           {value?.lat != null && value?.lng != null && (
             <Marker position={{ lat: value.lat, lng: value.lng }} />
           )}
