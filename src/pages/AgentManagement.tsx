@@ -49,7 +49,7 @@ interface SelectedBusinessType {
 import { useNotifications } from "@/hooks/useNotifications";
 import NotificationPopup from "@/components/NotificationPopup";
 import { Header } from "@/components/shared/Header";
-import { LocationMapPicker } from "@/components/onboarding/LocationMapPicker";
+import { LocationMapPicker, type LocationValue } from "@/components/onboarding/LocationMapPicker";
 
 interface FAQ {
   id: string;
@@ -137,7 +137,7 @@ const AgentManagement = () => {
   const [businessName, setBusinessName] = useState('');
   const [selectedBusinessTypes, setSelectedBusinessTypes] = useState<string[]>([]);
   const [customTypes, setCustomTypes] = useState<string[]>([]);
-  const [businessLocation, setBusinessLocation] = useState('');
+  const [businessLocationValue, setBusinessLocationValue] = useState<LocationValue | null>(null);
   const [detailedServices, setDetailedServices] = useState<any[]>([]);
   
   // AI Personality  
@@ -432,7 +432,7 @@ const AgentManagement = () => {
 
         setSelectedBusinessTypes(loadedBusinessTypes);
         setCustomTypes(loadedCustomTypes);
-        setBusinessLocation(data.primary_location || '');
+        setBusinessLocationValue(data.primary_location ? { address: data.primary_location } : null);
         
         // Load detailed services with durations
         const servicesData = Array.isArray(data.services) ? data.services : [];
@@ -580,7 +580,7 @@ const AgentManagement = () => {
         user_id: user.id,
         business_name: businessName,
         business_types: allBusinessTypes as any,
-        primary_location: businessLocation,
+        primary_location: businessLocationValue?.address ?? '',
         contact_number: contactNumber,
         ai_assistant_name: selectedAssistantName === 'custom-value' ? customAssistantName : (selectedAssistantName === 'default' ? `Your ${businessName} Assistant` : aiAssistantName),
         ai_voice_style: selectedVoice,
@@ -736,7 +736,7 @@ const AgentManagement = () => {
         variant: "destructive",
       });
     }
-  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocation, contactNumber, aiAssistantName, voiceStyle, greetingStyle, detailedServices, appointmentDuration, businessDays, dayHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
+  }, [selectedAgentId, businessName, selectedBusinessTypes, customTypes, businessLocationValue, contactNumber, aiAssistantName, voiceStyle, greetingStyle, detailedServices, appointmentDuration, businessDays, dayHours, faqEnabled, faqs, dailySummary, toast, loadUserAgents, currentProject, selectedAssistantName, customAssistantName, selectedVoice, selectedGreetingStyle, greetingOptions, AGENT_UPDATE_WEBHOOK_URL]);
 
   const handleAgentSelection = useCallback(async (agentId: string) => {
     setSelectedAgentId(agentId);
@@ -919,7 +919,7 @@ const AgentManagement = () => {
 
         setSelectedBusinessTypes(resetBusinessTypes);
         setCustomTypes(resetCustomTypes.length > 0 ? resetCustomTypes : ['']);
-        setBusinessLocation(data.primary_location || '');
+        setBusinessLocationValue(data.primary_location ? { address: data.primary_location } : null);
         
         // Reset services
         const servicesData = Array.isArray(data.services) ? data.services : [];
@@ -1178,8 +1178,8 @@ const AgentManagement = () => {
           <div>
             <label className="block text-sm md:text-base lg:text-lg font-semibold text-black mb-2 md:mb-3">Primary Location</label>
             <LocationMapPicker
-              value={{ address: businessLocation }}
-              onChange={(value) => setBusinessLocation(value.address)}
+              value={businessLocationValue}
+              onChange={setBusinessLocationValue}
               placeholder="Search address or click map"
             />
           </div>
