@@ -1,39 +1,41 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { hasCompletedOnboarding } from "@/lib/onboarding";
 import { supabase } from "@/integrations/supabase/client";
 
 export const UserRedirect = () => {
   const { user } = useAuth();
-  const [subscriptionActive, setSubscriptionActive] = useState<boolean | null>(null);
-  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
-  const [isOwner, setIsOwner] = useState<boolean | null>(null);
+  const [destination, setDestination] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkStatus = async () => {
+    const resolve = async () => {
       if (!user) return;
 
       try {
-        const { data: projectMembers } = await supabase
+        // Single query: get ALL project_members rows for this user (any role)
+        const { data: memberships, error: memberErr } = await supabase
           .from("project_members")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "owner")
-          .limit(1);
+          .select("id, role, project_id")
+          .eq("user_id", user.id);
 
-        const userIsOwner = projectMembers && projectMembers.length > 0;
-        setIsOwner(userIsOwner);
-        console.log("[UserRedirect] isOwner:", userIsOwner);
+        if (memberErr) {
+          console.error("[UserRedirect] project_members query error:", memberErr);
+        }
 
-        if (userIsOwner) {
+        const hasMembership = memberships && memberships.length > 0;
+        const isOwner = memberships?.some((m) => m.role === "owner") ?? false;
+
+        console.log("[UserRedirect] user:", user.id, "hasMembership:", hasMembership, "isOwner:", isOwner);
+
+        // Owner → check subscription first
+        if (isOwner) {
           const { data: subscription } = await supabase
             .from("subscriptions")
             .select("status, current_period_end")
             .eq("user_id", user.id)
             .maybeSingle();
 
-          const hasActiveSubscription =
+          const hasActiveSub =
             subscription?.status === "active" &&
             subscription.status !== "unpaid" &&
             subscription.status !== "past_due" &&
@@ -41,34 +43,47 @@ export const UserRedirect = () => {
             (!subscription.current_period_end ||
               new Date(subscription.current_period_end) > new Date());
 
-          console.log("[UserRedirect] subscription active:", hasActiveSubscription);
-          setSubscriptionActive(hasActiveSubscription);
+          console.log("[UserRedirect] subscription active:", hasActiveSub);
 
-          if (hasActiveSubscription) {
-            const completed = await hasCompletedOnboarding(undefined, user.id);
-            console.log("[UserRedirect] onboarding completed:", completed);
-            setOnboardingComplete(completed);
-          } else {
-            setOnboardingComplete(null);
+          if (!hasActiveSub) {
+            setDestination("/subscription");
+            return;
           }
+        }
+
+        // Check onboarding_responses (the authoritative "has completed onboarding" check)
+        const { data: onboardingRow, error: onbErr } = await supabase
+          .from("onboarding_responses")
+          .select("id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (onbErr) {
+          console.error("[UserRedirect] onboarding_responses query error:", onbErr);
+        }
+
+        const hasOnboarding = !!onboardingRow;
+        console.log("[UserRedirect] hasOnboarding:", hasOnboarding);
+
+        // Decision: go to dashboard if user has onboarding data OR has project membership
+        if (hasOnboarding || hasMembership) {
+          console.log("[UserRedirect] → /dashboard (hasOnboarding:", hasOnboarding, "hasMembership:", hasMembership, ")");
+          setDestination("/dashboard");
         } else {
-          console.log("[UserRedirect] Not owner, skipping subscription check");
-          setSubscriptionActive(true);
-          const completed = await hasCompletedOnboarding(undefined, user.id);
-          console.log("[UserRedirect] onboarding completed:", completed);
-          setOnboardingComplete(completed);
+          console.log("[UserRedirect] → /onboarding/business-intro (no onboarding data, no membership)");
+          setDestination("/onboarding/business-intro");
         }
       } catch (error) {
-        console.error("[UserRedirect] Error checking status:", error);
-        setIsOwner(false);
-        setSubscriptionActive(false);
+        console.error("[UserRedirect] Unexpected error, defaulting to dashboard:", error);
+        setDestination("/dashboard");
       }
     };
 
-    checkStatus();
+    resolve();
   }, [user]);
 
-  if (isOwner === null || (isOwner && subscriptionActive === null)) {
+  if (!destination) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -79,27 +94,5 @@ export const UserRedirect = () => {
     );
   }
 
-  if (isOwner && subscriptionActive === false) {
-    console.log("[UserRedirect] Owner without subscription → /subscription");
-    return <Navigate to="/subscription" replace />;
-  }
-
-  if (onboardingComplete === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Checking status...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (onboardingComplete) {
-    console.log("[UserRedirect] → /dashboard");
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  console.log("[UserRedirect] → /onboarding/business-intro");
-  return <Navigate to="/onboarding/business-intro" replace />;
+  return <Navigate to={destination} replace />;
 };
