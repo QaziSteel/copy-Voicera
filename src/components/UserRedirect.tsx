@@ -9,31 +9,40 @@ export const UserRedirect = () => {
 
   useEffect(() => {
     const resolve = async () => {
-      if (!user) return;
+      console.log("=== [UserRedirect] START ===");
+      console.log("[UserRedirect] user from useAuth():", user ? { id: user.id, email: user.email } : null);
+
+      if (!user) {
+        console.log("[UserRedirect] No user, aborting");
+        return;
+      }
 
       try {
-        // Single query: get ALL project_members rows for this user (any role)
+        // 1) Check Supabase session
+        const { data: sessionData } = await supabase.auth.getSession();
+        console.log("[UserRedirect] Supabase session:", sessionData?.session ? "EXISTS" : "NULL", "user_id:", sessionData?.session?.user?.id ?? "N/A");
+
+        // 2) Query project_members
         const { data: memberships, error: memberErr } = await supabase
           .from("project_members")
           .select("id, role, project_id")
           .eq("user_id", user.id);
 
-        if (memberErr) {
-          console.error("[UserRedirect] project_members query error:", memberErr);
-        }
+        console.log("[UserRedirect] project_members query result:", JSON.stringify({ data: memberships, error: memberErr }));
 
         const hasMembership = memberships && memberships.length > 0;
         const isOwner = memberships?.some((m) => m.role === "owner") ?? false;
+        console.log("[UserRedirect] hasMembership:", hasMembership, "isOwner:", isOwner);
 
-        console.log("[UserRedirect] user:", user.id, "hasMembership:", hasMembership, "isOwner:", isOwner);
-
-        // Owner → check subscription first
+        // 3) Subscription check (owner only)
         if (isOwner) {
-          const { data: subscription } = await supabase
+          const { data: subscription, error: subErr } = await supabase
             .from("subscriptions")
             .select("status, current_period_end")
             .eq("user_id", user.id)
             .maybeSingle();
+
+          console.log("[UserRedirect] subscription query result:", JSON.stringify({ data: subscription, error: subErr }));
 
           const hasActiveSub =
             subscription?.status === "active" &&
@@ -43,15 +52,16 @@ export const UserRedirect = () => {
             (!subscription.current_period_end ||
               new Date(subscription.current_period_end) > new Date());
 
-          console.log("[UserRedirect] subscription active:", hasActiveSub);
+          console.log("[UserRedirect] hasActiveSub:", hasActiveSub);
 
           if (!hasActiveSub) {
+            console.log("[UserRedirect] DECISION → /subscription (owner, no active sub)");
             setDestination("/subscription");
             return;
           }
         }
 
-        // Check onboarding_responses (the authoritative "has completed onboarding" check)
+        // 4) Query onboarding_responses
         const { data: onboardingRow, error: onbErr } = await supabase
           .from("onboarding_responses")
           .select("id")
@@ -59,29 +69,30 @@ export const UserRedirect = () => {
           .limit(1)
           .maybeSingle();
 
-        if (onbErr) {
-          console.error("[UserRedirect] onboarding_responses query error:", onbErr);
-        }
+        console.log("[UserRedirect] onboarding_responses query result:", JSON.stringify({ data: onboardingRow, error: onbErr }));
 
         const hasOnboarding = !!onboardingRow;
-        console.log("[UserRedirect] hasOnboarding:", hasOnboarding);
 
-        // Decision: go to dashboard if user has onboarding data OR has project membership
+        // 5) Final decision
         if (hasOnboarding || hasMembership) {
-          console.log("[UserRedirect] → /dashboard (hasOnboarding:", hasOnboarding, "hasMembership:", hasMembership, ")");
+          console.log("[UserRedirect] DECISION → /dashboard (hasOnboarding:", hasOnboarding, "hasMembership:", hasMembership, ")");
           setDestination("/dashboard");
         } else {
-          console.log("[UserRedirect] → /onboarding/business-intro (no onboarding data, no membership)");
+          console.log("[UserRedirect] DECISION → /onboarding/business-intro (hasOnboarding:", hasOnboarding, "hasMembership:", hasMembership, ")");
           setDestination("/onboarding/business-intro");
         }
       } catch (error) {
-        console.error("[UserRedirect] Unexpected error, defaulting to dashboard:", error);
+        console.error("[UserRedirect] CAUGHT ERROR, defaulting to /dashboard:", error);
         setDestination("/dashboard");
       }
+
+      console.log("=== [UserRedirect] END ===");
     };
 
     resolve();
   }, [user]);
+
+  console.log("[UserRedirect] render — destination:", destination);
 
   if (!destination) {
     return (
