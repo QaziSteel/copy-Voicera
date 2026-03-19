@@ -95,6 +95,27 @@ export function LocationMapPicker({
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
   }, []);
 
+  // Auto-geocode when value has an address but no coordinates
+  const lastGeocodedAddress = useRef<string>("");
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!value?.address || (value.lat != null && value.lng != null)) return;
+    if (value.address === lastGeocodedAddress.current) return;
+
+    lastGeocodedAddress.current = value.address;
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: value.address }, (results, status) => {
+      if (status === "OK" && results && results[0]) {
+        const loc = results[0].geometry.location;
+        onChangeRef.current({
+          address: value.address,
+          lat: loc.lat(),
+          lng: loc.lng(),
+        });
+      }
+    });
+  }, [isLoaded, value?.address, value?.lat, value?.lng]);
+
   // Mount Places API (New) PlaceAutocompleteElement when script is loaded
   useEffect(() => {
     if (!isLoaded || !autocompleteHostRef.current || !window.google?.maps?.places) return;
