@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { hasCompletedOnboarding } from "@/lib/onboarding";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,8 +36,8 @@ export default function SubscriptionPaywall() {
         .maybeSingle();
 
       if (data && data.status === "active") {
-        // User has active subscription, redirect to onboarding
-        navigate("/onboarding/business-intro");
+        const completed = await hasCompletedOnboarding(undefined, user.id);
+        navigate(completed ? "/dashboard" : "/onboarding/business-intro");
         return;
       }
     } catch (error) {
