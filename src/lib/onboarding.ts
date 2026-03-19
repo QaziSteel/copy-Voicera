@@ -206,18 +206,23 @@ export const getLatestOnboardingResponse = async (projectId?: string) => {
   return { data, error };
 };
 
-export const hasCompletedOnboarding = async (projectId?: string): Promise<boolean> => {
+export const hasCompletedOnboarding = async (projectId?: string, userId?: string): Promise<boolean> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return false;
+    let uid = userId;
+    if (!uid) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('[hasCompletedOnboarding] No user from getUser() and no userId provided');
+        return false;
+      }
+      uid = user.id;
     }
 
     // Check 1: Does user have an onboarding_responses record?
     let query = supabase
       .from('onboarding_responses')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .order('created_at', { ascending: false });
 
     if (projectId) {
@@ -227,12 +232,8 @@ export const hasCompletedOnboarding = async (projectId?: string): Promise<boolea
     const { data, error } = await query.limit(1).maybeSingle();
 
     if (error) {
-      console.error('Error checking onboarding status:', error);
-      return false;
-    }
-
-    // If they have an onboarding response, they've completed onboarding
-    if (data) {
+      console.error('[hasCompletedOnboarding] Error checking onboarding_responses:', error);
+    } else if (data) {
       return true;
     }
 
@@ -240,19 +241,17 @@ export const hasCompletedOnboarding = async (projectId?: string): Promise<boolea
     const { data: membership, error: memberError } = await supabase
       .from('project_members')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', uid)
       .limit(1)
       .maybeSingle();
 
     if (memberError) {
-      console.error('Error checking project membership:', memberError);
-      return false;
+      console.error('[hasCompletedOnboarding] Error checking project_members:', memberError);
     }
 
-    // If they're in a project, consider onboarding complete (invited user)
     return !!membership;
   } catch (error) {
-    console.error('Error checking onboarding status:', error);
+    console.error('[hasCompletedOnboarding] Unexpected error:', error);
     return false;
   }
 };
