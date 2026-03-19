@@ -18,6 +18,13 @@ export interface LocationValue {
   lng?: number;
 }
 
+interface PredictionItem {
+  description: string;
+  placeId: string;
+  /** Opaque reference kept for the new API's toPlace() path */
+  _suggestion?: any;
+}
+
 interface LocationMapPickerProps {
   value?: LocationValue | null;
   onChange: (value: LocationValue) => void;
@@ -35,9 +42,8 @@ export function LocationMapPicker({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Custom autocomplete state
   const [inputText, setInputText] = useState("");
-  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [predictions, setPredictions] = useState<PredictionItem[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const mapWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -55,14 +61,6 @@ export function LocationMapPicker({
     libraries: LIBRARIES,
   });
 
-  // Initialize AutocompleteService once the script is loaded
-  useEffect(() => {
-    if (isLoaded && !autocompleteServiceRef.current) {
-      autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-    }
-  }, [isLoaded]);
-
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target as Node)) {
@@ -130,57 +128,131 @@ export function LocationMapPicker({
     });
   }, [isLoaded, value?.address, value?.lat, value?.lng]);
 
-  // Debounced autocomplete predictions
-  const handleSearchInput = useCallback((text: string) => {
-    setInputText(text);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+  // ── Autocomplete: try new Places API, fall back to legacy ──
 
-    if (!text.trim()) {
-      setPredictions([]);
-      setShowDropdown(false);
-      return;
+  const fetchPredictions = useCallback(async (text: string) => {
+    // 1. Try the new Places API (AutocompleteSuggestion)
+    try {
+      const Suggestion = (google.maps.places as any).AutocompleteSuggestion;
+      if (Suggestion?.fetchAutocompleteSuggestions) {
+        const { suggestions } = await Suggestion.fetchAutocompleteSuggestions({
+          input: text,
+        });
+        if (suggestions && suggestions.length > 0) {
+          const items: PredictionItem[] = suggestions
+            .filter((s: any) => s.placePrediction)
+            .map((s: any) => ({
+              description: s.placePrediction.text?.text ?? "",
+              placeId: s.placePrediction.placeId ?? "",
+              _suggestion: s,
+            }));
+          if (items.length > 0) return items;
+        }
+      }
+    } catch {
+      // New API unavailable — fall through to legacy
     }
 
-    debounceRef.current = setTimeout(() => {
-      autocompleteServiceRef.current?.getPlacePredictions(
-        { input: text },
-        (results, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-            setPredictions(results);
-            setShowDropdown(true);
-          } else {
-            setPredictions([]);
-            setShowDropdown(false);
-          }
-        }
-      );
-    }, DEBOUNCE_MS);
+    // 2. Legacy AutocompleteService (Promise-based)
+    try {
+      if (!autocompleteServiceRef.current) {
+        autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
+      }
+      const result = await autocompleteServiceRef.current.getPlacePredictions({ input: text });
+      if (result?.predictions?.length) {
+        return result.predictions.map((p) => ({
+          description: p.description,
+          placeId: p.place_id,
+        }));
+      }
+    } catch {
+      // Legacy also failed
+    }
+
+    return [];
   }, []);
 
-  // Select a prediction → geocode its place_id for lat/lng
-  const handleSelectPrediction = useCallback((prediction: google.maps.places.AutocompletePrediction) => {
-    setInputText("");
-    setPredictions([]);
-    setShowDropdown(false);
+  const handleSearchInput = useCallback(
+    (text: string) => {
+      setInputText(text);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
-      if (status === "OK" && results && results[0]) {
-        const loc = results[0].geometry.location;
-        const lat = loc.lat();
-        const lng = loc.lng();
-        onChangeRef.current({ address: results[0].formatted_address, lat, lng });
-        mapRef.current?.panTo({ lat, lng });
-        mapRef.current?.setZoom(15);
+      if (!text.trim()) {
+        setPredictions([]);
+        setShowDropdown(false);
+        return;
       }
+
+      debounceRef.current = setTimeout(async () => {
+        const items = await fetchPredictions(text);
+        setPredictions(items);
+        setShowDropdown(items.length > 0);
+      }, DEBOUNCE_MS);
+    },
+    [fetchPredictions]
+  );
+
+  const resolvePlace = useCallback(async (item: PredictionItem) => {
+    // Try new API toPlace() path first
+    if (item._suggestion?.placePrediction?.toPlace) {
+      try {
+        const place = await item._suggestion.placePrediction.toPlace();
+        await place.fetchFields({ fields: ["formattedAddress", "location"] });
+        const address: string = place.formattedAddress ?? item.description;
+        const loc = place.location;
+        let lat: number | undefined;
+        let lng: number | undefined;
+        if (loc) {
+          lat = typeof loc.lat === "function" ? loc.lat() : loc.lat;
+          lng = typeof loc.lng === "function" ? loc.lng() : loc.lng;
+        }
+        return { address, lat, lng };
+      } catch {
+        // Fall through to geocode
+      }
+    }
+
+    // Geocode by placeId
+    return new Promise<LocationValue>((resolve) => {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ placeId: item.placeId }, (results, status) => {
+        if (status === "OK" && results?.[0]) {
+          const loc = results[0].geometry.location;
+          resolve({
+            address: results[0].formatted_address,
+            lat: loc.lat(),
+            lng: loc.lng(),
+          });
+        } else {
+          resolve({ address: item.description });
+        }
+      });
     });
   }, []);
+
+  const handleSelectPrediction = useCallback(
+    async (item: PredictionItem) => {
+      setInputText("");
+      setPredictions([]);
+      setShowDropdown(false);
+
+      const resolved = await resolvePlace(item);
+      onChangeRef.current(resolved);
+      if (resolved.lat != null && resolved.lng != null) {
+        mapRef.current?.panTo({ lat: resolved.lat, lng: resolved.lng });
+        mapRef.current?.setZoom(15);
+      }
+    },
+    [resolvePlace]
+  );
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       setShowDropdown(false);
     }
   }, []);
+
+  // ── Render ──
 
   if (!apiKey) {
     return (
@@ -230,14 +302,14 @@ export function LocationMapPicker({
         />
 
         {showDropdown && predictions.length > 0 && (
-          <div className="absolute left-0 right-0 top-full mt-1 border-2 border-[#E5E7EB] rounded-xl overflow-hidden bg-white z-30">
-            {predictions.map((prediction) => (
+          <div className="absolute left-0 right-0 top-full mt-1 border-2 border-[#E5E7EB] rounded-xl overflow-hidden bg-white z-30 shadow-lg">
+            {predictions.map((item) => (
               <div
-                key={prediction.place_id}
+                key={item.placeId}
                 className="p-3 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                onMouseDown={() => handleSelectPrediction(prediction)}
+                onMouseDown={() => handleSelectPrediction(item)}
               >
-                <span className="text-lg text-[#6B7280]">{prediction.description}</span>
+                <span className="text-lg text-[#6B7280]">{item.description}</span>
               </div>
             ))}
           </div>
