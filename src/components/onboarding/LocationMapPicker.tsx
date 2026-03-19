@@ -10,6 +10,7 @@ const LIBRARIES: ("places")[] = ["places"];
 const DEFAULT_CENTER = { lat: 39.5, lng: -98 };
 const DEFAULT_ZOOM = 4;
 const MAP_CONTAINER_STYLE = { width: "100%", height: "320px", borderRadius: "12px" };
+const DEBOUNCE_MS = 300;
 
 export interface LocationValue {
   address: string;
@@ -33,11 +34,18 @@ export function LocationMapPicker({
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Custom autocomplete state
+  const [inputText, setInputText] = useState("");
+  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const mapWrapperRef = useRef<HTMLDivElement | null>(null);
-  const autocompleteHostRef = useRef<HTMLDivElement | null>(null);
-  const placeAutocompleteRef = useRef<google.maps.places.PlaceAutocompleteElement | null>(null);
+  const searchWrapperRef = useRef<HTMLDivElement | null>(null);
   const onChangeRef = useRef(onChange);
   const mapRef = useRef(map);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
   onChangeRef.current = onChange;
   mapRef.current = map;
 
@@ -46,6 +54,24 @@ export function LocationMapPicker({
     googleMapsApiKey: apiKey || "",
     libraries: LIBRARIES,
   });
+
+  // Initialize AutocompleteService once the script is loaded
+  useEffect(() => {
+    if (isLoaded && !autocompleteServiceRef.current) {
+      autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
+    }
+  }, [isLoaded]);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const onMapLoad = useCallback((mapInstance: google.maps.Map) => {
     setMap(mapInstance);
@@ -61,17 +87,9 @@ export function LocationMapPicker({
         { location: { lat, lng } },
         (results, status) => {
           if (status === "OK" && results && results[0]) {
-            onChange({
-              address: results[0].formatted_address,
-              lat,
-              lng,
-            });
+            onChange({ address: results[0].formatted_address, lat, lng });
           } else {
-            onChange({
-              address: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-              lat,
-              lng,
-            });
+            onChange({ address: `${lat.toFixed(6)}, ${lng.toFixed(6)}`, lat, lng });
           }
         }
       );
@@ -107,82 +125,66 @@ export function LocationMapPicker({
     geocoder.geocode({ address: value.address }, (results, status) => {
       if (status === "OK" && results && results[0]) {
         const loc = results[0].geometry.location;
-        onChangeRef.current({
-          address: value.address,
-          lat: loc.lat(),
-          lng: loc.lng(),
-        });
+        onChangeRef.current({ address: value.address, lat: loc.lat(), lng: loc.lng() });
       }
     });
   }, [isLoaded, value?.address, value?.lat, value?.lng]);
 
-  // Mount Places API (New) PlaceAutocompleteElement when script is loaded
-  useEffect(() => {
-    if (!isLoaded || !autocompleteHostRef.current || !window.google?.maps?.places) return;
+  // Debounced autocomplete predictions
+  const handleSearchInput = useCallback((text: string) => {
+    setInputText(text);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    let element: google.maps.places.PlaceAutocompleteElement | null = null;
+    if (!text.trim()) {
+      setPredictions([]);
+      setShowDropdown(false);
+      return;
+    }
 
-    const init = async () => {
-      try {
-        const places = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
-        if (!places?.PlaceAutocompleteElement) return;
-
-        element = new places.PlaceAutocompleteElement({
-          // Optional: restrict to addresses
-          // includedPrimaryTypes: ["address"],
-        });
-        autocompleteHostRef.current?.appendChild(element);
-        placeAutocompleteRef.current = element;
-
-        element.addEventListener("gmp-select", async (e: Event) => {
-          const detail = (e as CustomEvent<{ placePrediction?: { toPlace: () => Promise<google.maps.places.Place> } }>)?.detail ?? e as { placePrediction?: { toPlace: () => Promise<google.maps.places.Place> } };
-          const placePrediction = detail?.placePrediction;
-          if (!placePrediction?.toPlace) return;
-          try {
-            const place = await placePrediction.toPlace();
-            await place.fetchFields({
-              fields: ["formattedAddress", "location"],
-            });
-            const address = place.formattedAddress ?? "";
-            const loc = place.location;
-            let lat: number | undefined;
-            let lng: number | undefined;
-            if (loc) {
-              if (typeof (loc as { lat: () => number }).lat === "function") {
-                lat = (loc as google.maps.LatLng).lat();
-                lng = (loc as google.maps.LatLng).lng();
-              } else {
-                lat = (loc as { lat: number }).lat;
-                lng = (loc as { lng: number }).lng;
-              }
-            }
-            onChangeRef.current({ address, lat, lng });
-            if (lat != null && lng != null) {
-              mapRef.current?.panTo({ lat, lng });
-              mapRef.current?.setZoom(15);
-            }
-          } catch (err) {
-            console.error("Place fetchFields error:", err);
+    debounceRef.current = setTimeout(() => {
+      autocompleteServiceRef.current?.getPlacePredictions(
+        { input: text },
+        (results, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            setPredictions(results);
+            setShowDropdown(true);
+          } else {
+            setPredictions([]);
+            setShowDropdown(false);
           }
-        });
-      } catch (err) {
-        console.error("PlaceAutocompleteElement init error:", err);
-      }
-    };
+        }
+      );
+    }, DEBOUNCE_MS);
+  }, []);
 
-    init();
+  // Select a prediction → geocode its place_id for lat/lng
+  const handleSelectPrediction = useCallback((prediction: google.maps.places.AutocompletePrediction) => {
+    setInputText("");
+    setPredictions([]);
+    setShowDropdown(false);
 
-    return () => {
-      if (element && autocompleteHostRef.current?.contains(element)) {
-        autocompleteHostRef.current.removeChild(element);
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
+      if (status === "OK" && results && results[0]) {
+        const loc = results[0].geometry.location;
+        const lat = loc.lat();
+        const lng = loc.lng();
+        onChangeRef.current({ address: results[0].formatted_address, lat, lng });
+        mapRef.current?.panTo({ lat, lng });
+        mapRef.current?.setZoom(15);
       }
-      placeAutocompleteRef.current = null;
-    };
-  }, [isLoaded]);
+    });
+  }, []);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setShowDropdown(false);
+    }
+  }, []);
 
   if (!apiKey) {
     return (
-      <div className="rounded-xl border-2 border-muted bg-muted/30 p-4 text-center text-muted-foreground">
+      <div className="rounded-xl border-2 border-[#E5E7EB] p-4 text-center text-[#6B7280]">
         Set VITE_GOOGLE_MAPS_API_KEY in your .env to enable the map.
       </div>
     );
@@ -199,7 +201,7 @@ export function LocationMapPicker({
   if (!isLoaded) {
     return (
       <div
-        className="rounded-xl border-2 border-muted bg-muted/30 flex items-center justify-center text-muted-foreground"
+        className="rounded-xl border-2 border-[#E5E7EB] flex items-center justify-center text-[#6B7280]"
         style={MAP_CONTAINER_STYLE}
       >
         Loading map…
@@ -215,19 +217,34 @@ export function LocationMapPicker({
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      {/* Search row: below page label, above map, normal flow */}
-      <div className="w-full">
-        <label className="block text-sm font-medium text-foreground mb-1.5">
-          Search for an address
-        </label>
-        <div
-          ref={autocompleteHostRef}
-          className="w-full overflow-visible [&::part(input)]:w-full [&::part(input)]:p-3 [&::part(input)]:text-base [&::part(input)]:font-medium [&::part(input)]:border-2 [&::part(input)]:border-muted [&::part(input)]:rounded-lg [&::part(input)]:bg-background [&::part(input)]:focus:outline-none [&::part(input)]:focus:border-primary"
-          style={{ minHeight: "48px" }}
+      {/* Search input with custom autocomplete dropdown */}
+      <div ref={searchWrapperRef} className="relative w-full">
+        <input
+          type="text"
+          value={inputText}
+          onChange={(e) => handleSearchInput(e.target.value)}
+          onFocus={() => { if (predictions.length > 0) setShowDropdown(true); }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="flex items-center w-full p-4 border-2 border-[#E5E7EB] rounded-xl text-lg text-black placeholder:text-[#6B7280] hover:border-black focus:border-black focus:outline-none transition-colors"
         />
+
+        {showDropdown && predictions.length > 0 && (
+          <div className="absolute left-0 right-0 top-full mt-1 border-2 border-[#E5E7EB] rounded-xl overflow-hidden bg-white z-30">
+            {predictions.map((prediction) => (
+              <div
+                key={prediction.place_id}
+                className="p-3 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                onMouseDown={() => handleSelectPrediction(prediction)}
+              >
+                <span className="text-lg text-[#6B7280]">{prediction.description}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Map row */}
+      {/* Map */}
       <div
         ref={mapWrapperRef}
         className="relative overflow-visible rounded-xl"
@@ -236,7 +253,7 @@ export function LocationMapPicker({
         <button
           type="button"
           onClick={toggleFullscreen}
-          className="absolute top-3 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-lg border-2 border-muted bg-background text-foreground shadow hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
+          className="absolute top-3 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[#E5E7EB] bg-white text-black shadow hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black"
           title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
           aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
         >
@@ -262,21 +279,16 @@ export function LocationMapPicker({
         </GoogleMap>
       </div>
 
-      {/* Selected location: read-only display below the map */}
-      <div className="w-full">
-        <label className="block text-sm font-medium text-foreground mb-1.5">
-          Selected location
-        </label>
-        <input
-          type="text"
-          readOnly
-          value={value?.address ?? ""}
-          placeholder="No location selected"
-          className="w-full px-3 py-2.5 text-base border-2 border-muted rounded-lg bg-muted/30 text-foreground placeholder:text-muted-foreground cursor-default"
-        />
-      </div>
+      {/* Selected location display */}
+      <input
+        type="text"
+        readOnly
+        value={value?.address ?? ""}
+        placeholder="No location selected"
+        className="w-full p-4 border-2 border-[#E5E7EB] rounded-xl text-lg text-black placeholder:text-[#6B7280] bg-gray-50 cursor-default"
+      />
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-[#6B7280]">
         Search above or click on the map to set your business location.
       </p>
     </div>
