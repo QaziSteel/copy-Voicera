@@ -13,6 +13,16 @@ export default function BusinessLocation() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const savedData = sessionStorage.getItem("primaryLocationData");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData) as LocationValue;
+        if (parsed?.address) {
+          setLocationValue(parsed);
+          return;
+        }
+      } catch { /* fall through to legacy key */ }
+    }
     const savedLocation = sessionStorage.getItem("primaryLocation");
     if (
       savedLocation &&
@@ -33,12 +43,15 @@ export default function BusinessLocation() {
     const address = locationValue?.address?.trim();
     if (address) {
       sessionStorage.setItem("primaryLocation", address);
+      sessionStorage.setItem("primaryLocationData", JSON.stringify(locationValue));
       navigate("/onboarding/contact-number");
     }
   };
 
   const handleLocationChange = useCallback((value: LocationValue) => {
     setLocationValue(value);
+    sessionStorage.setItem("primaryLocation", value.address);
+    sessionStorage.setItem("primaryLocationData", JSON.stringify(value));
   }, []);
 
   const primaryLocation = locationValue?.address ?? "";

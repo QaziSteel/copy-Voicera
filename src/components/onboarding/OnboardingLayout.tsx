@@ -153,7 +153,7 @@ export const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
     try {
       // Clear all onboarding-related sessionStorage data
       const keysToRemove = [
-        'businessName', 'businessTypes', 'primaryLocation', 'contactNumber', 
+        'businessName', 'businessTypes', 'primaryLocation', 'primaryLocationData', 'contactNumber', 
         'purchasedNumberDetails', 'aiVoiceStyle', 'aiGreetingStyle', 'aiAssistantName', 
         'aiHandlingUnknown', 'services', 'businessDays', 'businessHours', 
         'scheduleFullAction', 'wantsDailySummary', 'wantsEmailConfirmations', 'reminderSettings', 
